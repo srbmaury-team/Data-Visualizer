@@ -3,18 +3,27 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "./ReadmeViewer.css";
 
-export default function ReadmeViewer(): JSX.Element {
-  const [content, setContent] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export default function ReadmeViewer() {
+  const [content, setContent] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+    // Fetch README from repo root served by dev server
     fetch("/README.md")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.text();
       })
-      .then((text) => setContent(text))
-      .catch((err) => setError(err.message));
+      .then((text) => {
+        if (!cancelled) setContent(text);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (error) return <div className="readme-error">Failed to load README: {error}</div>;

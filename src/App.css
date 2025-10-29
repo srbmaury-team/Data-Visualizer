@@ -54,7 +54,8 @@ body {
 
 .save-graph-btn,
 .my-graphs-btn,
-.clear-data-btn {
+.clear-data-btn,
+.docs-btn {
   padding: 8px 16px;
   font-size: 0.85em;
   font-weight: 600;
@@ -101,6 +102,19 @@ body {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.docs-btn {
+  color: #7c3aed;
+  background: white;
+  border-color: #7c3aed;
+}
+
+.docs-btn:hover {
+  background: #7c3aed;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
 .autosave-indicator {
