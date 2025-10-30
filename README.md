@@ -20,6 +20,14 @@ A powerful, AI-enhanced browser-based visualizer that converts YAML hierarchies 
 - **White Background Theme**: Clean, professional editor appearance
 - **Monospace Font**: Professional code editor with proper spacing
 
+### 🔀 **Combined Editor View**
+- **Split-Panel Interface**: Edit YAML and view diagram simultaneously
+- **Adjustable Divider**: Drag the resizer to customize panel widths (20%-80%)
+- **Real-time Visualization**: Diagram updates automatically as you type
+- **Integrated Search**: Search panel positioned for quick access
+- **Unified Controls**: Save, load, and manage graphs without switching views
+- **Professional Workflow**: Perfect for iterative YAML development
+
 ### 🎨 **Interactive Diagram Viewer**
 - **D3.js Powered**: Smooth, performant tree visualization
 - **Smart Node Display**:
@@ -27,6 +35,10 @@ A powerful, AI-enhanced browser-based visualizer that converts YAML hierarchies 
   - Properties below with color coding
   - Auto-sizing based on content
   - Rounded corners with drop shadows
+  - **📋 Copy Icons**: One-click copy for every property value
+    - Subtle icons appear on hover
+    - Instant clipboard copy with visual feedback (checkmark)
+    - Works for strings, numbers, and complex JSON values
 - **Horizontal Tree Layout**: Logical left-to-right hierarchy
 - **Straight Connectors**: Clean lines from parents to children
   - Single vertical line per parent
@@ -72,11 +84,19 @@ A powerful, AI-enhanced browser-based visualizer that converts YAML hierarchies 
 - **Large Hierarchy Support**: Better exploration of complex trees
 - **Auto-detect**: Automatically detects and updates fullscreen state
 
-### 🔢 **Node Count Badge**
-- **Live Statistics**: Shows "Showing X of Y nodes" in real-time
-- **Visibility Tracking**: Understand how much of the tree is visible vs collapsed
-- **Green Badge**: Color-coded for quick recognition
-- **Always Visible**: Bottom-left corner placement for constant awareness
+### 🔢 **Tree Information Panel**
+- **Collapsible Sidebar**: Toggle visibility with "▶ Tree Structure" button
+- **Live Statistics**: 
+  - Total nodes count
+  - Total edges count
+  - Maximum depth (levels)
+- **Nodes per Level**: Organized breakdown showing:
+  - Level badge with node count
+  - All node names at that level
+  - **📋 Copy Icons**: Copy any node name or statistic value
+- **Quick Tips**: Helpful interaction hints
+- **Real-time Updates**: Reflects current tree state
+- **Node Count Badge**: Additional "Showing X of Y nodes" badge for visibility tracking
 
 ### 💾 **Data Persistence**
 - **Auto-save**: Automatic localStorage persistence
@@ -287,6 +307,8 @@ Data-Visualizer/
 │   ├── pages/
 │   │   ├── EditorPage.jsx             # Main editor interface
 │   │   ├── DiagramPage.jsx            # Diagram viewing page
+│   │   ├── CombinedEditor.css         # Combined editor split-panel styling
+│   │   ├── CombinedEditorPage.jsx     # Split-panel editor with live preview
 │   │   └── DocsPage.jsx               # Documentation page
 │   ├── services/
 │   │   ├── openaiService.js           # OpenAI API integration
@@ -330,6 +352,19 @@ The diagram calculates optimal spacing by:
 - Case-insensitive matching
 - Returns node references with match types
 - **Only searches visible nodes** (collapsed nodes are not searched)
+- **Event-based communication**: Uses CustomEvents for Combined Editor
+- **Stable function references**: Prevents unnecessary re-renders
+
+### Copy to Clipboard Feature
+- **SVG-embedded HTML**: Uses foreignObject for interactive buttons in diagram
+- **Pointer events management**: Ensures copy buttons work without blocking node clicks
+- **Visual feedback**: Icon changes to checkmark (✓) for 2 seconds after copying
+- **Smart value handling**: 
+  - Strings copied as-is
+  - Objects converted to JSON
+  - Numbers and booleans converted to strings
+- **Hover effects**: Icons fade in on hover with scale animation
+- **Works everywhere**: Both in diagram nodes and Tree Info Panel
 
 ### Path Highlighting Algorithm
 - Traverses from clicked node to root
@@ -361,6 +396,16 @@ The diagram calculates optimal spacing by:
 - **Real-time Updates**: Recalculated on every `update()` call
 - **State Management**: `{ visible, total }` object in React state
 - **Performance**: O(n) complexity where n = total nodes
+
+### Combined Editor Implementation
+- **Split-panel Layout**: CSS Flexbox with adjustable divider
+- **Drag Resizing**: Mouse event listeners for dynamic width adjustment
+- **Real-time YAML Parsing**: Auto-visualizes on every keystroke (with validation)
+- **Event-driven Search**: DiagramViewer dispatches CustomEvents for search results
+- **Global Function Bridge**: Uses `window` object for component communication
+- **Ref-based State Access**: Ensures fresh state values in closures
+- **Stable Callbacks**: `useCallback` prevents SearchPanel re-renders
+- **Constraints**: Divider constrained between 20% and 80% width
 
 ### LocalStorage Schema
 ```javascript
@@ -398,6 +443,9 @@ The diagram calculates optimal spacing by:
 | Click & Drag | Pan the diagram |
 | Click Node Box | Highlight path from root to node |
 | Click `+`/`−` Icon (on node) | Expand/collapse that node |
+| Click `📋` Icon (on property) | Copy property value to clipboard |
+| Hover over Property | Reveal copy icon |
+| Drag Divider (Combined Editor) | Adjust panel widths |
 
 ### 🎛️ Control Buttons
 | Button | Action |

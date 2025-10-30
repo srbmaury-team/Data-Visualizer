@@ -39,6 +39,22 @@ const DiagramViewer = forwardRef(({
   const [copiedProperty, setCopiedProperty] = useState(null);
   const rootRef = useRef(null);
   const updateFunctionRef = useRef(null);
+  const searchTermRef = useRef(searchTerm);
+  const searchResultsRef = useRef(searchResults);
+  const currentSearchIndexRef = useRef(currentSearchIndex);
+
+  // Update refs when state changes
+  useEffect(() => {
+    searchTermRef.current = searchTerm;
+  }, [searchTerm]);
+
+  useEffect(() => {
+    searchResultsRef.current = searchResults;
+  }, [searchResults]);
+
+  useEffect(() => {
+    currentSearchIndexRef.current = currentSearchIndex;
+  }, [currentSearchIndex]);
 
   // Copy to clipboard function
   const copyToClipboard = useCallback((value, nodeId, propKey) => {
@@ -582,7 +598,8 @@ const DiagramViewer = forwardRef(({
       });
     }
 
-  }, [data, dimensions, copyToClipboard]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, dimensions]); // copyToClipboard is stable (empty deps) so safe to omit
 
   // Update copy button icons when copiedProperty changes
   useEffect(() => {
@@ -753,13 +770,26 @@ const DiagramViewer = forwardRef(({
 
       setSearchResults(results); // Set internal results for highlighting
       onSearchResults && onSearchResults(results);
+      
+      // For combined editor: dispatch custom event with results
+      if (hideSearch) {
+        window.dispatchEvent(new CustomEvent('diagramSearchComplete', { 
+          detail: { results, currentIndex: 0 }
+        }));
+      }
     } else {
       // Internal search handling
+      const prevSearchTerm = searchTermRef.current;
       setSearchTerm(term);
-      setCurrentSearchIndex(0);
+      
+      // Only reset index if search term actually changed
+      if (term !== prevSearchTerm) {
+        setCurrentSearchIndex(0);
+      }
 
       if (!term || !rootRef.current) {
         setSearchResults([]);
+        setCurrentSearchIndex(0);
         return;
       }
 
@@ -802,8 +832,15 @@ const DiagramViewer = forwardRef(({
 
       setSearchResults(results);
       onSearchResults && onSearchResults(results);
+      
+      // For combined editor: dispatch custom event with results
+      if (hideSearch) {
+        window.dispatchEvent(new CustomEvent('diagramSearchComplete', { 
+          detail: { results, currentIndex: 0 }
+        }));
+      }
     }
-  }, [externalSearch, onSearchResults]);
+  }, [externalSearch, onSearchResults, hideSearch]); // Using searchTermRef.current to avoid re-creation
 
   // Handle external search term changes
   useEffect(() => {
@@ -858,6 +895,13 @@ const DiagramViewer = forwardRef(({
     setCurrentSearchIndex(newIndex);
     onSearchIndexChange && onSearchIndexChange(newIndex);
     zoomToNode(searchResults[newIndex].node);
+    
+    // For combined editor: dispatch custom event with new index
+    if (!externalSearch) {
+      window.dispatchEvent(new CustomEvent('diagramNavigationComplete', { 
+        detail: { currentIndex: newIndex, resultsCount: searchResults.length }
+      }));
+    }
   }, [externalSearch, searchResults, currentSearchIndex, externalSearchIndex, zoomToNode, onSearchIndexChange]);
 
   // Expose search and navigation functions to parent via ref
@@ -876,11 +920,16 @@ const DiagramViewer = forwardRef(({
   useEffect(() => {
     if (hideSearch) {
       // Use unique function names to avoid collisions
+      // Use stable function references
       window.combinedEditorDiagramSearch = handleSearch;
       window.combinedEditorDiagramNavigate = handleNavigate;
-      window.getCombinedEditorSearchResults = () => searchResults;
-      window.getCombinedEditorCurrentIndex = () => currentSearchIndex;
-      console.log('DiagramViewer: Exposing global functions for combined editor');
+      // Use refs for getters to always return current state
+      window.getCombinedEditorSearchResults = () => searchResultsRef.current;
+      window.getCombinedEditorCurrentIndex = () => currentSearchIndexRef.current;
+      console.log('DiagramViewer: Exposing global functions for combined editor', {
+        resultsCount: searchResultsRef.current.length,
+        currentIndex: currentSearchIndexRef.current
+      });
     }
     return () => {
       if (hideSearch) {
@@ -891,7 +940,7 @@ const DiagramViewer = forwardRef(({
         console.log('DiagramViewer: Cleaning up global functions');
       }
     };
-  }, [hideSearch]); // Only depend on hideSearch, not the changing state values
+  }, [hideSearch, handleSearch, handleNavigate]); // Only re-create when functions change, not state
 
   // Collapse or expand all nodes
   // IMPORTANT: We maintain _children as a permanent backup reference to support

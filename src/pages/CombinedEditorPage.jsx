@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
 import DiagramViewer from "../components/DiagramViewer";
@@ -11,73 +11,72 @@ import "./CombinedEditor.css";
 export default function CombinedEditorPage({
   yamlText,
   setYamlText,
-  handleVisualize,
   error,
   validation,
   handleSaveGraph,
   savedGraphs,
   setShowSavedGraphs,
-  handleClearData,
 }) {
   const navigate = useNavigate();
-  const diagramViewerRef = useRef();
   const [parsedData, setParsedData] = useState(null);
   const [treeInfo, setTreeInfo] = useState(null);
   const [localError, setLocalError] = useState("");
-  const [leftWidth, setLeftWidth] = useState(50); // Percentage width for left panel
+  const [leftWidth, setLeftWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [searchTrigger, setSearchTrigger] = useState({ term: "", timestamp: 0 });
   
-  // Debug: Log when searchTerm changes
+  // Listen for search results from DiagramViewer via custom events
   useEffect(() => {
-  }, [searchTerm]);
+    const handleSearchComplete = (event) => {
+      const { results, currentIndex } = event.detail;
+      console.log('CombinedEditorPage: Search complete', { resultsCount: results.length, currentIndex });
+      setSearchResults(results);
+      setCurrentSearchIndex(currentIndex);
+    };
+
+    const handleNavigationComplete = (event) => {
+      const { currentIndex } = event.detail;
+      console.log('CombinedEditorPage: Navigation complete', { currentIndex });
+      setCurrentSearchIndex(currentIndex);
+    };
+
+    window.addEventListener('diagramSearchComplete', handleSearchComplete);
+    window.addEventListener('diagramNavigationComplete', handleNavigationComplete);
+
+    return () => {
+      window.removeEventListener('diagramSearchComplete', handleSearchComplete);
+      window.removeEventListener('diagramNavigationComplete', handleNavigationComplete);
+    };
+  }, []);
   
-  // Search handlers for the diagram
-  const handleSearch = (term) => {
-    console.log('CombinedEditorPage: handleSearch called with term:', term);
+  // Search handler - calls DiagramViewer's global search function
+  const handleSearch = useCallback((term) => {
+    console.log('CombinedEditorPage: Search triggered with term:', term);
+    
+    if (!term || !term.trim()) {
+      // Clear results immediately for empty search
+      setSearchResults([]);
+      setCurrentSearchIndex(0);
+    }
+    
+    // Call DiagramViewer's search function (will dispatch event with results)
     if (window.combinedEditorDiagramSearch) {
-      console.log('CombinedEditorPage: Calling global search function');
       window.combinedEditorDiagramSearch(term);
-      // Only update local state if we have a search term
-      if (term && term.trim()) {
-        setTimeout(() => {
-          const results = window.getCombinedEditorSearchResults ? window.getCombinedEditorSearchResults() : [];
-          const currentIndex = window.getCombinedEditorCurrentIndex ? window.getCombinedEditorCurrentIndex() : 0;
-          console.log('CombinedEditorPage: Retrieved results:', results.length, 'currentIndex:', currentIndex);
-          setSearchResults(results);
-          setCurrentSearchIndex(currentIndex);
-        }, 100);
-      } else {
-        // Clear results for empty search
-        setSearchResults([]);
-        setCurrentSearchIndex(0);
-      }
-    } else {
-      console.log('CombinedEditorPage: Global search function not available');
     }
-  };
+  }, []);
 
-  const handleSearchNavigation = (direction) => {
-    console.log('CombinedEditorPage: handleSearchNavigation called with direction:', direction);
+  // Navigation handler - calls DiagramViewer's global navigate function
+  const handleSearchNavigation = useCallback((direction) => {
+    console.log('CombinedEditorPage: Navigate triggered:', direction);
+    
+    // Call DiagramViewer's navigate function (will dispatch event with new index)
     if (window.combinedEditorDiagramNavigate) {
-      console.log('CombinedEditorPage: Calling global navigate function');
       window.combinedEditorDiagramNavigate(direction);
-      // Update local state to sync with SearchPanel
-      setTimeout(() => {
-        const currentIndex = window.getCombinedEditorCurrentIndex ? window.getCombinedEditorCurrentIndex() : 0;
-        console.log('CombinedEditorPage: Retrieved new index after navigation:', currentIndex);
-        setCurrentSearchIndex(currentIndex);
-      }, 50);
-    } else {
-      console.log('CombinedEditorPage: Global navigate function not available');
     }
-  };
+  }, []);
 
-    // Auto-visualize when YAML changes
+  // Auto-visualize when YAML changes
   useEffect(() => {
     if (yamlText) {
       try {
@@ -104,13 +103,13 @@ export default function CombinedEditorPage({
   }, [yamlText]);
 
   // Handle resizer drag
-  const handleMouseDown = (e) => {
+  const handleMouseDown = useCallback((e) => {
     setIsDragging(true);
     document.body.classList.add('dragging');
     e.preventDefault();
-  };
+  }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
     
     const containerWidth = window.innerWidth;
@@ -120,12 +119,12 @@ export default function CombinedEditorPage({
     if (newLeftWidth >= 20 && newLeftWidth <= 80) {
       setLeftWidth(newLeftWidth);
     }
-  };
+  }, [isDragging]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     document.body.classList.remove('dragging');
-  };
+  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -136,7 +135,7 @@ export default function CombinedEditorPage({
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="simple-combined-editor">
@@ -207,7 +206,6 @@ export default function CombinedEditorPage({
                   searchResults={searchResults}
                   currentIndex={currentSearchIndex}
                   onNavigate={handleSearchNavigation}
-                  onExpandedChange={setIsSearchExpanded}
                 />
               </div>
               <div className="diagram-content">
