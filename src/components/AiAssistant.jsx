@@ -5,7 +5,7 @@ import VisualAnalysisService from "../services/visualAnalysisService";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import { validateYAML } from "../utils/yamlValidator";
 import yaml from "js-yaml";
-import "./AiAssistant.css";
+import "./styles/AiAssistant.css";
 
 export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentYaml }) {
   const [messages, setMessages] = useState([
@@ -31,7 +31,6 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
     // Priority: Environment variable -> localStorage -> empty string
     return import.meta.env.VITE_OPENAI_API_KEY || localStorage.getItem('openai_api_key') || '';
   });
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const openaiServiceRef = useRef(new OpenAIYamlService(apiKey));
@@ -49,26 +48,6 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
   useEffect(() => {
     openaiServiceRef.current = new OpenAIYamlService(apiKey);
   }, [apiKey]);
-
-  const saveApiKey = (key) => {
-    setApiKey(key);
-    // Only save to localStorage if it's not from environment variables
-    if (!import.meta.env.VITE_OPENAI_API_KEY) {
-      localStorage.setItem('openai_api_key', key);
-    }
-    setShowApiKeyInput(false);
-  };
-
-  const clearApiKey = () => {
-    // Can't clear environment variable, only localStorage
-    if (import.meta.env.VITE_OPENAI_API_KEY) {
-      alert('Cannot clear API key from environment variables. Please remove VITE_OPENAI_API_KEY from your .env file.');
-      return;
-    }
-    setApiKey('');
-    localStorage.removeItem('openai_api_key');
-    openaiServiceRef.current = new OpenAIYamlService('');
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -378,72 +357,35 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           </div>
           <div className="header-actions">
             <button 
-              className="api-key-btn" 
-              onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-              title={apiKey ? 'Manage OpenAI API Key' : 'Add OpenAI API Key for real AI responses'}
+              className="clear-chat-btn" 
+              onClick={() => {
+                if (window.confirm('Clear all chat messages? This cannot be undone.')) {
+                  setMessages([
+                    {
+                      id: 1,
+                      type: 'assistant',
+                      content: 'Hi! I\'m your AI YAML Assistant with Visual Intelligence. I can help you generate, modify, optimize YAML structures, analyze your tree visualization, and provide intelligent insights about structure and organization.',
+                      timestamp: new Date(),
+                      suggestions: [
+                        'Generate an e-commerce platform structure',
+                        'Analyze my tree visualization structure',
+                        'Check tree balance and organization',
+                        'Suggest visual improvements for my tree',
+                        'Optimize this YAML for better visualization',
+                        'Identify structural issues in my tree',
+                        'Create a microservices architecture'
+                      ]
+                    }
+                  ]);
+                }
+              }}
+              title="Clear all chat messages"
             >
-              🔑 {apiKey ? 'API Key' : 'Add API Key'}
+              🗑️ Clear Chat
             </button>
             <button className="close-btn" onClick={onClose}>✕</button>
           </div>
         </div>
-
-        {showApiKeyInput && (
-          <div className="api-key-config">
-            {import.meta.env.VITE_OPENAI_API_KEY ? (
-              <div className="api-key-env-notice">
-                <div className="env-notice-content">
-                  <h4>🔧 Environment Variable Detected</h4>
-                  <p>OpenAI API key is loaded from <code>VITE_OPENAI_API_KEY</code> environment variable.</p>
-                  <p>To change the API key, update your <code>.env</code> file and restart the development server.</p>
-                </div>
-                <button 
-                  className="cancel-key-btn" 
-                  onClick={() => setShowApiKeyInput(false)}
-                >
-                  Close
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="api-key-form">
-                  <input
-                    type="password"
-                    placeholder="Enter your OpenAI API Key (sk-...)"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="api-key-input"
-                  />
-                  <div className="api-key-actions">
-                    <button 
-                      className="save-key-btn"
-                      onClick={() => saveApiKey(apiKey)}
-                      disabled={!apiKey.trim()}
-                    >
-                      Save
-                    </button>
-                    {apiKey && (
-                      <button className="clear-key-btn" onClick={clearApiKey}>
-                        Clear
-                      </button>
-                    )}
-                    <button 
-                      className="cancel-key-btn" 
-                      onClick={() => setShowApiKeyInput(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-                <div className="api-key-help">
-                  <p>🔒 Your API key is stored locally and never sent to our servers.</p>
-                  <p>Get your key from: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com/api-keys</a></p>
-                  <p>💡 <strong>Pro tip:</strong> Add <code>VITE_OPENAI_API_KEY=your_key_here</code> to your <code>.env</code> file for automatic loading.</p>
-                </div>
-              </>
-            )}
-          </div>
-        )}
 
         <div className="messages-container">
           {messages.map((message) => (

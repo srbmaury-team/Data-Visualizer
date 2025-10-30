@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './NodeFilterPanel.css';
+import './styles/NodeFilterPanel.css';
 
 export default function NodeFilterPanel({ 
   data, 

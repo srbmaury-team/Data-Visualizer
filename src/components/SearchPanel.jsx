@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "./SearchPanel.css";
+import "./styles/SearchPanel.css";
 
-export default function SearchPanel({ onSearch, searchResults, currentIndex, onNavigate }) {
+export default function SearchPanel({ onSearch, searchResults, currentIndex, onNavigate, onExpandedChange }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -17,6 +17,13 @@ export default function SearchPanel({ onSearch, searchResults, currentIndex, onN
 
     return () => clearTimeout(timer);
   }, [searchTerm, onSearch]);
+
+  useEffect(() => {
+    // Notify parent of expanded state changes
+    if (onExpandedChange) {
+      onExpandedChange(isExpanded);
+    }
+  }, [isExpanded, onExpandedChange]);
 
   const handleClear = () => {
     setSearchTerm("");

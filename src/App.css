@@ -57,7 +57,9 @@ body {
 .clear-data-btn,
 .docs-btn,
 .ai-btn,
-.analysis-btn {
+.visualize-btn,
+.analysis-btn,
+.combined-editor-btn {
   padding: 8px 16px;
   font-size: 0.85em;
   font-weight: 600;
@@ -144,6 +146,19 @@ body {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.combined-editor-btn {
+  color: #8b5cf6;
+  background: white;
+  border-color: #8b5cf6;
+}
+
+.combined-editor-btn:hover {
+  background: #8b5cf6;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 /* Editor Layout */
@@ -337,6 +352,11 @@ body {
   margin: 0 0 10px 0;
 }
 
+.updated-date {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
 .graph-preview {
   font-family: 'Courier New', monospace;
   font-size: 0.8em;
@@ -357,6 +377,7 @@ body {
 }
 
 .load-btn,
+.update-btn,
 .delete-btn {
   padding: 8px 16px;
   font-size: 0.9em;
@@ -375,6 +396,17 @@ body {
 
 .load-btn:hover {
   background: #2563eb;
+  color: white;
+}
+
+.update-btn {
+  color: #f59e0b;
+  background: white;
+  border-color: #f59e0b;
+}
+
+.update-btn:hover {
+  background: #f59e0b;
   color: white;
 }
 
@@ -465,6 +497,24 @@ body {
   background: #667eea;
   color: white;
   transform: translateX(-3px);
+}
+
+.combined-btn {
+  padding: 10px 20px;
+  font-size: 1em;
+  font-weight: 500;
+  color: #8b5cf6;
+  background: white;
+  border: 2px solid #8b5cf6;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.combined-btn:hover {
+  background: #8b5cf6;
+  color: white;
+  transform: translateY(-2px);
 }
 
 .diagram-header h2 {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import "./ReadmeViewer.css";
+import "./styles/ReadmeViewer.css";
 
 export default function ReadmeViewer() {
   const [content, setContent] = useState(null);

@@ -1,8 +1,17 @@
 import React, { useState } from "react";
-import "./TreeInfoPanel.css";
+import "./styles/TreeInfoPanel.css";
 
 export default function TreeInfoPanel({ treeInfo }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [copiedValue, setCopiedValue] = useState(null);
+
+  const copyToClipboard = (value, label) => {
+    const textToCopy = typeof value === 'string' ? value : String(value);
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopiedValue(label);
+      setTimeout(() => setCopiedValue(null), 2000);
+    });
+  };
 
   if (!treeInfo) return null;
 
@@ -22,21 +31,48 @@ export default function TreeInfoPanel({ treeInfo }) {
             <h3>📊 Overview</h3>
             <div className="info-item">
               <span className="label">Total Nodes:</span>
-              <span className="value">{treeInfo.totalNodes}</span>
+              <div className="value-container">
+                <span className="value">{treeInfo.totalNodes}</span>
+                <button
+                  className="copy-icon"
+                  onClick={() => copyToClipboard(treeInfo.totalNodes, 'totalNodes')}
+                  title="Copy value"
+                >
+                  {copiedValue === 'totalNodes' ? '✓' : '📋'}
+                </button>
+              </div>
             </div>
             <div className="info-item">
               <span className="label">Total Edges:</span>
-              <span className="value">{treeInfo.totalEdges}</span>
+              <div className="value-container">
+                <span className="value">{treeInfo.totalEdges}</span>
+                <button
+                  className="copy-icon"
+                  onClick={() => copyToClipboard(treeInfo.totalEdges, 'totalEdges')}
+                  title="Copy value"
+                >
+                  {copiedValue === 'totalEdges' ? '✓' : '📋'}
+                </button>
+              </div>
             </div>
             <div className="info-item">
               <span className="label">Max Depth:</span>
-              <span className="value">{treeInfo.maxDepth + 1} levels</span>
+              <div className="value-container">
+                <span className="value">{treeInfo.maxDepth + 1} levels</span>
+                <button
+                  className="copy-icon"
+                  onClick={() => copyToClipboard(`${treeInfo.maxDepth + 1} levels`, 'maxDepth')}
+                  title="Copy value"
+                >
+                  {copiedValue === 'maxDepth' ? '✓' : '📋'}
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="info-section">
             <h3>🌳 Nodes per Level</h3>
-            {treeInfo.nodesPerLevel.map(({ level, count, nodes }) => (
+            {(treeInfo.nodesPerLevel || []).map(({ level, count, nodes }) => (
               <div key={level} className="level-info">
                 <div className="level-header">
                   <span className="level-badge">Level {level}</span>
@@ -44,9 +80,16 @@ export default function TreeInfoPanel({ treeInfo }) {
                 </div>
                 <div className="node-list">
                   {nodes.map((nodeName, idx) => (
-                    <span key={idx} className="node-tag">
-                      {nodeName}
-                    </span>
+                    <div key={idx} className="node-tag-container">
+                      <span className="node-tag">{nodeName}</span>
+                      <button
+                        className="copy-icon copy-icon-small"
+                        onClick={() => copyToClipboard(nodeName, `node-${level}-${idx}`)}
+                        title="Copy node name"
+                      >
+                        {copiedValue === `node-${level}-${idx}` ? '✓' : '📋'}
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>

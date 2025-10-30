@@ -3,7 +3,7 @@
  * Provides intelligent analysis and insights for YAML structures
  */
 
-export class YamlAnalysisService {
+class YamlAnalysisService {
   /**
    * Performs comprehensive analysis of a YAML structure
    * @param {Object} yamlData - Parsed YAML data

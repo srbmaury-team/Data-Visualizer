@@ -112,265 +112,78 @@ Generate appropriate YAML based on the request. If modifying existing YAML, pres
   getMockResponse(userInput, currentYaml) {
     const input = userInput.toLowerCase();
     
+    // Provide helpful guidance instead of pre-made YAML structures
     if (input.includes('e-commerce') || input.includes('ecommerce')) {
       return {
-        message: "I've generated a comprehensive e-commerce platform structure for you! This includes frontend, backend services, database, and payment processing components.",
-        yaml: `name: E-Commerce-Platform
-version: 3.0.0
-environment: production
-type: web-application
+        message: `I'd help you create an e-commerce platform structure! Since OpenAI API is not configured, here's what I would typically generate:
 
-children:
-  - name: Frontend
-    type: web-app
-    framework: React
-    port: 3000
-    nodes:
-      - name: Product-Catalog
-        description: Browse and search products
-      - name: Shopping-Cart
-        description: Add/remove items
-      - name: User-Authentication
-        description: Login and registration
-      - name: Checkout-Process
-        description: Order completion
+🏪 **E-commerce Platform Components:**
+- Frontend (React/Vue with product catalog, cart, checkout)
+- Backend APIs (user service, product service, order service)
+- Database layer (users, products, orders tables)
+- Payment integration
+- Authentication & authorization
 
-  - name: Backend-API
-    type: api-service
-    framework: Node.js
-    port: 8080
-    database: PostgreSQL
-    children:
-      - name: Product-Service
-        nodes:
-          - name: Get-Products
-            method: GET
-            path: /api/products
-          - name: Product-Details
-            method: GET
-            path: /api/products/:id
-        
-      - name: User-Service
-        nodes:
-          - name: Register
-            method: POST
-            path: /api/users/register
-          - name: Login
-            method: POST
-            path: /api/users/login
-            
-      - name: Order-Service
-        nodes:
-          - name: Create-Order
-            method: POST
-            path: /api/orders
-          - name: Order-History
-            method: GET
-            path: /api/orders/user/:id
-
-  - name: Database
-    type: database
-    engine: PostgreSQL
-    port: 5432
-    children:
-      - name: Users-Table
-        fields: "id, email, password, created_at"
-      - name: Products-Table
-        fields: "id, name, price, description, stock"
-      - name: Orders-Table
-        fields: "id, user_id, total, status, created_at"
-
-  - name: Payment-Gateway
-    type: external-service
-    provider: Stripe
-    nodes:
-      - name: Process-Payment
-        method: POST
-        path: /api/payments/charge
-      - name: Refund
-        method: POST
-        path: /api/payments/refund
-
-  - name: Cache-Layer
-    type: cache
-    technology: Redis
-    port: 6379
-    nodes:
-      - name: Session-Storage
-        description: User session data
-      - name: Product-Cache
-        description: Product information cache`
+To get AI-generated YAML structures, please configure your OpenAI API key in the settings.`,
+        yaml: null
       };
     }
 
     if (input.includes('auth') || input.includes('authentication')) {
-      const authService = `
-  - name: Authentication-Service
-    type: microservice
-    framework: Node.js
-    port: 8081
-    database: PostgreSQL
-    children:
-      - name: JWT-Token-Management
-        description: Issue and validate tokens
-      - name: Password-Hashing
-        algorithm: bcrypt
-      - name: OAuth-Integration
-        providers: "Google, GitHub, Facebook"
-    
-    nodes:
-      - name: Register
-        method: POST
-        path: /auth/register
-        validation: "email, password-strength"
-        
-      - name: Login
-        method: POST
-        path: /auth/login
-        response: jwt-token
-        
-      - name: Logout
-        method: POST
-        path: /auth/logout
-        
-      - name: Verify-Token
-        method: GET
-        path: /auth/verify
-        
-      - name: Reset-Password
-        method: POST
-        path: /auth/reset-password
+      return {
+        message: `I'd help you create an authentication system! Since OpenAI API is not configured, here's what I would typically generate:
 
-    children:
-      - name: Security-Features
-        nodes:
-          - name: Rate-Limiting
-            limit: "100-requests-per-minute"
-          - name: CORS-Configuration
-            origins: "localhost:3000, app.domain.com"
-          - name: Input-Validation
-            library: joi`;
+🔐 **Authentication System Components:**
+- JWT token management
+- User registration & login endpoints
+- Password hashing & security
+- OAuth integration (Google, GitHub, etc.)
+- Rate limiting & CORS configuration
 
-      if (currentYaml && currentYaml.trim()) {
-        return {
-          message: "I've created an authentication service that you can add to your existing structure. This includes JWT token management, OAuth integration, and comprehensive security features.",
-          yaml: currentYaml + authService
-        };
-      } else {
-        return {
-          message: "I've created a complete authentication service structure for you! This includes user registration, login, JWT tokens, OAuth integration, and security features.",
-          yaml: `name: Authentication-System
-version: 1.0.0
-type: authentication-service
-children:${authService}`
-        };
-      }
+To get AI-generated YAML structures, please configure your OpenAI API key in the settings.`,
+        yaml: null
+      };
     }
 
     if (input.includes('microservice') || input.includes('micro-service')) {
       return {
-        message: "I've created a modern microservices architecture following best practices with service discovery, API gateway, and containerization ready!",
-        yaml: `name: Microservices-Architecture
-version: 2.0.0
-type: distributed-system
+        message: `I'd help you create a microservices architecture! Since OpenAI API is not configured, here's what I would typically generate:
 
-children:
-  - name: API-Gateway
-    type: gateway
-    framework: Kong
-    port: 8000
-    nodes:
-      - name: Load-Balancing
-      - name: Rate-Limiting
-      - name: Authentication-Proxy
-      - name: Request-Routing
+🏗️ **Microservices Architecture Components:**
+- API Gateway with load balancing & routing
+- Service discovery (Consul/Eureka)
+- Individual services (user, product, order, notification)
+- Message queues (RabbitMQ/Kafka)
+- Monitoring & observability stack
 
-  - name: Service-Discovery
-    type: discovery
-    technology: Consul
-    port: 8500
-    nodes:
-      - name: Health-Checks
-      - name: Load-Balancing
-
-  - name: User-Service
-    type: microservice
-    framework: Node.js
-    port: 8081
-    database: PostgreSQL
-    nodes:
-      - name: User-CRUD
-        paths: "/users, /users/:id"
-
-  - name: Product-Service
-    type: microservice
-    framework: Python-Flask
-    port: 8082
-    database: MongoDB
-    nodes:
-      - name: Product-Management
-        paths: "/products, /products/:id"
-
-  - name: Order-Service
-    type: microservice
-    framework: Java-Spring
-    port: 8083
-    database: MySQL
-    message-queue: RabbitMQ
-
-  - name: Notification-Service
-    type: microservice
-    framework: Node.js
-    port: 8084
-    nodes:
-      - name: Email-Notifications
-      - name: SMS-Notifications
-      - name: Push-Notifications
-
-  - name: Message-Queue
-    type: queue
-    technology: RabbitMQ
-    port: 5672
-    nodes:
-      - name: User-Events
-      - name: Order-Events
-
-  - name: Monitoring
-    type: observability
-    children:
-      - name: Metrics
-        technology: Prometheus
-        port: 9090
-      - name: Logging
-        technology: ELK-Stack
-      - name: Tracing
-        technology: Jaeger`
+To get AI-generated YAML structures, please configure your OpenAI API key in the settings.`,
+        yaml: null
       };
     }
 
-    // Default response for unrecognized input
+    // Default response for any other input
     return {
-      message: `I understand you're looking for help with: "${userInput}". Here are some things I can help you with:
+      message: `I understand you're looking for help with: "${userInput}".
 
-🏗️ **Generate Structures:**
-- E-commerce platforms
-- Microservices architectures  
-- Authentication systems
-- Database configurations
+🤖 **AI-Powered YAML Generation:**
+I can help you create sophisticated YAML structures for various use cases, but I need an OpenAI API key to generate custom content.
 
-🔧 **Modify Existing:**
-- Add new services
-- Integrate authentication
-- Add database layers
-- Include monitoring
+🏗️ **What I Can Generate:**
+- E-commerce platforms & marketplaces
+- Microservices architectures
+- Authentication & authorization systems
+- Database schemas & configurations
+- API documentation structures
+- DevOps & deployment configs
+- Component hierarchies
+- System architecture diagrams
 
-🚀 **Optimize:**
-- Improve organization
-- Add best practices
-- Include security features
-- Performance enhancements
+� **Setup Required:**
+Please configure your OpenAI API key in the AI Assistant settings (🔑 button) to unlock AI-powered YAML generation.
 
-Try asking me something like "Generate a microservices architecture" or "Add a database to my current structure"!`
+📝 **Alternative:**
+You can also write your own YAML structure using the editor - I'll help analyze and visualize whatever you create!`,
+      yaml: null
     };
   }
 }

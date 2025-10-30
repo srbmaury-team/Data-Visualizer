@@ -1,8 +1,0 @@
-root:
-  level1a:
-    level2a: "value1"
-    level2b: "value2"
-  level1b:
-    level2c: "value3"
-    level2d:
-      level3a: "deep value"

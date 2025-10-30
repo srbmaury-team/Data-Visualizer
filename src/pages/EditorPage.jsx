@@ -71,6 +71,9 @@ export default function EditorPage({
         <h1>🧩 YAML Diagram Visualizer</h1>
         <p>Convert YAML hierarchy into interactive tree diagrams</p>
         <div className="header-actions">
+          <button className="combined-editor-btn" onClick={() => navigate("/combined")} title="Combined Editor & Visualizer">
+            🔗 Combined View
+          </button>
           <button className="save-graph-btn" onClick={handleSaveGraph} title="Save current graph">
             💾 Save Graph
           </button>

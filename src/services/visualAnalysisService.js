@@ -3,7 +3,7 @@
  * Analyzes tree visualization structure and provides AI-powered insights
  */
 
-export class VisualAnalysisService {
+class VisualAnalysisService {
   /**
    * Analyzes the visual structure of a tree for AI insights
    * @param {Object} treeData - The tree data structure
@@ -426,11 +426,13 @@ export class VisualAnalysisService {
 
     // Helper function to traverse tree and collect node paths
     const traverseAndAnalyze = (node, path = [], depth = 0) => {
-      const currentPath = [...path, node.data.name];
+      const nodeName = node.name || node.data?.name || `Node-${depth}`;
+      const currentPath = [...path, nodeName];
       const nodeId = currentPath.join('.');
       
       // Analyze current node
-      const childCount = node.children ? node.children.length : 0;
+      const children = this.getNodeChildren(node);
+      const childCount = children.length;
       const isLeaf = childCount === 0;
       const isWide = childCount > 4;
       const isDeep = depth > 4;
@@ -501,8 +503,8 @@ export class VisualAnalysisService {
       }
       
       // Recursively analyze children
-      if (node.children) {
-        node.children.forEach(child => {
+      if (children.length > 0) {
+        children.forEach(child => {
           traverseAndAnalyze(child, currentPath, depth + 1);
         });
       }
@@ -523,9 +525,11 @@ export class VisualAnalysisService {
         
         if (metrics.leftHeavy) {
           leftSide.forEach(child => {
+            const childName = child.name || child.data?.name || 'Unknown';
+            const rootName = treeData.name || treeData.data?.name || 'Root';
             highlights.warning.push({
-              nodeId: `${treeData.data.name}.${child.data.name}`,
-              path: [treeData.data.name, child.data.name],
+              nodeId: `${rootName}.${childName}`,
+              path: [rootName, childName],
               reason: 'Part of left-heavy imbalance',
               severity: 'warning',
               suggestion: 'Consider moving some items to right side'

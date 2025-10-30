@@ -464,3 +464,28 @@
 .legend-warning { background-color: #f59e0b; }
 .legend-positive { background-color: #22c55e; }
 .legend-info { background-color: #3b82f6; }
+
+/* Copy button in SVG nodes */
+.svg-copy-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+  border-radius: 3px;
+  margin-left: 4px;
+  flex-shrink: 0;
+  pointer-events: auto; /* Ensure button captures clicks */
+}
+
+.svg-copy-btn:hover {
+  opacity: 1 !important;
+  background: rgba(102, 126, 234, 0.1);
+  transform: scale(1.15) !important;
+}
+
+.svg-copy-btn:active {
+  transform: scale(0.95) !important;
+}

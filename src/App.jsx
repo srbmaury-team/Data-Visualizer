@@ -2,75 +2,18 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import EditorPage from "./pages/EditorPage";
 import DiagramPage from "./pages/DiagramPage";
+import CombinedEditorPage from "./pages/CombinedEditorPage";
 import DocsPage from "./pages/DocsPage";
 import SavedGraphsModal from "./components/SavedGraphsModal";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "./utils/treeBuilder";
 import { validateYAML } from "./utils/yamlValidator";
+import defaultYamlContent from "./assets/default.yaml?raw";
 import "./App.css";
 
 const STORAGE_KEY = "yaml-diagram-data";
 const SAVED_GRAPHS_KEY = "yaml-diagram-saved-graphs";
-const DEFAULT_YAML = `# Sample YAML - Flat Root Structure
-# Your format: properties and children at root level
-# Click nodes to expand/collapse, scroll to zoom, drag to pan
-
-name: E-Commerce-Platform
-version: 2.5.1
-environment: production
-type: web-application
-children:
-  - name: Frontend
-    framework: React
-    port: 3000
-    status: running
-    nodes:
-      - name: UI-Components
-        type: module
-        count: 47
-      - name: State-Management
-        library: Redux
-      - name: Routing
-        library: React-Router
-  
-  - name: Backend
-    framework: Node.js
-    port: 8080
-    database: PostgreSQL
-    children:
-      - name: Auth-Service
-        protocol: JWT
-        timeout: 30s
-        children:
-          - name: User-Login
-            method: POST
-            endpoint: /api/auth/login
-          - name: Token-Refresh
-            method: POST
-            endpoint: /api/auth/refresh
-      
-      - name: Product-Service
-        cache: Redis
-        rate-limit: 1000/min
-        nodes:
-          - name: Get-Products
-            method: GET
-            endpoint: /api/products
-          - name: Add-Product
-            method: POST
-            endpoint: /api/products
-  
-  - name: Database
-    type: PostgreSQL
-    version: 14.2
-    host: db.example.com
-    children:
-      - name: Users-Table
-        rows: 150000
-        indexes: 5
-      - name: Products-Table
-        rows: 25000
-        indexes: 8`;
+const DEFAULT_YAML = defaultYamlContent;
 
 function AppContent() {
   const navigate = useNavigate();
@@ -170,17 +113,44 @@ function AppContent() {
     const name = prompt("Enter a name for this graph:");
     if (!name || name.trim() === "") return;
 
-    const newGraph = {
-      id: Date.now(),
-      name: name.trim(),
-      yamlText,
-      createdAt: new Date().toISOString()
-    };
+    // Check if a graph with this name already exists
+    const existingGraphIndex = savedGraphs.findIndex(graph => 
+      graph.name.toLowerCase() === name.trim().toLowerCase()
+    );
 
-    const updatedGraphs = [...savedGraphs, newGraph];
-    setSavedGraphs(updatedGraphs);
-    localStorage.setItem(SAVED_GRAPHS_KEY, JSON.stringify(updatedGraphs));
-    alert(`Graph "${name}" saved successfully!`);
+    if (existingGraphIndex !== -1) {
+      const shouldOverwrite = window.confirm(
+        `A graph named "${name}" already exists. Do you want to overwrite it?`
+      );
+      
+      if (!shouldOverwrite) return;
+
+      // Update existing graph
+      const updatedGraphs = [...savedGraphs];
+      updatedGraphs[existingGraphIndex] = {
+        ...updatedGraphs[existingGraphIndex],
+        yamlText,
+        updatedAt: new Date().toISOString(),
+        name: name.trim()
+      };
+      
+      setSavedGraphs(updatedGraphs);
+      localStorage.setItem(SAVED_GRAPHS_KEY, JSON.stringify(updatedGraphs));
+      alert(`Graph "${name}" updated successfully!`);
+    } else {
+      // Create new graph
+      const newGraph = {
+        id: Date.now(),
+        name: name.trim(),
+        yamlText,
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedGraphs = [...savedGraphs, newGraph];
+      setSavedGraphs(updatedGraphs);
+      localStorage.setItem(SAVED_GRAPHS_KEY, JSON.stringify(updatedGraphs));
+      alert(`Graph "${name}" saved successfully!`);
+    }
   };
 
   const handleLoadGraph = (graph) => {
@@ -199,6 +169,21 @@ function AppContent() {
     const updatedGraphs = savedGraphs.filter(g => g.id !== graphId);
     setSavedGraphs(updatedGraphs);
     localStorage.setItem(SAVED_GRAPHS_KEY, JSON.stringify(updatedGraphs));
+  };
+
+  const handleUpdateGraph = (graph) => {
+    if (!window.confirm(`Update "${graph.name}" with the current YAML content?`)) return;
+    
+    const updatedGraphs = savedGraphs.map(g => 
+      g.id === graph.id 
+        ? { ...g, yamlText, updatedAt: new Date().toISOString() }
+        : g
+    );
+    
+    setSavedGraphs(updatedGraphs);
+    localStorage.setItem(SAVED_GRAPHS_KEY, JSON.stringify(updatedGraphs));
+    alert(`Graph "${graph.name}" updated successfully!`);
+    setShowSavedGraphs(false);
   };
 
   return (
@@ -229,6 +214,22 @@ function AppContent() {
             />
           } 
         />
+        <Route 
+          path="/combined" 
+          element={
+            <CombinedEditorPage
+              yamlText={yamlText}
+              setYamlText={setYamlText}
+              handleVisualize={handleVisualize}
+              error={error}
+              validation={validation}
+              handleSaveGraph={handleSaveGraph}
+              savedGraphs={savedGraphs}
+              setShowSavedGraphs={setShowSavedGraphs}
+              handleClearData={handleClearData}
+            />
+          } 
+        />
         <Route path="/docs" element={<DocsPage />} />
       </Routes>
       
@@ -238,6 +239,7 @@ function AppContent() {
         savedGraphs={savedGraphs}
         handleLoadGraph={handleLoadGraph}
         handleDeleteGraph={handleDeleteGraph}
+        handleUpdateGraph={handleUpdateGraph}
       />
     </div>
   );

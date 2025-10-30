@@ -11,6 +11,9 @@ export default function DiagramPage({ parsedData, treeInfo }) {
         <button className="back-btn" onClick={() => navigate("/")}>
           ← Back to Editor
         </button>
+        <button className="combined-btn" onClick={() => navigate("/combined")}>
+          🔗 Combined View
+        </button>
         <h2>Interactive Diagram View</h2>
         <div className="hint">
           💡 Scroll to zoom • Drag to pan • Click nodes to expand/collapse

@@ -1,5 +1,5 @@
 import React from 'react';
-import './AnalysisPanel.css';
+import './styles/AnalysisPanel.css';
 
 const AnalysisPanel = ({ analysis, isLoading = false }) => {
   if (isLoading) {

@@ -72,6 +72,7 @@
 .info-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 8px 0;
   font-size: 0.95em;
 }
@@ -81,9 +82,36 @@
   font-weight: 500;
 }
 
+.value-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .info-item .value {
   color: #2c3e50;
   font-weight: 600;
+}
+
+.copy-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.copy-icon:hover {
+  opacity: 1;
+  background: rgba(102, 126, 234, 0.1);
+  transform: scale(1.1);
+}
+
+.copy-icon:active {
+  transform: scale(0.95);
 }
 
 .level-info {
@@ -121,14 +149,40 @@
   margin-top: 8px;
 }
 
-.node-tag {
+.node-tag-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: white;
-  color: #667eea;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 12px;
-  font-size: 0.8em;
   border: 1px solid #d0d9ff;
+  transition: all 0.2s ease;
+}
+
+.node-tag-container:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+}
+
+.node-tag {
+  color: #667eea;
+  font-size: 0.8em;
   font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.copy-icon-small {
+  font-size: 0.75em;
+  padding: 2px 4px;
+  opacity: 0.5;
+}
+
+.node-tag-container:hover .copy-icon-small {
+  opacity: 0.8;
+}
+
+.copy-icon-small:hover {
+  opacity: 1 !important;
 }
 
 .tips-list {

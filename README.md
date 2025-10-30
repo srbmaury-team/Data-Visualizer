@@ -1,23 +1,24 @@
 # 🧩 YAML Diagram Visualizer
 
-A powerful, browser-based visualizer that converts YAML hierarchies into beautiful interactive tree diagrams. Built with React and D3.js, featuring a professional code editor with line numbers and indentation guides.
+A powerful, AI-enhanced browser-based visualizer that converts YAML hierarchies into beautiful interactive tree diagrams. Built with React and D3.js, featuring a professional code editor, intelligent analysis, and AI-powered YAML generation.
 
-![React](https://img.shields.io/badge/React-19.1.1-blue) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Vite](https://img.shields.io/badge/Vite-7.1.7-purple) ![js-yaml](https://img.shields.io/badge/js--yaml-4.1.0-green)
+![React](https://img.shields.io/badge/React-19.1.1-blue) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Vite](https://img.shields.io/badge/Vite-7.1.12-purple) ![js-yaml](https://img.shields.io/badge/js--yaml-4.1.0-green) ![OpenAI](https://img.shields.io/badge/OpenAI-6.7.0-brightgreen)
 
 ---
 
 ## ✨ Features
 
 ### 📝 **Professional YAML Editor**
+- **Syntax Highlighting**: Color-coded YAML syntax with real-time highlighting
 - **Line Numbers**: Synchronized line numbers on the left side
 - **Indentation Guides**: Subtle vertical lines showing indentation levels
+- **Search & Replace**: Full-featured find/replace with case-sensitivity options
 - **Smart Indentation**:
   - `Tab` → Add 2 spaces
   - `Enter` → Auto-indent based on current line
   - Extra indent after lines ending with `:`
-- **Creamish Theme**: Eye-friendly color scheme
-- **Monospace Font**: Professional code editor appearance
-- **Auto-scroll Sync**: Line numbers and guides follow your scrolling
+- **White Background Theme**: Clean, professional editor appearance
+- **Monospace Font**: Professional code editor with proper spacing
 
 ### 🎨 **Interactive Diagram Viewer**
 - **D3.js Powered**: Smooth, performant tree visualization
@@ -80,12 +81,34 @@ A powerful, browser-based visualizer that converts YAML hierarchies into beautif
 ### 💾 **Data Persistence**
 - **Auto-save**: Automatic localStorage persistence
 - **Save Graphs**: Save multiple YAML diagrams with custom names
+- **Update Existing Graphs**: Overwrite saved graphs with new content
 - **My Graphs Library**: 
   - View all saved diagrams
-  - Quick load/delete actions
+  - Load/Update/Delete actions with confirmation
   - Preview first 2 lines of YAML
-  - Creation timestamp for each graph
+  - Creation and update timestamps for each graph
 - **Session Recovery**: Restore your work after browser refresh
+
+### 🤖 **AI-Powered YAML Assistant**
+- **OpenAI Integration**: Real AI-powered YAML generation and assistance
+- **Smart Request Detection**: Automatically detects generation vs analysis requests
+- **Visual Intelligence**: AI analysis of tree structure and organization
+- **Context-Aware Responses**: Maintains conversation context and current YAML
+- **Fallback Mode**: Helpful guidance when API key is not configured
+- **Multiple Use Cases**:
+  - Generate e-commerce platforms
+  - Create microservices architectures
+  - Build authentication systems
+  - Design database schemas
+  - And much more...
+
+### 📊 **Intelligent Analysis Panel**
+- **Real-time YAML Analysis**: Comprehensive structure analysis
+- **Complexity Scoring**: Analyze depth, branching, and organization
+- **Performance Insights**: Optimization recommendations
+- **Best Practices**: YAML structure suggestions
+- **Issue Detection**: Find problems, typos, and inconsistencies
+- **Visual Metrics**: Tree statistics and health indicators
 
 ### ✅ **YAML Validation**
 - **Real-time Validation**: Instant error detection
@@ -125,7 +148,26 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173` in your browser.
+Visit `http://localhost:5173` in your browser (or the port shown in terminal if 5173 is in use).
+
+### 🤖 AI Assistant Setup
+
+The AI Assistant provides intelligent YAML generation and analysis. To unlock its full potential:
+
+1. **Get an OpenAI API Key**:
+   - Visit [OpenAI API](https://platform.openai.com/api-keys)
+   - Create a new API key
+   - Copy the key (starts with `sk-`)
+
+2. **Configure the Assistant**:
+   - Click "🤖 AI Assistant" in the editor
+   - Click the "🔑" button to enter your API key
+   - Your key is stored locally and never sent elsewhere
+
+3. **Without API Key**:
+   - The assistant still provides helpful guidance
+   - Shows what it would generate with real AI
+   - Encourages proper setup for full functionality
 
 ---
 
@@ -156,7 +198,14 @@ Visit `http://localhost:5173` in your browser.
    - Use search to find specific nodes
    - Click "Collapse All" to minimize
 
-4. **Save your work**:
+4. **Use AI Assistant** (optional):
+   - Click "🤖 AI Assistant" to open the AI helper
+   - Configure OpenAI API key for enhanced features
+   - Ask for YAML generation: "Create an e-commerce platform"
+   - Request analysis: "Analyze my tree structure"
+   - Get optimization suggestions and insights
+
+5. **Save your work**:
    - Auto-saved to browser automatically
    - Click "💾 Save Graph" to save with custom name
    - Click "📚 My Graphs" to view saved diagrams
@@ -183,6 +232,7 @@ children:
 - `name`: Node display name (required)
 - `children` or `nodes`: Array of child nodes (optional, both formats supported)
 - Other properties: Displayed in the node box
+- Default content loads from `src/assets/default.yaml`
 
 **Alternative Format** (using `nodes`):
 ```yaml
@@ -201,40 +251,61 @@ nodes:
 
 | Technology | Purpose |
 |------------|---------|
-| **React** | UI framework with hooks |
-| **D3.js** | Tree layout and SVG manipulation |
-| **js-yaml** | YAML parsing |
+| **React 18** | UI framework with hooks and routing |
+| **D3.js 7** | Tree layout and SVG manipulation |
+| **OpenAI API** | AI-powered YAML generation and analysis |
+| **js-yaml** | YAML parsing and validation |
 | **Vite** | Build tool and dev server |
-| **CSS3** | Styling with animations |
+| **React Router** | Client-side routing |
+| **CSS3** | Modern styling with animations and gradients |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-yaml-diagram-react/
+Data-Visualizer/
 ├── src/
 │   ├── components/
-│   │   ├── YamlEditor.jsx          # YAML input editor with line numbers
-│   │   ├── YamlEditor.css          # Editor styling
-│   │   ├── DiagramViewer.jsx       # D3.js tree visualization
-│   │   ├── DiagramViewer.css       # Diagram styling
-│   │   ├── SearchPanel.jsx         # Search functionality
-│   │   ├── SearchPanel.css         # Search panel styling
-│   │   ├── TreeInfoPanel.jsx       # Tree statistics display
-│   │   └── TreeInfoPanel.css       # Info panel styling
+│   │   ├── YamlEditor.jsx              # Professional YAML editor with syntax highlighting
+│   │   ├── DiagramViewer.jsx           # D3.js tree visualization
+│   │   ├── AiAssistant.jsx            # AI-powered YAML assistant
+│   │   ├── AnalysisPanel.jsx          # YAML structure analysis
+│   │   ├── SearchPanel.jsx            # Search functionality
+│   │   ├── TreeInfoPanel.jsx          # Tree statistics display
+│   │   ├── SavedGraphsModal.jsx       # Saved graphs management
+│   │   ├── ReadmeViewer.jsx           # Documentation viewer
+│   │   ├── Minimap.jsx                # Diagram overview (future)
+│   │   ├── NodeFilterPanel.jsx        # Node filtering (future)
+│   │   └── styles/                    # Component CSS files
+│   │       ├── YamlEditor.css         # Editor styling with syntax highlighting
+│   │       ├── DiagramViewer.css      # Diagram and controls styling
+│   │       ├── AiAssistant.css        # AI assistant modal styling
+│   │       ├── AnalysisPanel.css      # Analysis panel styling
+│   │       ├── SearchPanel.css        # Search functionality styling
+│   │       └── ... (other component styles)
+│   ├── pages/
+│   │   ├── EditorPage.jsx             # Main editor interface
+│   │   ├── DiagramPage.jsx            # Diagram viewing page
+│   │   └── DocsPage.jsx               # Documentation page
+│   ├── services/
+│   │   ├── openaiService.js           # OpenAI API integration
+│   │   ├── yamlAnalysisService.js     # YAML analysis and insights
+│   │   └── visualAnalysisService.js   # Tree visualization analysis
 │   ├── utils/
-│   │   ├── treeBuilder.js          # YAML → Tree conversion
-│   │   └── yamlValidator.js        # YAML validation logic
-│   ├── App.jsx                     # Main application component
-│   ├── App.css                     # Global application styles
-│   ├── main.jsx                    # React entry point
-│   └── index.css                   # Base CSS reset
-├── public/                         # Static assets
-├── index.html                      # HTML template
-├── package.json                    # Dependencies
-├── vite.config.js                  # Vite configuration
-└── README.md                       # This file
+│   │   ├── treeBuilder.js             # YAML → Tree conversion
+│   │   └── yamlValidator.js           # YAML validation logic
+│   ├── assets/
+│   │   └── default.yaml               # Default YAML content
+│   ├── App.jsx                        # Main application with routing
+│   ├── App.css                        # Global application styles
+│   ├── main.jsx                       # React entry point
+│   └── index.css                      # Base CSS reset
+├── public/                            # Static assets
+├── index.html                         # HTML template
+├── package.json                       # Dependencies and scripts
+├── vite.config.js                     # Vite configuration
+└── README.md                          # This file
 ```
 
 ---
@@ -296,7 +367,6 @@ The diagram calculates optimal spacing by:
 {
   "yaml-diagram-data": {
     yamlText: string,
-    showDiagram: boolean,
     timestamp: ISO string
   },
   "yaml-diagram-saved-graphs": [
@@ -304,7 +374,8 @@ The diagram calculates optimal spacing by:
       id: timestamp,
       name: string,
       yamlText: string,
-      createdAt: ISO string
+      createdAt: ISO string,
+      updatedAt: ISO string    // Added when graph is updated
     }
   ]
 }
@@ -331,21 +402,29 @@ The diagram calculates optimal spacing by:
 ### 🎛️ Control Buttons
 | Button | Action |
 |--------|--------|
-| `🔽/🔼 Collapse/Expand All` | Toggle entire tree (top-right) |
-| `+` Zoom In | Zoom in 1.3x (bottom-right) |
-| `−` Zoom Out | Zoom out 0.7x (bottom-right) |
-| `⟲` Reset View | Recenter and reset zoom (bottom-right) |
-| `⛶` Fullscreen | Toggle fullscreen mode (bottom-right) |
+| `� Save Graph` | Save current YAML with custom name |
+| `📚 My Graphs` | View and manage saved graphs |
+| `🤖 AI Assistant` | Open AI-powered YAML helper |
+| `🎨 Visualize` | Generate tree diagram from YAML |
+| `🔍 Analysis` | Toggle analysis panel visibility |
+| `�🔽/🔼 Collapse/Expand All` | Toggle entire tree (diagram) |
+| `+` Zoom In | Zoom in 1.3x (diagram) |
+| `−` Zoom Out | Zoom out 0.7x (diagram) |
+| `⟲` Reset View | Recenter and reset zoom (diagram) |
+| `⛶` Fullscreen | Toggle fullscreen mode (diagram) |
 
 ---
 
 ## 🎯 Use Cases
 
 - **System Architecture Visualization**: Map microservices and dependencies
-- **Configuration Documentation**: Visualize complex config files
+- **Configuration Documentation**: Visualize complex config files  
 - **Data Structure Exploration**: Understand nested data hierarchies
 - **API Structure Mapping**: Show endpoint relationships
 - **Component Trees**: Display UI component hierarchies
+- **CI/CD Pipeline Visualization**: Map deployment and build processes
+- **Database Schema Documentation**: Visualize table relationships
+- **Organizational Charts**: Display team and role hierarchies
 
 ---
 
@@ -386,8 +465,10 @@ npm run lint
 
 - Very large YAML files (>1000 nodes) may experience performance degradation
 - localStorage has ~5-10MB limit (varies by browser)
-- Horizontal scroll on very wide trees
-- No YAML export from diagram (one-way conversion)
+- OpenAI API requires internet connection and valid API key
+- Search only works on visible (expanded) nodes
+- Single scrollbar in YAML editor (fixed duplicate scrollbar issue)
+- No real-time collaboration features yet
 
 ---
 
@@ -395,14 +476,15 @@ npm run lint
 
 - [ ] Export diagram as PNG/SVG/PDF
 - [ ] Dark mode toggle
-- [ ] Minimap for large diagrams
-- [ ] Syntax highlighting in editor
-- [ ] YAML schema validation
+- [ ] Import YAML files via drag-and-drop
+- [ ] Multiple tree layout algorithms (vertical, radial)
+- [ ] Custom node styling and themes
 - [ ] Collaborative editing (real-time)
-- [ ] Custom node styling
-- [ ] Vertical tree layout option
-- [ ] Drag-and-drop file upload
-- [ ] Compare two YAML files
+- [ ] GitHub integration for repository YAML files
+- [ ] Compare two YAML files side-by-side
+- [ ] Plugin system for extensibility
+- [ ] Webhook support for auto-updates
+- [ ] Performance optimization for massive files (>10k nodes)
 
 ---
 

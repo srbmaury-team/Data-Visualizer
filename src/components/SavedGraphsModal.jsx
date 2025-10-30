@@ -5,7 +5,8 @@ export default function SavedGraphsModal({
   setShowSavedGraphs, 
   savedGraphs, 
   handleLoadGraph, 
-  handleDeleteGraph 
+  handleDeleteGraph,
+  handleUpdateGraph 
 }) {
   if (!showSavedGraphs) return null;
 
@@ -29,7 +30,12 @@ export default function SavedGraphsModal({
                   <div className="graph-info">
                     <h3>{graph.name}</h3>
                     <p className="graph-date">
-                      {new Date(graph.createdAt).toLocaleDateString()} at {new Date(graph.createdAt).toLocaleTimeString()}
+                      Created: {new Date(graph.createdAt).toLocaleDateString()} at {new Date(graph.createdAt).toLocaleTimeString()}
+                      {graph.updatedAt && (
+                        <span className="updated-date">
+                          <br />Updated: {new Date(graph.updatedAt).toLocaleDateString()} at {new Date(graph.updatedAt).toLocaleTimeString()}
+                        </span>
+                      )}
                     </p>
                     <p className="graph-preview">
                       {graph.yamlText.split('\n').slice(0, 2).join('\n')}...
@@ -37,6 +43,7 @@ export default function SavedGraphsModal({
                   </div>
                   <div className="graph-actions">
                     <button className="load-btn" onClick={() => handleLoadGraph(graph)}>📂 Load</button>
+                    <button className="update-btn" onClick={() => handleUpdateGraph(graph)}>✏️ Update</button>
                     <button className="delete-btn" onClick={() => handleDeleteGraph(graph.id)}>🗑️</button>
                   </div>
                 </div>

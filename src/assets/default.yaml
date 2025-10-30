@@ -1,0 +1,22 @@
+# Sample YAML Structure
+# Try creating your own tree visualization!
+
+name: My-Project
+version: 1.0.0
+type: web-application
+children:
+  - name: Frontend
+    framework: React
+    nodes:
+      - name: Components
+        count: 12
+      - name: Pages
+        count: 5
+  
+  - name: Backend
+    framework: Node.js
+    children:
+      - name: API-Service
+        port: 8080
+      - name: Database
+        type: PostgreSQL

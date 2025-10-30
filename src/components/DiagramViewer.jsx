@@ -1,10 +1,25 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import * as d3 from "d3";
 import TreeInfoPanel from "./TreeInfoPanel";
 import SearchPanel from "./SearchPanel";
-import "./DiagramViewer.css";
+import "./styles/DiagramViewer.css";
 
-export default function DiagramViewer({ data, treeInfo }) {
+const DiagramViewer = forwardRef(({ 
+  data, 
+  treeInfo, 
+  externalSearch = false,
+  hideSearch = false,
+  onSearchResults,
+  onSearchIndexChange,
+  searchTerm: externalSearchTerm,
+  currentSearchIndex: externalSearchIndex,
+  triggerSearch
+}, ref) => {
+  
+  // Debug: Log when props change
+  useEffect(() => {
+  }, [externalSearchTerm]);
+  
   const svgRef = useRef(null);
   const gRef = useRef(null);
   const zoomBehaviorRef = useRef(null);
@@ -12,12 +27,27 @@ export default function DiagramViewer({ data, treeInfo }) {
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Use external search state if provided, otherwise use internal state
+  const activeSearchResults = searchResults; // Always use the internal searchResults which gets populated by handleSearch
+  const activeSearchIndex = externalSearch ? (externalSearchIndex || 0) : currentSearchIndex;
+  const activeSearchTerm = searchTerm; // Always use internal searchTerm (set by handleSearch in both modes)
   const [allExpanded, setAllExpanded] = useState(true);
   const [selectedPath, setSelectedPath] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [nodeCount, setNodeCount] = useState({ visible: 0, total: 0 });
+  const [copiedProperty, setCopiedProperty] = useState(null);
   const rootRef = useRef(null);
   const updateFunctionRef = useRef(null);
+
+  // Copy to clipboard function
+  const copyToClipboard = useCallback((value, nodeId, propKey) => {
+    const textToCopy = typeof value === 'string' ? value : JSON.stringify(value);
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopiedProperty(`${nodeId}-${propKey}`);
+      setTimeout(() => setCopiedProperty(null), 2000);
+    });
+  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -216,11 +246,18 @@ export default function DiagramViewer({ data, treeInfo }) {
       
       treeLayout(root);
 
-      // Update nodes - ensure unique IDs
+      // Update nodes - ensure unique IDs based on node data
       const node = g.selectAll("g.node")
         .data(nodes, d => {
           if (!d.id) {
-            d.id = `node-${++i}`;
+            // Create stable ID based on node data path
+            const pathParts = [];
+            let current = d;
+            while (current) {
+              pathParts.unshift(current.data.name || 'node');
+              current = current.parent;
+            }
+            d.id = `node-${pathParts.join('-')}-${d.depth}`;
           }
           return d.id;
         });
@@ -293,7 +330,7 @@ export default function DiagramViewer({ data, treeInfo }) {
             .attr("y2", 18);
         }
 
-        // Draw properties
+        // Draw properties with copy icons
         propEntries.forEach(([key, value], i) => {
           // Format value properly
           let displayValue;
@@ -305,26 +342,74 @@ export default function DiagramViewer({ data, treeInfo }) {
             displayValue = String(value);
           }
           
-          const propGroup = nodeGroup.append("text")
-            .attr("class", "node-property")
-            .attr("dy", 42 + i * 24) // Increased spacing
-            .attr("x", -boxWidth / 2 + 10);
+          // Create a foreignObject to hold HTML content (for copy button)
+          const propFO = nodeGroup.append("foreignObject")
+            .attr("x", -boxWidth / 2 + 10)
+            .attr("y", 26 + i * 24)
+            .attr("width", boxWidth - 20)
+            .attr("height", 24)
+            .style("pointer-events", "none"); // Allow clicks to pass through
 
-          // Property key
-          propGroup.append("tspan")
-            .attr("class", "prop-key")
+          const propDiv = propFO.append("xhtml:div")
+            .attr("xmlns", "http://www.w3.org/1999/xhtml")
+            .style("display", "flex")
+            .style("align-items", "center")
+            .style("justify-content", "space-between")
+            .style("height", "100%")
+            .style("font-size", "12px")
+            .style("font-family", "'Monaco', 'Menlo', monospace")
+            .style("pointer-events", "none"); // Allow clicks to pass through
+
+          // Property text
+          const propText = propDiv.append("xhtml:span")
+            .style("overflow", "hidden")
+            .style("text-overflow", "ellipsis")
+            .style("white-space", "nowrap")
+            .style("flex", "1")
+            .style("pointer-events", "none"); // Allow clicks to pass through
+
+          propText.append("xhtml:span")
+            .style("color", "#667eea")
+            .style("font-weight", "600")
+            .style("pointer-events", "none") // Allow clicks to pass through
             .text(`${key}: `);
 
-          // Property value with tooltip for truncated content
-          const valueTspan = propGroup.append("tspan")
-            .attr("class", "prop-value")
-            .text(displayValue);
+          propText.append("xhtml:span")
+            .style("color", "#2c3e50")
+            .style("pointer-events", "none") // Allow clicks to pass through
+            .text(displayValue)
+            .attr("title", displayValue.length > 30 ? displayValue : null);
+
+          // Copy button
+          const copyBtn = propDiv.append("xhtml:button")
+            .attr("class", "svg-copy-btn")
+            .style("background", "transparent")
+            .style("border", "none")
+            .style("cursor", "pointer")
+            .style("font-size", "12px")
+            .style("padding", "2px 4px")
+            .style("opacity", "0.5")
+            .style("transition", "opacity 0.2s, transform 0.2s")
+            .style("pointer-events", "auto") // Only button captures clicks
+            .attr("title", "Copy value")
+            .on("click", function(event) {
+              event.stopPropagation();
+              copyToClipboard(value, d.id, key);
+            })
+            .on("mouseenter", function() {
+              d3.select(this).style("opacity", "1").style("transform", "scale(1.1)");
+            })
+            .on("mouseleave", function() {
+              d3.select(this).style("opacity", "0.5").style("transform", "scale(1)");
+            });
+
+          // Update button icon based on copied state
+          const updateCopyIcon = () => {
+            const isCopied = copiedProperty === `${d.id}-${key}`;
+            copyBtn.text(isCopied ? "✓" : "📋");
+          };
           
-          // Add tooltip if value was truncated
-          if (displayValue.endsWith("...")) {
-            const fullValue = typeof value === "object" ? JSON.stringify(value) : String(value);
-            valueTspan.append("title").text(fullValue);
-          }
+          updateCopyIcon();
         });
 
         // Draw expand/collapse icon
@@ -497,7 +582,33 @@ export default function DiagramViewer({ data, treeInfo }) {
       });
     }
 
-  }, [data, dimensions]);
+  }, [data, dimensions, copyToClipboard]);
+
+  // Update copy button icons when copiedProperty changes
+  useEffect(() => {
+    if (!svgRef.current) return;
+    
+    const svg = d3.select(svgRef.current);
+    svg.selectAll(".svg-copy-btn").each(function() {
+      const btn = d3.select(this);
+      const node = d3.select(this.closest('.node'));
+      const nodeData = node.datum();
+      
+      if (nodeData) {
+        // Extract property key from the button's parent structure
+        const foreignObj = d3.select(this.parentNode.parentNode);
+        const yPos = parseFloat(foreignObj.attr('y'));
+        const propIndex = Math.round((yPos - 26) / 24);
+        const properties = nodeData.data.properties || {};
+        const propKey = Object.keys(properties)[propIndex];
+        
+        if (propKey) {
+          const isCopied = copiedProperty === `${nodeData.id}-${propKey}`;
+          btn.text(isCopied ? "✓" : "📋");
+        }
+      }
+    });
+  }, [copiedProperty]);
 
   // Separate effect for path highlighting
   useEffect(() => {
@@ -557,21 +668,21 @@ export default function DiagramViewer({ data, treeInfo }) {
       .classed("search-match", false);
 
     // Apply search highlighting
-    if (searchResults.length > 0 && searchTerm) {
-      searchResults.forEach((result, index) => {
+    if (activeSearchResults.length > 0 && activeSearchTerm) {
+      activeSearchResults.forEach((result, index) => {
         const nodeElement = svg.select(`#${result.id}`);
         
         if (!nodeElement.empty()) {
           nodeElement.select(".node-box")
             .classed("search-highlight", true)
-            .classed("current-match", index === currentSearchIndex);
+            .classed("current-match", index === activeSearchIndex);
           
           nodeElement.select(".node-name")
             .classed("search-match", true);
         }
       });
     }
-  }, [searchResults, currentSearchIndex, searchTerm]);
+  }, [activeSearchResults, activeSearchIndex, activeSearchTerm]);
 
   // Zoom to node function
   const zoomToNode = useCallback((node) => {
@@ -593,58 +704,147 @@ export default function DiagramViewer({ data, treeInfo }) {
 
   // Search functionality
   const handleSearch = useCallback((term) => {
-    setSearchTerm(term);
-    setCurrentSearchIndex(0);
-
-    if (!term || !rootRef.current) {
-      setSearchResults([]);
-      return;
-    }
-
-    const results = [];
-    const searchLower = term.toLowerCase();
-
-    rootRef.current.each(node => {
-      // Search in node name
-      const nodeName = node.data.name || "";
-      if (nodeName.toLowerCase().includes(searchLower)) {
-        results.push({
-          id: node.id,
-          node: node,
-          matchType: "name",
-          matchText: nodeName
-        });
+    if (externalSearch) {
+      // For external search, just perform the search and notify parent
+      if (!term || !rootRef.current) {
+        setSearchTerm(""); // Clear search term for highlighting
+        setSearchResults([]); // Clear internal results for highlighting
+        onSearchResults && onSearchResults([]);
         return;
       }
 
-      // Search in properties
-      if (node.data.properties) {
-        for (const [key, value] of Object.entries(node.data.properties)) {
-          const keyMatch = key.toLowerCase().includes(searchLower);
-          const valueMatch = String(value).toLowerCase().includes(searchLower);
-          
-          if (keyMatch || valueMatch) {
-            results.push({
-              id: node.id,
-              node: node,
-              matchType: "property",
-              matchText: `${key}: ${value}`
-            });
-            break;
+      setSearchTerm(term); // Set search term for highlighting
+      const results = [];
+      const searchLower = term.toLowerCase();
+
+      rootRef.current.each(node => {
+        let alreadyMatched = false;
+        
+        // Search in node name
+        const nodeName = node.data.name || "";
+        if (nodeName.toLowerCase().includes(searchLower)) {
+          results.push({
+            id: node.id,
+            node: node,
+            matchType: "name",
+            matchText: nodeName
+          });
+          alreadyMatched = true;
+        }
+
+        // Search in properties (only if not already matched)
+        if (!alreadyMatched && node.data.properties) {
+          for (const [key, value] of Object.entries(node.data.properties)) {
+            const keyMatch = key.toLowerCase().includes(searchLower);
+            const valueMatch = String(value).toLowerCase().includes(searchLower);
+            
+            if (keyMatch || valueMatch) {
+              results.push({
+                id: node.id,
+                node: node,
+                matchType: "property",
+                matchText: `${key}: ${value}`
+              });
+              break;
+            }
           }
         }
+      });
+
+      setSearchResults(results); // Set internal results for highlighting
+      onSearchResults && onSearchResults(results);
+    } else {
+      // Internal search handling
+      setSearchTerm(term);
+      setCurrentSearchIndex(0);
+
+      if (!term || !rootRef.current) {
+        setSearchResults([]);
+        return;
       }
-    });
 
-    setSearchResults(results);
+      const results = [];
+      const searchLower = term.toLowerCase();
 
-    // Zoom to first result
-    if (results.length > 0) {
-      zoomToNode(results[0].node);
+      rootRef.current.each(node => {
+        let alreadyMatched = false;
+        
+        // Search in node name
+        const nodeName = node.data.name || "";
+        if (nodeName.toLowerCase().includes(searchLower)) {
+          results.push({
+            id: node.id,
+            node: node,
+            matchType: "name",
+            matchText: nodeName
+          });
+          alreadyMatched = true;
+        }
+
+        // Search in properties (only if not already matched)
+        if (!alreadyMatched && node.data.properties) {
+          for (const [key, value] of Object.entries(node.data.properties)) {
+            const keyMatch = key.toLowerCase().includes(searchLower);
+            const valueMatch = String(value).toLowerCase().includes(searchLower);
+            
+            if (keyMatch || valueMatch) {
+              results.push({
+                id: node.id,
+                node: node,
+                matchType: "property",
+                matchText: `${key}: ${value}`
+              });
+              break;
+            }
+          }
+        }
+      });
+
+      setSearchResults(results);
+      onSearchResults && onSearchResults(results);
     }
-  }, [zoomToNode]);
+  }, [externalSearch, onSearchResults]);
+
+  // Handle external search term changes
+  useEffect(() => {
+    if (externalSearch && externalSearchTerm !== undefined) {
+      handleSearch(externalSearchTerm);
+    }
+  }, [externalSearch, externalSearchTerm, handleSearch]);
+
+  // Handle direct search trigger
+  useEffect(() => {
+    if (triggerSearch && triggerSearch.term !== undefined) {
+      handleSearch(triggerSearch.term);
+    }
+  }, [triggerSearch, handleSearch]);
+
+  // Handle external search index changes (zoom to current result)
+  useEffect(() => {
+    if (externalSearch && searchResults.length > 0 && externalSearchIndex !== undefined) {
+      const currentResult = searchResults[externalSearchIndex];
+      if (currentResult && currentResult.node) {
+        zoomToNode(currentResult.node);
+      }
+    }
+  }, [externalSearch, externalSearchIndex, searchResults, zoomToNode]);
 
   const handleNavigate = useCallback((direction) => {
+    console.log('DiagramViewer handleNavigate called with:', direction, 'currentIndex:', currentSearchIndex, 'resultsLength:', searchResults.length);
+    
+    if (externalSearch) {
+      // In external search mode, just zoom to current result
+      // Navigation is handled by parent component
+      if (searchResults.length > 0 && externalSearchIndex !== undefined) {
+        const currentResult = searchResults[externalSearchIndex];
+        if (currentResult && currentResult.node) {
+          zoomToNode(currentResult.node);
+        }
+      }
+      return;
+    }
+
+    // Internal search navigation
     if (searchResults.length === 0) return;
 
     let newIndex;
@@ -654,9 +854,44 @@ export default function DiagramViewer({ data, treeInfo }) {
       newIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     }
 
+    console.log('DiagramViewer: Navigating from index', currentSearchIndex, 'to', newIndex);
     setCurrentSearchIndex(newIndex);
+    onSearchIndexChange && onSearchIndexChange(newIndex);
     zoomToNode(searchResults[newIndex].node);
-  }, [searchResults, currentSearchIndex, zoomToNode]);
+  }, [externalSearch, searchResults, currentSearchIndex, externalSearchIndex, zoomToNode, onSearchIndexChange]);
+
+  // Expose search and navigation functions to parent via ref
+  useImperativeHandle(ref, () => ({
+    search: (term) => {
+      handleSearch(term);
+    },
+    navigate: (direction) => {
+      handleNavigate(direction);
+    },
+    getCurrentIndex: () => currentSearchIndex,
+    getSearchResults: () => searchResults
+  }), [handleSearch, handleNavigate, currentSearchIndex, searchResults]);
+
+  // For combined editor: expose search functions globally when not using internal SearchPanel
+  useEffect(() => {
+    if (hideSearch) {
+      // Use unique function names to avoid collisions
+      window.combinedEditorDiagramSearch = handleSearch;
+      window.combinedEditorDiagramNavigate = handleNavigate;
+      window.getCombinedEditorSearchResults = () => searchResults;
+      window.getCombinedEditorCurrentIndex = () => currentSearchIndex;
+      console.log('DiagramViewer: Exposing global functions for combined editor');
+    }
+    return () => {
+      if (hideSearch) {
+        delete window.combinedEditorDiagramSearch;
+        delete window.combinedEditorDiagramNavigate;
+        delete window.getCombinedEditorSearchResults;
+        delete window.getCombinedEditorCurrentIndex;
+        console.log('DiagramViewer: Cleaning up global functions');
+      }
+    };
+  }, [hideSearch]); // Only depend on hideSearch, not the changing state values
 
   // Collapse or expand all nodes
   // IMPORTANT: We maintain _children as a permanent backup reference to support
@@ -914,15 +1149,19 @@ export default function DiagramViewer({ data, treeInfo }) {
         <span className="node-count-label">nodes</span>
       </div>
 
-      <SearchPanel
-        onSearch={handleSearch}
-        searchResults={searchResults}
-        currentIndex={currentSearchIndex}
-        onNavigate={handleNavigate}
-      />
+      {!externalSearch && !hideSearch && (
+        <SearchPanel
+          onSearch={handleSearch}
+          searchResults={searchResults}
+          currentIndex={currentSearchIndex}
+          onNavigate={handleNavigate}
+        />
+      )}
       
       <TreeInfoPanel treeInfo={treeInfo} />
     </div>
   );
-}
+});
+
+export default DiagramViewer;
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import './Minimap.css';
+import './styles/Minimap.css';
 
 export default function Minimap({ data, mainTransform, onViewportChange, width = 200, height = 150 }) {
   const minimapRef = useRef(null);
