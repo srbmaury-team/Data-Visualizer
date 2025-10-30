@@ -137,7 +137,7 @@
   transform: translateY(0);
 }
 
-/* Zoom controls */
+/* Enhanced zoom controls */
 .zoom-controls {
   position: absolute;
   bottom: 30px;
@@ -145,20 +145,31 @@
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   background: rgba(255, 255, 255, 0.95);
-  padding: 8px;
+  padding: 12px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
   margin-right: 25px;
 }
 
+.zoom-controls-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zoom-controls-group:not(:last-child) {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
 .zoom-btn {
-  width: 42px;
-  height: 42px;
-  font-size: 20px;
-  font-weight: 700;
+  width: 46px;
+  height: 38px;
+  font-size: 16px;
+  font-weight: 600;
   color: #334155;
   background: white;
   border: 2px solid #e2e8f0;
@@ -169,6 +180,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
 .zoom-btn:hover {
@@ -182,21 +194,20 @@
   transform: scale(0.95);
 }
 
-.zoom-in-btn {
-  font-size: 24px;
-  line-height: 1;
+.fit-btn,
+.actual-size-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
 }
 
-.zoom-out-btn {
-  font-size: 28px;
-  line-height: 1;
+.fit-btn:hover,
+.actual-size-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
 
-.reset-btn {
-  font-size: 22px;
-  border-top: 2px solid #cbd5e1;
-  margin-top: 4px;
-  padding-top: 4px;
+.fullscreen-btn {
+  font-size: 18px;
 }
 
 .fullscreen-btn {
@@ -343,3 +354,113 @@
   z-index: 1000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+/* Visual Analysis Highlighting Styles */
+.node-highlight-critical .node-box {
+  fill: #fef2f2;
+  stroke: #ef4444;
+  stroke-width: 3;
+  filter: drop-shadow(0 4px 16px rgba(239, 68, 68, 0.4));
+  animation: pulse-critical 2s ease-in-out infinite;
+}
+
+.node-highlight-warning .node-box {
+  fill: #fffbeb;
+  stroke: #f59e0b;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.3));
+  animation: pulse-warning 3s ease-in-out infinite;
+}
+
+.node-highlight-positive .node-box {
+  fill: #f0fdf4;
+  stroke: #22c55e;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 16px rgba(34, 197, 94, 0.3));
+}
+
+.node-highlight-info .node-box {
+  fill: #f0f9ff;
+  stroke: #3b82f6;
+  stroke-width: 2;
+  filter: drop-shadow(0 4px 16px rgba(59, 130, 246, 0.25));
+}
+
+/* Highlight pulse animations */
+@keyframes pulse-critical {
+  0%, 100% {
+    stroke-width: 3;
+    filter: drop-shadow(0 4px 16px rgba(239, 68, 68, 0.4));
+  }
+  50% {
+    stroke-width: 4;
+    filter: drop-shadow(0 6px 20px rgba(239, 68, 68, 0.6));
+  }
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    stroke-width: 2.5;
+    filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.3));
+  }
+  50% {
+    stroke-width: 3;
+    filter: drop-shadow(0 6px 20px rgba(245, 158, 11, 0.5));
+  }
+}
+
+/* Highlight hover effects */
+.node-highlight-critical:hover .node-box {
+  fill: #fee2e2;
+  stroke: #dc2626;
+  transform: translateY(-3px);
+}
+
+.node-highlight-warning:hover .node-box {
+  fill: #fef3c7;
+  stroke: #d97706;
+  transform: translateY(-2px);
+}
+
+.node-highlight-positive:hover .node-box {
+  fill: #dcfce7;
+  stroke: #16a34a;
+  transform: translateY(-2px);
+}
+
+.node-highlight-info:hover .node-box {
+  fill: #dbeafe;
+  stroke: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Highlight legend (for future use) */
+.highlight-legend {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  z-index: 100;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
+.legend-critical { background-color: #ef4444; }
+.legend-warning { background-color: #f59e0b; }
+.legend-positive { background-color: #22c55e; }
+.legend-info { background-color: #3b82f6; }

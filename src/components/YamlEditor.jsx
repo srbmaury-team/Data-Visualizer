@@ -107,8 +107,10 @@ export default function YamlEditor({ value, onChange }) {
   return (
     <div className="yaml-editor-wrapper">
       <div className="editor-toolbar">
-        <span className="toolbar-label">📝 YAML Editor</span>
-        <span className="toolbar-hint">Use Tab for indentation • Auto-indent on Enter</span>
+        <div className="toolbar-left">
+          <span className="toolbar-label">📝 YAML Editor</span>
+          <span className="toolbar-hint">Use Tab for indentation • Auto-indent on Enter</span>
+        </div>
       </div>
       <div className="editor-with-lines">
         <div ref={lineNumbersRef} className="line-numbers">

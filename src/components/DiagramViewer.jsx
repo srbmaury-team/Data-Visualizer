@@ -207,7 +207,7 @@ export default function DiagramViewer({ data, treeInfo }) {
       const duration = 300;
       
       // Compute the new tree layout
-      const nodes = root.descendants();
+      let nodes = root.descendants();
       const links = root.links();
       
       // Update node count (visible vs total)
@@ -738,6 +738,43 @@ export default function DiagramViewer({ data, treeInfo }) {
     }
   }, []);
 
+  const handleZoomToFit = useCallback(() => {
+    if (!zoomBehaviorRef.current || !gRef.current || !dimensions.width || !dimensions.height) return;
+    
+    const { zoom, svg } = zoomBehaviorRef.current;
+    const bounds = gRef.current.getBBox();
+    
+    if (bounds.width === 0 || bounds.height === 0) return;
+    
+    const padding = 40;
+    const dx = bounds.width;
+    const dy = bounds.height;
+    const x = bounds.x;
+    const y = bounds.y;
+    
+    const scale = Math.min(
+      (dimensions.width - padding * 2) / dx,
+      (dimensions.height - padding * 2) / dy
+    );
+    
+    const transform = d3.zoomIdentity
+      .translate(dimensions.width / 2, dimensions.height / 2)
+      .scale(scale)
+      .translate(-x - dx / 2, -y - dy / 2);
+    
+    svg.transition().duration(750).call(zoom.transform, transform);
+  }, [dimensions]);
+
+  const handleZoomActualSize = useCallback(() => {
+    if (zoomBehaviorRef.current && dimensions.width && dimensions.height) {
+      const { zoom, svg } = zoomBehaviorRef.current;
+      const transform = d3.zoomIdentity
+        .translate(dimensions.width / 2, dimensions.height / 2)
+        .scale(1);
+      svg.transition().duration(500).call(zoom.transform, transform);
+    }
+  }, [dimensions]);
+
   const handleResetView = useCallback(() => {
     if (zoomBehaviorRef.current && dimensions.width && dimensions.height) {
       const { zoom, svg } = zoomBehaviorRef.current;
@@ -776,6 +813,8 @@ export default function DiagramViewer({ data, treeInfo }) {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+
+
   return (
     <div className="diagram-viewer">
       <svg ref={svgRef} className="diagram-svg">
@@ -812,36 +851,58 @@ export default function DiagramViewer({ data, treeInfo }) {
         </button>
       </div>
 
-      {/* Zoom controls */}
+      {/* Enhanced zoom controls */}
       <div className="zoom-controls">
-        <button 
-          className="zoom-btn zoom-in-btn"
-          onClick={handleZoomIn}
-          title="Zoom in"
-        >
-          +
-        </button>
-        <button 
-          className="zoom-btn zoom-out-btn"
-          onClick={handleZoomOut}
-          title="Zoom out"
-        >
-          −
-        </button>
-        <button 
-          className="zoom-btn reset-btn"
-          onClick={handleResetView}
-          title="Reset view"
-        >
-          ⟲
-        </button>
-        <button 
-          className="zoom-btn fullscreen-btn"
-          onClick={handleToggleFullscreen}
-          title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-        >
-          {isFullscreen ? "⛶" : "⛶"}
-        </button>
+        <div className="zoom-controls-group">
+          <button 
+            className="zoom-btn zoom-in-btn"
+            onClick={handleZoomIn}
+            title="Zoom in (Ctrl + +)"
+          >
+            🔍+
+          </button>
+          <button 
+            className="zoom-btn zoom-out-btn"
+            onClick={handleZoomOut}
+            title="Zoom out (Ctrl + -)"
+          >
+            🔍−
+          </button>
+        </div>
+        
+        <div className="zoom-controls-group">
+          <button 
+            className="zoom-btn fit-btn"
+            onClick={handleZoomToFit}
+            title="Fit to screen (F)"
+          >
+            📐
+          </button>
+          <button 
+            className="zoom-btn actual-size-btn"
+            onClick={handleZoomActualSize}
+            title="Actual size (1:1)"
+          >
+            📏
+          </button>
+        </div>
+        
+        <div className="zoom-controls-group">
+          <button 
+            className="zoom-btn reset-btn"
+            onClick={handleResetView}
+            title="Reset view (R)"
+          >
+            🏠
+          </button>
+          <button 
+            className="zoom-btn fullscreen-btn"
+            onClick={handleToggleFullscreen}
+            title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F11)"}
+          >
+            {isFullscreen ? "⛶" : "⛶"}
+          </button>
+        </div>
       </div>
 
       {/* Node count badge */}
@@ -852,13 +913,14 @@ export default function DiagramViewer({ data, treeInfo }) {
         </span>
         <span className="node-count-label">nodes</span>
       </div>
-      
+
       <SearchPanel
         onSearch={handleSearch}
         searchResults={searchResults}
         currentIndex={currentSearchIndex}
         onNavigate={handleNavigate}
       />
+      
       <TreeInfoPanel treeInfo={treeInfo} />
     </div>
   );

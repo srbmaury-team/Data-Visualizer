@@ -55,7 +55,9 @@ body {
 .save-graph-btn,
 .my-graphs-btn,
 .clear-data-btn,
-.docs-btn {
+.docs-btn,
+.ai-btn,
+.analysis-btn {
   padding: 8px 16px;
   font-size: 0.85em;
   font-weight: 600;
@@ -115,6 +117,73 @@ body {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.ai-btn {
+  color: #f59e0b;
+  background: white;
+  border-color: #f59e0b;
+}
+
+.ai-btn:hover {
+  background: #f59e0b;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.analysis-btn {
+  color: #6366f1;
+  background: white;
+  border-color: #6366f1;
+}
+
+.analysis-btn:hover,
+.analysis-btn.active {
+  background: #6366f1;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Editor Layout */
+.editor-layout {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+.editor-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.analysis-sidebar {
+  width: 400px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .analysis-sidebar {
+    width: 350px;
+  }
+}
+
+@media (max-width: 968px) {
+  .editor-layout {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .analysis-sidebar {
+    width: 100%;
+    max-height: 400px;
+  }
 }
 
 .autosave-indicator {

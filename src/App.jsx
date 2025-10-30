@@ -1,4 +1,3 @@
-// ...existing code...
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import EditorPage from "./pages/EditorPage";
@@ -226,7 +225,7 @@ function AppContent() {
           element={
             <DiagramPage 
               parsedData={parsedData} 
-              treeInfo={treeInfo} 
+              treeInfo={treeInfo}
             />
           } 
         />
@@ -251,4 +250,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-// ...existing code...

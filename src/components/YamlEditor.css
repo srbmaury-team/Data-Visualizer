@@ -18,6 +18,57 @@
   align-items: center;
 }
 
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.copy-button {
+  padding: 6px 12px;
+  background: #f7dc6f;
+  border: 1px solid #f4d03f;
+  border-radius: 6px;
+  color: #7d6608;
+  font-size: 0.9em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover:not(:disabled) {
+  background: #f4d03f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.copy-button:active {
+  transform: translateY(0);
+}
+
+.copy-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copy-button.copy-success {
+  background: #d5f4e6;
+  border-color: #52c41a;
+  color: #135200;
+}
+
+.copy-button.copy-error {
+  background: #ffebe6;
+  border-color: #ff4d4f;
+  color: #a8071a;
+}
+
 .toolbar-label {
   font-weight: 600;
   font-size: 1.1em;

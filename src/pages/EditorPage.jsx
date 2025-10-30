@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
+import AiAssistant from "../components/AiAssistant";
+import AnalysisPanel from "../components/AnalysisPanel";
+import YamlAnalysisService from "../services/yamlAnalysisService";
+import yaml from "js-yaml";
 
 export default function EditorPage({
   yamlText,
@@ -14,6 +18,52 @@ export default function EditorPage({
   handleClearData,
 }) {
   const navigate = useNavigate();
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(true);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+
+  // Memoized analysis that updates when YAML changes
+  const analysis = useMemo(() => {
+    if (!yamlText || yamlText.trim() === '') {
+      return null;
+    }
+
+    try {
+      const parsedYaml = yaml.load(yamlText);
+      return YamlAnalysisService.analyzeYaml(parsedYaml, yamlText);
+    } catch (error) {
+      // Return error analysis for invalid YAML
+      return {
+        complexity: { score: 0, level: 'Invalid', details: [] },
+        performance: { score: 0, recommendations: [] },
+        bestPractices: { score: 0, suggestions: [] },
+        issues: { 
+          critical: [{ 
+            type: 'YAML Syntax Error', 
+            message: `Parse error: ${error.message}`, 
+            severity: 'critical' 
+          }], 
+          warnings: [], 
+          info: [] 
+        },
+        summary: { 
+          overall: 'error', 
+          message: 'Invalid YAML syntax prevents analysis',
+          overallScore: 0,
+          recommendations: []
+        }
+      };
+    }
+  }, [yamlText]);
+
+  // Simulate loading for analysis updates
+  useEffect(() => {
+    if (yamlText && yamlText.trim() !== '') {
+      setAnalysisLoading(true);
+      const timer = setTimeout(() => setAnalysisLoading(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [yamlText]);
 
   return (
     <div className="editor-container">
@@ -33,63 +83,94 @@ export default function EditorPage({
           <button className="docs-btn" onClick={() => navigate("/docs")} title="Open project README">
             📖 Docs
           </button>
+          <button className="ai-btn" onClick={() => setShowAiAssistant(true)} title="AI YAML Assistant">
+            🤖 AI Assistant
+          </button>
+          <button className="visualize-btn" onClick={handleVisualize} title="Create Interactive Diagram">
+            🎨 Visualize
+          </button>
+          <button 
+            className={`analysis-btn ${showAnalysis ? 'active' : ''}`} 
+            onClick={() => setShowAnalysis(!showAnalysis)} 
+            title="Toggle Analysis Panel"
+          >
+            🔍 Analysis
+          </button>
           <span className="autosave-indicator">💾 Auto-saves</span>
         </div>
       </div>
-      <YamlEditor value={yamlText} onChange={setYamlText} />
-      <div className="controls">
-        <button className="visualize-btn" onClick={handleVisualize}>
-          🎨 Visualize Diagram
-        </button>
-        {error && <div className="error">{error}</div>}
-        {validation && (
-          <div className="validation-panel">
-            {validation.issues.length > 0 && (
-              <div className="validation-section errors">
-                <h4>❌ Errors ({validation.issues.length})</h4>
-                {validation.issues.map((issue, idx) => (
-                  <div key={idx} className="validation-item error-item">
-                    <div className="issue-header">
-                      <span className="line-number">Line {issue.line}</span>
-                      <span className="issue-type">{issue.type}</span>
-                    </div>
-                    <div className="issue-message">{issue.message}</div>
-                    {issue.suggestion && (
-                      <div className="issue-suggestion">
-                        💡 Suggestion: <code>{issue.suggestion}</code>
+      
+      <div className="editor-layout">
+        <div className="editor-main">
+          <YamlEditor value={yamlText} onChange={setYamlText} />
+          <div className="controls">
+            {error && <div className="error">{error}</div>}
+            {validation && (
+              <div className="validation-panel">
+                {validation.issues.length > 0 && (
+                  <div className="validation-section errors">
+                    <h4>❌ Errors ({validation.issues.length})</h4>
+                    {validation.issues.map((issue, idx) => (
+                      <div key={idx} className="validation-item error-item">
+                        <div className="issue-header">
+                          <span className="line-number">Line {issue.line}</span>
+                          <span className="issue-type">{issue.type}</span>
+                        </div>
+                        <div className="issue-message">{issue.message}</div>
+                        {issue.suggestion && (
+                          <div className="issue-suggestion">
+                            💡 Suggestion: <code>{issue.suggestion}</code>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            {validation.warnings.length > 0 && (
-              <div className="validation-section warnings">
-                <h4>⚠️ Warnings ({validation.warnings.length})</h4>
-                {validation.warnings.map((warning, idx) => (
-                  <div key={idx} className="validation-item warning-item">
-                    <div className="issue-header">
-                      <span className="line-number">Line {warning.line}</span>
-                      <span className="issue-type">{warning.type}</span>
-                    </div>
-                    <div className="issue-message">{warning.message}</div>
-                    {warning.suggestion && (
-                      <div className="issue-suggestion">
-                        💡 {warning.suggestion}
+                )}
+                {validation.warnings.length > 0 && (
+                  <div className="validation-section warnings">
+                    <h4>⚠️ Warnings ({validation.warnings.length})</h4>
+                    {validation.warnings.map((warning, idx) => (
+                      <div key={idx} className="validation-item warning-item">
+                        <div className="issue-header">
+                          <span className="line-number">Line {warning.line}</span>
+                          <span className="issue-type">{warning.type}</span>
+                        </div>
+                        <div className="issue-message">{warning.message}</div>
+                        {warning.suggestion && (
+                          <div className="issue-suggestion">
+                            💡 {warning.suggestion}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            {validation.valid && validation.warnings.length === 0 && (
-              <div className="validation-success">
-                ✅ YAML is valid! ({validation.stats.nonEmptyLines} lines)
+                )}
+                {validation.valid && validation.warnings.length === 0 && (
+                  <div className="validation-success">
+                    ✅ YAML is valid! ({validation.stats.nonEmptyLines} lines)
+                  </div>
+                )}
               </div>
             )}
           </div>
+        </div>
+        
+        {showAnalysis && (
+          <div className="analysis-sidebar">
+            <AnalysisPanel 
+              analysis={analysis} 
+              isLoading={analysisLoading}
+            />
+          </div>
         )}
       </div>
+      
+      <AiAssistant
+        isOpen={showAiAssistant}
+        onClose={() => setShowAiAssistant(false)}
+        onYamlGenerated={setYamlText}
+        currentYaml={yamlText}
+      />
     </div>
   );
 }
