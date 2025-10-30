@@ -22,7 +22,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         'Optimize this YAML for better visualization',
         'Identify structural issues in my tree',
         'Create a microservices architecture'
-     Visual Highlighting (highlight problem areas in the tree diagram)Visual Highlighting (highlight problem areas in the tree diagram) ]
+      ]
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
