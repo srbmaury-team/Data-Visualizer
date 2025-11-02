@@ -51,6 +51,52 @@ const SavedGraphsModal = ({
   isAuthenticated, 
   onAuthRequired 
 }) => {
+  const copyShareLink = async (shareId) => {
+    try {
+      const shareUrl = `${window.location.origin}/shared/${shareId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      
+      // Show temporary success feedback
+      const button = document.querySelector(`[data-share-id="${shareId}"]`);
+      if (button) {
+        const originalIcon = button.textContent;
+        button.textContent = '✅';
+        button.style.background = '#10b981';
+        button.style.color = 'white';
+        
+        setTimeout(() => {
+          button.textContent = originalIcon;
+          button.style.background = '';
+          button.style.color = '';
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy share link:', err);
+      // Fallback for older browsers
+      const shareUrl = `${window.location.origin}/shared/${shareId}`;
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      // Show feedback
+      const button = document.querySelector(`[data-share-id="${shareId}"]`);
+      if (button) {
+        const originalIcon = button.textContent;
+        button.textContent = '✅';
+        button.style.background = '#10b981';
+        button.style.color = 'white';
+        
+        setTimeout(() => {
+          button.textContent = originalIcon;
+          button.style.background = '';
+          button.style.color = '';
+        }, 2000);
+      }
+    }
+  };
   if (!showSavedGraphs) return null;
 
   const handleAuthRequiredAction = () => {
@@ -122,12 +168,17 @@ const SavedGraphsModal = ({
                         'No content available'
                       }
                     </p>
-                    {graph.isPublic && (
+                    {graph.isPublic && graph.shareId && (
                       <div className="public-indicator">
-                        🌐 Public Graph
-                        {graph.shareId && (
-                          <span className="share-id"> (ID: {graph.shareId})</span>
-                        )}
+                        🌐 Public Graph - (ID: {graph.shareId})
+                        <button 
+                          className="copy-icon-btn" 
+                          data-share-id={graph.shareId}
+                          onClick={() => copyShareLink(graph.shareId)}
+                          title="Copy share link"
+                        >
+                          📋
+                        </button>
                       </div>
                     )}
                   </div>

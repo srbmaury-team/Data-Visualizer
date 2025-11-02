@@ -298,6 +298,26 @@
   background: rgba(0, 123, 255, 0.3);
 }
 
+.yaml-textarea[readonly] {
+  background: #f8f9fa;
+  cursor: default;
+  opacity: 0.9;
+  color: #24292e !important;
+}
+
+.yaml-textarea[readonly]::placeholder {
+  color: #6c757d;
+}
+
+.yaml-textarea[readonly]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.yaml-textarea[readonly] + .syntax-highlighter {
+  display: none;
+}
+
 /* Scrollbars */
 .yaml-textarea::-webkit-scrollbar {
   width: 12px;

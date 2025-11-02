@@ -216,6 +216,25 @@
   font-size: 0.8em;
   font-weight: 500;
   margin: 8px 0;
+  gap: 8px;
+}
+
+.copy-icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copy-icon-btn:hover {
+  background: rgba(22, 101, 52, 0.1);
+  transform: scale(1.1);
 }
 
 .share-id {
@@ -269,6 +288,16 @@
 
 .delete-btn:hover {
   background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.share-btn {
+  background: #10b981;
+  color: white;
+}
+
+.share-btn:hover {
+  background: #059669;
   transform: translateY(-1px);
 }
 

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import "./styles/YamlEditor.css";
 
-export default function YamlEditor({ value, onChange }) {
+export default function YamlEditor({ value, onChange, readOnly = false }) {
   const textareaRef = useRef(null);
   const highlighterRef = useRef(null);
   const lineNumbersRef = useRef(null);
@@ -281,7 +281,7 @@ export default function YamlEditor({ value, onChange }) {
       <div className="editor-toolbar">
         <div className="toolbar-left">
           <span className="toolbar-label">📝 YAML Editor</span>
-          <span className="toolbar-hint">Ctrl+F: Search • Ctrl+H: Replace • Tab: Indent</span>
+          {readOnly ? <span>Read-only</span> : <span className="toolbar-hint">Auto saved to Local Storage</span>}
         </div>
         <div className="toolbar-right">
           <button 
@@ -366,6 +366,7 @@ export default function YamlEditor({ value, onChange }) {
             onScroll={handleScroll}
             spellCheck={false}
             placeholder="# Enter your YAML here..."
+            readOnly={readOnly}
           />
         </div>
       </div>

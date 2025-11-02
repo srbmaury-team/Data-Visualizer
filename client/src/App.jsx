@@ -8,6 +8,8 @@ import { useToast } from "./hooks/useToast";
 import EditorPage from "./pages/EditorPage";
 import DiagramPage from "./pages/DiagramPage";
 import CombinedEditorPage from "./pages/CombinedEditorPage";
+import SharedViewerPage from "./pages/SharedViewerPage";
+import SharedViewerWrapper from "./pages/SharedViewerWrapper";
 import DocsPage from "./pages/DocsPage";
 import SavedGraphsModal from "./components/SavedGraphsModal";
 import SaveGraphModal from "./components/SaveGraphModal";
@@ -252,6 +254,7 @@ function AppContent() {
             />
           } 
         />
+        <Route path="/shared/:shareId" element={<SharedViewerWrapper />} />
         <Route path="/docs" element={<DocsPage />} />
       </Routes>
       

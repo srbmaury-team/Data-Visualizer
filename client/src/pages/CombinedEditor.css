@@ -151,6 +151,19 @@
   color: white;
 }
 
+.shared-badge {
+  padding: 0.5rem 1rem;
+  background: #f0f9ff;
+  color: #0284c7;
+  border: 1px solid #7dd3fc;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Error Banner */
 .error-banner {
   background: #fef2f2;
