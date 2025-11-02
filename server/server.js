@@ -34,7 +34,8 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: true, // Allow all origins for now
+  // origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
 }));
 
@@ -78,8 +79,10 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📱 Frontend CORS origin: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
+  console.log(`🌐 Server accessible from any device on network: http://0.0.0.0:${PORT}`);
+  console.log(`📱 Local access: http://localhost:${PORT}`);
   console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔓 CORS: Allowing all origins (development mode)`);
 });
