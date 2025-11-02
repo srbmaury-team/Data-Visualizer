@@ -1,0 +1,294 @@
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
+import { useAuth } from "./hooks/useAuth";
+import { useYamlFiles } from "./hooks/useYamlFiles";
+import { useToast } from "./hooks/useToast";
+import EditorPage from "./pages/EditorPage";
+import DiagramPage from "./pages/DiagramPage";
+import CombinedEditorPage from "./pages/CombinedEditorPage";
+import DocsPage from "./pages/DocsPage";
+import SavedGraphsModal from "./components/SavedGraphsModal";
+import SaveGraphModal from "./components/SaveGraphModal";
+import AuthModal from "./components/AuthModal";
+import yaml from "js-yaml";
+import { buildTreeFromYAML, convertToD3Hierarchy } from "./utils/treeBuilder";
+import { validateYAML } from "./utils/yamlValidator";
+import defaultYamlContent from "./assets/default.yaml?raw";
+import "./App.css";
+
+const STORAGE_KEY = "yaml-diagram-data";
+const DEFAULT_YAML = defaultYamlContent;
+
+function AppContent() {
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+  const { showSuccess, showError } = useToast();
+  const { 
+    savedGraphs, 
+    loadSavedGraphs, 
+    saveGraph, 
+    updateGraph, 
+    deleteGraph 
+  } = useYamlFiles();
+  
+  const [yamlText, setYamlText] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        return data.yamlText || DEFAULT_YAML;
+      }
+    } catch (e) {
+      console.error("Error loading from localStorage:", e);
+    }
+    return DEFAULT_YAML;
+  });
+
+  const [parsedData, setParsedData] = useState(null);
+  const [treeInfo, setTreeInfo] = useState(null);
+  const [error, setError] = useState("");
+  const [validation, setValidation] = useState(null);
+  const [showSavedGraphs, setShowSavedGraphs] = useState(false);
+  const [showSaveGraphModal, setShowSaveGraphModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Load saved graphs when user authenticates
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSavedGraphs();
+    }
+  }, [isAuthenticated, loadSavedGraphs]);
+
+  useEffect(() => {
+    try {
+      const dataToSave = {
+        yamlText,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Error saving to localStorage:", e);
+      if (e.name === "QuotaExceededError") {
+        console.warn("localStorage quota exceeded");
+      }
+    }
+  }, [yamlText]);
+
+  const handleVisualize = () => {
+    try {
+      const validationResult = validateYAML(yamlText);
+      setValidation(validationResult);
+
+      if (!validationResult.valid) {
+        setError(`Found ${validationResult.issues.length} issue(s) in YAML. Check validation panel below.`);
+        return;
+      }
+
+      const data = yaml.load(yamlText);
+      const tree = buildTreeFromYAML(data);
+      const hierarchical = convertToD3Hierarchy(tree);
+
+      const info = {
+        totalNodes: tree.nodes.length,
+        totalEdges: tree.edges.length,
+        maxDepth: Math.max(...tree.nodes.map(n => n.level)),
+        nodesPerLevel: Array.from(tree.levels.entries()).map(([level, nodes]) => ({
+          level,
+          count: nodes.length,
+          nodes: nodes.map(n => n.name),
+        })),
+      };
+
+      setParsedData(hierarchical);
+      setTreeInfo(info);
+      setError("");
+      navigate("/diagram");
+    } catch (e) {
+      console.error("Parsing error:", e);
+      setError("Invalid YAML: " + e.message);
+      setValidation(null);
+    }
+  };
+
+  const handleClearData = () => {
+    if (window.confirm("Clear saved data and reset to default? This cannot be undone.")) {
+      localStorage.removeItem(STORAGE_KEY);
+      setYamlText(DEFAULT_YAML);
+      setParsedData(null);
+      setTreeInfo(null);
+      setError("");
+      setValidation(null);
+    }
+  };
+
+  const handleSaveGraph = async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    setShowSaveGraphModal(true);
+  };
+
+  const handleSaveGraphFromModal = async (graphData) => {
+    try {
+      if (graphData.isUpdate) {
+        // Update existing graph
+        await updateGraph(graphData.existingId, {
+          title: graphData.title,
+          yamlContent: yamlText,
+          description: graphData.description,
+          isPublic: graphData.isPublic
+        });
+        
+        showSuccess(`Graph "${graphData.title}" updated successfully!`);
+      } else {
+        // Create new graph
+        await saveGraph({
+          title: graphData.title,
+          yamlContent: yamlText,
+          description: graphData.description,
+          isPublic: graphData.isPublic
+        });
+        
+        showSuccess(`Graph "${graphData.title}" saved successfully!`);
+      }
+    } catch (err) {
+      showError(`Failed to save graph: ${err.message}`);
+    }
+  };
+
+  const handleLoadGraph = (graph) => {
+    if (yamlText !== graph.content && yamlText !== DEFAULT_YAML) {
+      if (!window.confirm("Loading this graph will replace your current YAML. Continue?")) {
+        return;
+      }
+    }
+    setYamlText(graph.content);
+    setShowSavedGraphs(false);
+    navigate("/");
+  };
+
+  const handleDeleteGraph = async (graphId) => {
+    if (!window.confirm("Delete this saved graph? This cannot be undone.")) return;
+    
+    try {
+      await deleteGraph(graphId);
+      showSuccess("Graph deleted successfully!");
+    } catch (err) {
+      showError(`Failed to delete graph: ${err.message}`);
+    }
+  };
+
+  const handleUpdateGraph = async (graph) => {
+    if (!window.confirm(`Update "${graph.title}" with the current YAML content?`)) return;
+    
+    try {
+      await updateGraph(graph.id, {
+        title: graph.title,
+        yamlContent: yamlText,
+        description: graph.description,
+        isPublic: graph.isPublic
+      });
+      
+      showSuccess(`Graph "${graph.title}" updated successfully!`);
+      setShowSavedGraphs(false);
+    } catch (err) {
+      showError(`Failed to update graph: ${err.message}`);
+    }
+  };
+
+  return (
+    <div className="app">
+      <Routes>
+        <Route 
+          path="/" 
+          element={
+            <EditorPage
+              yamlText={yamlText}
+              setYamlText={setYamlText}
+              handleVisualize={handleVisualize}
+              error={error}
+              validation={validation}
+              handleSaveGraph={handleSaveGraph}
+              savedGraphs={savedGraphs}
+              setShowSavedGraphs={setShowSavedGraphs}
+              handleClearData={handleClearData}
+              isAuthenticated={isAuthenticated}
+              user={user}
+              onShowAuth={() => setShowAuthModal(true)}
+              onLogout={logout}
+            />
+          } 
+        />
+        <Route 
+          path="/diagram" 
+          element={
+            <DiagramPage 
+              parsedData={parsedData} 
+              treeInfo={treeInfo}
+            />
+          } 
+        />
+        <Route 
+          path="/combined" 
+          element={
+            <CombinedEditorPage
+              yamlText={yamlText}
+              setYamlText={setYamlText}
+              handleVisualize={handleVisualize}
+              error={error}
+              validation={validation}
+              handleSaveGraph={handleSaveGraph}
+              savedGraphs={savedGraphs}
+              setShowSavedGraphs={setShowSavedGraphs}
+              handleClearData={handleClearData}
+              isAuthenticated={isAuthenticated}
+              user={user}
+              onShowAuth={() => setShowAuthModal(true)}
+              onLogout={logout}
+            />
+          } 
+        />
+        <Route path="/docs" element={<DocsPage />} />
+      </Routes>
+      
+      <SavedGraphsModal
+        showSavedGraphs={showSavedGraphs}
+        setShowSavedGraphs={setShowSavedGraphs}
+        savedGraphs={savedGraphs}
+        handleLoadGraph={handleLoadGraph}
+        handleDeleteGraph={handleDeleteGraph}
+        handleUpdateGraph={handleUpdateGraph}
+        isAuthenticated={isAuthenticated}
+        onAuthRequired={() => setShowAuthModal(true)}
+      />
+      
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+      
+      <SaveGraphModal
+        isOpen={showSaveGraphModal}
+        onClose={() => setShowSaveGraphModal(false)}
+        onSave={handleSaveGraphFromModal}
+        existingGraphs={savedGraphs}
+      />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </ToastProvider>
+    </AuthProvider>
+  );
+}

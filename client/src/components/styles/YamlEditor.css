@@ -1,0 +1,361 @@
+/* YAML Editor Styles */
+.yaml-editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  background: white;
+  border: 1px solid #e1e5e9;
+  min-height: 60vh;
+}
+
+.editor-toolbar {
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5e9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-toggle-btn {
+  padding: 6px 12px;
+  background: #007bff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-toggle-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.toolbar-label {
+  font-weight: 600;
+  font-size: 1.1em;
+  color: #495057;
+}
+
+.toolbar-hint {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Search and Replace Panel */
+.search-replace-panel {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5e9;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-row, .replace-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-input, .replace-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9em;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus, .replace-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.search-replace-panel button {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #495057;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-replace-panel button:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.search-replace-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.close-search {
+  background: #dc3545 !important;
+  color: white !important;
+  border-color: #dc3545 !important;
+}
+
+.close-search:hover:not(:disabled) {
+  background: #c82333 !important;
+}
+
+.match-count {
+  font-size: 0.85em;
+  color: #6c757d;
+  min-width: 40px;
+  text-align: center;
+}
+
+.match-case-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85em;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+/* Editor Layout */
+.editor-with-lines {
+  flex: 1;
+  display: flex;
+  background: white;
+  position: relative;
+}
+
+.line-numbers {
+  padding: 20px 12px 20px 8px;
+  text-align: right;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-right: 1px solid #e1e5e9;
+  user-select: none;
+  overflow: hidden;
+  min-height: calc(70vh - 300px);
+  min-width: 50px;
+}
+
+.line-numbers::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.line-numbers div {
+  line-height: 1.5;
+  padding: 0 4px;
+}
+
+.editor-text-container {
+  flex: 1;
+  position: relative;
+  min-height: calc(70vh - 300px);
+  background: white;
+}
+
+/* Indent Guides */
+.indent-guides-svg {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  pointer-events: none;
+  z-index: 1;
+  transform-origin: top left;
+}
+
+/* Syntax Highlighting Overlay */
+.syntax-highlighter {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: transparent;
+  pointer-events: none;
+  overflow: hidden;
+  white-space: pre;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* YAML Syntax Highlighting */
+.yaml-key {
+  color: #d73a49;
+  font-weight: 600;
+}
+
+.yaml-colon {
+  color: #24292e;
+}
+
+.yaml-value {
+  color: #032f62;
+}
+
+.yaml-string {
+  color: #22863a;
+}
+
+.yaml-number {
+  color: #005cc5;
+  font-weight: 500;
+}
+
+.yaml-boolean {
+  color: #e36209;
+  font-weight: 500;
+}
+
+.yaml-array {
+  color: #6f42c1;
+}
+
+.yaml-comment {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.yaml-list-dash {
+  color: #d73a49;
+  font-weight: bold;
+}
+
+/* Search Highlighting */
+.search-highlight {
+  background: #ffeb3b;
+  color: #333;
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.current-match {
+  background: #ff9800 !important;
+  color: white !important;
+  box-shadow: 0 0 0 1px #f57c00;
+}
+
+/* Textarea */
+.yaml-textarea {
+  width: 100%;
+  height: 100%;
+  min-height: calc(70vh - 300px);
+  padding: 20px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  background: transparent;
+  color: transparent;
+  caret-color: #24292e;
+  border: none;
+  outline: none;
+  resize: none;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-y: auto;
+  overflow-x: auto;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+
+.yaml-textarea::placeholder {
+  color: #6c757d;
+}
+
+.yaml-textarea::selection {
+  background: rgba(0, 123, 255, 0.3);
+}
+
+/* Scrollbars */
+.yaml-textarea::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.yaml-textarea::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+.yaml-textarea::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 6px;
+}
+
+.yaml-textarea::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-replace-panel {
+    padding: 8px 12px;
+  }
+  
+  .search-row, .replace-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  
+  .search-input, .replace-input {
+    margin-bottom: 4px;
+  }
+  
+  .toolbar-hint {
+    display: none;
+  }
+}
+
+/* Focus States */
+.yaml-textarea:focus + .syntax-highlighter {
+  outline: 2px solid rgba(0, 123, 255, 0.3);
+  outline-offset: -2px;
+}
+
+/* Animation for search panel */
+.search-replace-panel {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
