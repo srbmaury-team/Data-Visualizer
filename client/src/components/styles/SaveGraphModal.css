@@ -230,6 +230,7 @@
   .save-graph-modal {
     width: 95%;
     margin: 20px;
+    max-height: 85vh; /* Reduce height to ensure buttons are visible */
   }
   
   .modal-header {
@@ -238,16 +239,25 @@
   
   .save-form {
     padding: 20px;
+    padding-bottom: 30px; /* Extra padding at bottom */
   }
   
   .form-actions {
     flex-direction: column;
+    margin-top: 24px; /* Reduce top margin */
+    position: sticky; /* Make buttons stick to bottom */
+    bottom: 0;
+    background: white;
+    padding: 16px 0 0 0;
+    border-top: 1px solid #e5e7eb;
   }
   
   .cancel-btn,
   .save-btn {
     width: 100%;
     justify-content: center;
+    padding: 14px 20px; /* Larger touch targets */
+    font-size: 1rem;
   }
   
   .confirm-actions {
@@ -256,5 +266,11 @@
   
   .overwrite-btn {
     width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+
+  .save-btn-modal {
+    display: block !important;
   }
 }

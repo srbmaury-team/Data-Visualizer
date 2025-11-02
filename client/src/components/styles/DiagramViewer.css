@@ -584,7 +584,7 @@
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1000;
+    z-index: 9999 !important;
     background: rgba(255, 255, 255, 0.95);
     border: 2px solid #e1e5e9;
     border-radius: 20px;
@@ -593,6 +593,14 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     backdrop-filter: blur(8px);
     display: block;
   }
@@ -703,9 +711,6 @@
     transform: none !important;
   }
 
-  /* Hide combined view buttons on mobile */
-  .combined-editor-btn,
-  .combined-btn {
-    display: none !important;
-  }
+  /* Combined view buttons are now visible on mobile */
+  /* Removed: display: none for .combined-editor-btn and .combined-btn */
 }

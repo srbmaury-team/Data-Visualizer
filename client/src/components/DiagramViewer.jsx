@@ -37,7 +37,6 @@ const DiagramViewer = forwardRef(({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [nodeCount, setNodeCount] = useState({ visible: 0, total: 0 });
   const [copiedProperty, setCopiedProperty] = useState(null);
-  const [showMobileHeader, setShowMobileHeader] = useState(false);
   const rootRef = useRef(null);
   const updateFunctionRef = useRef(null);
   const searchTermRef = useRef(searchTerm);
@@ -1158,13 +1157,12 @@ const DiagramViewer = forwardRef(({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleToggleMobileHeader = useCallback(() => {
-    setShowMobileHeader(!showMobileHeader);
-    // Scroll to top to show header when toggled on
-    if (!showMobileHeader) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [showMobileHeader]);
+  const handleToggleMobileHeader = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Simply scroll to top to show header
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
 
 

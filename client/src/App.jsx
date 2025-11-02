@@ -40,6 +40,30 @@ function AppContent() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const data = JSON.parse(saved);
+        
+        // Check if this came from a shared link on mobile
+        if (data.fromSharedLink) {
+          // Clean up the localStorage to prevent re-loading on subsequent visits
+          const cleanData = {
+            yamlText: data.yamlText,
+            timestamp: new Date().toISOString()
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanData));
+          
+          // Show a toast message about the shared content being loaded
+          setTimeout(() => {
+            const event = new CustomEvent('showToast', {
+              detail: {
+                message: data.sharedTitle ? 
+                  `Loaded shared graph: "${data.sharedTitle}"` : 
+                  'Shared graph content loaded successfully',
+                type: 'success'
+              }
+            });
+            window.dispatchEvent(event);
+          }, 1000);
+        }
+        
         return data.yamlText || DEFAULT_YAML;
       }
     } catch (e) {
@@ -62,6 +86,21 @@ function AppContent() {
       loadSavedGraphs();
     }
   }, [isAuthenticated, loadSavedGraphs]);
+
+  // Listen for toast events from shared link redirects
+  useEffect(() => {
+    const handleToastEvent = (event) => {
+      const { message, type } = event.detail;
+      if (type === 'success') {
+        showSuccess(message);
+      } else if (type === 'error') {
+        showError(message);
+      }
+    };
+
+    window.addEventListener('showToast', handleToastEvent);
+    return () => window.removeEventListener('showToast', handleToastEvent);
+  }, [showSuccess, showError]);
 
   useEffect(() => {
     try {

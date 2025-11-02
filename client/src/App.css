@@ -131,8 +131,21 @@ body {
 }
 
 .logout-btn:hover {
-  background: #d32f2f;
-  border-color: #d32f2f;
+  background: #c62828;
+  border-color: #c62828;
+}
+
+/* Hide mobile-specific saved graphs button on desktop */
+.saved-graphs-mobile,
+.save-graph-mobile {
+  display: none;
+}
+
+/* Desktop: auth-line and saved-line act as inline containers */
+.auth-container,
+.first-line,
+.second-line {
+  display: contents;
 }
 
 .save-graph-btn,
@@ -990,10 +1003,12 @@ body {
   }
   
   .auth-section {
-    position: static;
-    justify-content: center;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
     margin-bottom: 20px;
     order: -1;
+    justify-content: center;
   }
   
   .header-main {

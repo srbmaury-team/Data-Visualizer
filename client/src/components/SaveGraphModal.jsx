@@ -147,7 +147,7 @@ const SaveGraphModal = ({ isOpen, onClose, onSave, existingGraphs }) => {
               <button type="button" className="cancel-btn" onClick={handleClose}>
                 Cancel
               </button>
-              <button type="submit" className="save-btn" disabled={!title.trim()}>
+              <button type="submit" className="save-btn save-btn-modal" disabled={!title.trim()}>
                 💾 Save Graph
               </button>
             </div>

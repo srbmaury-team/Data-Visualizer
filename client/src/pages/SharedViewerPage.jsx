@@ -45,13 +45,8 @@ export default function SharedViewerPage({
     };
   }, []);
 
-  // Redirect mobile users to home page
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      navigate('/');
-    }
-  }, [navigate]);
+  // Note: Mobile redirect is now handled in SharedViewerWrapper
+  // This component will only render for desktop users
   
   // Search handler - calls DiagramViewer's global search function
   const handleSearch = useCallback((term) => {

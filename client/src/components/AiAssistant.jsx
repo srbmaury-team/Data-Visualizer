@@ -15,13 +15,14 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
       content: 'Hi! I\'m your AI YAML Assistant with Visual Intelligence. I can help you generate, modify, optimize YAML structures, analyze your tree visualization, and provide intelligent insights about structure and organization.',
       timestamp: new Date(),
       suggestions: [
-        'Generate an e-commerce platform structure',
+        'Generate a modern e-commerce platform architecture',
+        'Create a microservices ecosystem with API gateway',
         'Analyze my tree visualization structure',
-        'Check tree balance and organization',
+        'Check tree balance and organization', 
         'Suggest visual improvements for my tree',
         'Optimize this YAML for better visualization',
-        'Identify structural issues in my tree',
-        'Create a microservices architecture'
+        'Generate a DevOps CI/CD pipeline structure',
+        'Design a cloud-native application architecture'
       ]
     }
   ]);
@@ -158,87 +159,94 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         };
       }
 
-      // Run visual analysis
+      // Run basic analysis for metrics
       const analysis = VisualAnalysisService.analyzeTreeVisualization(treeData);
       
-      // Generate intelligent response based on visual analysis
-      let message = "## 🌳 Tree Visualization Analysis\n\n";
+      // Determine query type and provide specific responses
+      const openaiService = openaiServiceRef.current;
       
-      // Health summary
-      message += `**Tree Health Score:** ${analysis.summary.healthScore}/100 (${analysis.summary.healthLevel})\n`;
-      message += `**Primary Recommendation:** ${analysis.summary.primaryRecommendation}\n\n`;
-      
-      // Key metrics
-      message += "### 📊 Tree Metrics\n";
-      message += `- **Total Nodes:** ${analysis.metrics.totalNodes}\n`;
-      message += `- **Max Depth:** ${analysis.metrics.maxDepth} levels\n`;
-      message += `- **Average Depth:** ${analysis.metrics.averageDepth.toFixed(1)} levels\n`;
-      message += `- **Balance Ratio:** ${analysis.metrics.balanceRatio.toFixed(2)} (1.0 = perfect)\n`;
-      message += `- **Leaf Nodes:** ${analysis.metrics.leafNodes} (${(analysis.metrics.leafNodes/analysis.metrics.totalNodes*100).toFixed(1)}%)\n\n`;
-      
-      // Insights
-      if (analysis.insights.length > 0) {
-        message += "### 💡 Visual Insights\n";
-        analysis.insights.forEach(insight => {
-          const emoji = insight.severity === 'positive' ? '✅' : 
-                       insight.severity === 'high' ? '🔴' : 
-                       insight.severity === 'medium' ? '🟡' : '🔵';
-          message += `${emoji} **${insight.type.charAt(0).toUpperCase() + insight.type.slice(1)}:** ${insight.message}\n`;
-        });
-        message += "\n";
-      }
-      
-      // Issues
-      if (analysis.issues.length > 0) {
-        message += "### ⚠️ Structural Issues\n";
-        analysis.issues.forEach(issue => {
-          const emoji = issue.type === 'critical' ? '🚨' : issue.type === 'warning' ? '⚠️' : 'ℹ️';
-          message += `${emoji} **${issue.category}:** ${issue.message}\n`;
-        });
-        message += "\n";
-      }
-      
-      // Recommendations
-      if (analysis.recommendations.length > 0) {
-        message += "### 🎯 Improvement Recommendations\n";
-        analysis.recommendations.forEach((rec, index) => {
-          const priority = rec.priority === 'high' ? '🔴 HIGH' : 
-                          rec.priority === 'medium' ? '🟡 MED' : '🟢 LOW';
-          message += `${index + 1}. **${rec.title}** (${priority})\n`;
-          message += `   ${rec.description}\n`;
-        });
-        message += "\n";
-      }
-      
-      // Balance and asymmetry details
-      if (analysis.metrics.asymmetryScore > 0.2) {
-        message += "### ⚖️ Balance Analysis\n";
-        const side = analysis.metrics.leftHeavy ? 'left' : analysis.metrics.rightHeavy ? 'right' : 'center';
-        message += `Your tree is **${side}-weighted** with an asymmetry score of ${analysis.metrics.asymmetryScore.toFixed(2)}.\n`;
-        if (side !== 'center') {
-          message += "Consider redistributing nodes for better visual balance.\n";
+      if (/analyze.*tree.*structure|tree.*visualization.*structure|structure.*analysis/i.test(userInput)) {
+        // Deep structural analysis
+        const structurePrompt = `Analyze this tree structure with ${analysis.metrics.totalNodes} nodes, ${analysis.metrics.maxDepth} levels deep, balance ratio ${analysis.metrics.balanceRatio.toFixed(2)}. Provide insights about the hierarchical organization, node distribution patterns, and structural efficiency. Focus on the architecture and how well the tree represents logical relationships.`;
+        
+        if (openaiService.isConfigured()) {
+          const aiResponse = await openaiService.generateYamlResponse(structurePrompt, currentYaml);
+          return {
+            message: `## �️ Tree Structure Analysis\n\n${aiResponse.message}`,
+            visualAnalysis: analysis
+          };
+        } else {
+          return {
+            message: `## 🏗️ Tree Structure Analysis\n\n**Architectural Assessment:** Your tree has a solid ${analysis.metrics.maxDepth}-level architecture with ${analysis.metrics.totalNodes} nodes.\n\n**Structural Efficiency:** ${analysis.metrics.balanceRatio >= 0.8 ? 'Well-organized hierarchy' : 'Consider restructuring for better flow'}\n\n**Node Distribution:** ${Math.round(analysis.metrics.leafNodes/analysis.metrics.totalNodes*100)}% leaf nodes indicates ${analysis.metrics.leafNodes/analysis.metrics.totalNodes > 0.7 ? 'good detail granularity' : 'potential for more detailed breakdown'}\n\n**Logical Flow:** The current structure ${analysis.metrics.balanceRatio >= 0.7 ? 'follows logical patterns' : 'could benefit from reorganization'} for better comprehension.`,
+            visualAnalysis: analysis
+          };
         }
-        message += "\n";
       }
       
-      // Tips for improvement
-      message += "### 💡 Pro Tips\n";
-      if (analysis.metrics.maxDepth > 6) {
-        message += "- Consider grouping related items to reduce tree depth\n";
+      else if (/balance.*organization|organization.*balance|tree.*balance|balance.*tree/i.test(userInput)) {
+        // Balance and organization focused
+        return {
+          message: `## ⚖️ Tree Balance & Organization\n\n**Balance Score:** ${analysis.metrics.balanceRatio.toFixed(2)}/1.0 ${analysis.metrics.balanceRatio >= 0.8 ? '✅ Excellent' : analysis.metrics.balanceRatio >= 0.6 ? '⚠️ Good' : '❌ Needs Work'}\n\n**Distribution Analysis:**\n- **Symmetry:** ${analysis.metrics.asymmetryScore < 0.2 ? 'Well-balanced tree' : `${analysis.metrics.leftHeavy ? 'Left' : 'Right'}-heavy distribution`}\n- **Depth Consistency:** ${analysis.metrics.maxDepth - Math.min(...Object.values(analysis.metrics.depthDistribution || {})) <= 2 ? 'Consistent levels' : 'Uneven depth distribution'}\n- **Node Spread:** ${analysis.metrics.wideNodes > 3 ? 'Some branches are overcrowded' : 'Good node distribution'}\n\n**Organization Quality:**\n${analysis.metrics.balanceRatio >= 0.8 ? '✅ Tree is well-organized with good visual flow' : '⚠️ Consider redistributing nodes for better balance'}\n\n**Recommendations:**\n- ${analysis.metrics.wideNodes > 3 ? 'Group related items under intermediate categories' : 'Current grouping looks good'}\n- ${analysis.metrics.balanceRatio < 0.7 ? 'Move some items from heavy branches to lighter ones' : 'Maintain current balanced structure'}`,
+          visualAnalysis: analysis
+        };
       }
-      if (analysis.metrics.wideNodes > 2) {
-        message += "- Create intermediate categories for nodes with many children\n";
-      }
-      if (analysis.metrics.balanceRatio < 0.5) {
-        message += "- Move some items from large branches to smaller ones\n";
-      }
-      message += "- Use descriptive names to make the tree more self-explanatory\n";
-      message += "- Consider the logical flow when organizing your structure\n";
       
+      else if (/suggest.*visual|visual.*improvement|improve.*visual|visual.*enhance/i.test(userInput)) {
+        // Visual improvement suggestions
+        const improvementPrompt = `Suggest visual improvements for a tree with ${analysis.metrics.totalNodes} nodes, balance ratio ${analysis.metrics.balanceRatio.toFixed(2)}, and ${analysis.metrics.maxDepth} levels. Focus on layout, visual hierarchy, color coding, grouping strategies, and user experience enhancements.`;
+        
+        if (openaiService.isConfigured()) {
+          const aiResponse = await openaiService.generateYamlResponse(improvementPrompt, currentYaml);
+          return {
+            message: `## 🎨 Visual Enhancement Suggestions\n\n${aiResponse.message}`,
+            visualAnalysis: analysis
+          };
+        } else {
+          return {
+            message: `## 🎨 Visual Enhancement Suggestions\n\n**Color Strategy:**\n- Use consistent color themes for related node types\n- ${analysis.metrics.maxDepth > 3 ? 'Apply gradient colors by depth level' : 'Use category-based color coding'}\n- Highlight critical paths with accent colors\n\n**Layout Improvements:**\n- ${analysis.metrics.wideNodes > 3 ? 'Consider horizontal layouts for wide branches' : 'Current layout structure is optimal'}\n- ${analysis.metrics.balanceRatio < 0.7 ? 'Reposition nodes for better visual balance' : 'Maintain current balanced positioning'}\n- Add visual separators between major sections\n\n**Interactive Features:**\n- Implement hover effects for node details\n- Add expand/collapse for large branches\n- Include mini-map for navigation\n\n**Typography & Spacing:**\n- Use font weights to show hierarchy levels\n- Ensure adequate spacing between nodes\n- Consider abbreviated labels with detailed tooltips`,
+            visualAnalysis: analysis
+          };
+        }
+      }
+      
+      else if (/optimize.*yaml|yaml.*optimization|optimize.*visualization/i.test(userInput)) {
+        // YAML optimization for visualization
+        const optimizationPrompt = `Optimize this YAML structure for better visualization. Current metrics: ${analysis.metrics.totalNodes} nodes, ${analysis.metrics.maxDepth} depth, ${analysis.metrics.balanceRatio.toFixed(2)} balance ratio. Suggest YAML restructuring for clearer visual representation.`;
+        
+        if (openaiService.isConfigured()) {
+          const aiResponse = await openaiService.generateYamlResponse(optimizationPrompt, currentYaml);
+          return {
+            message: `## ⚡ YAML Visualization Optimization\n\n${aiResponse.message}`,
+            visualAnalysis: analysis
+          };
+        } else {
+          return {
+            message: `## ⚡ YAML Visualization Optimization\n\n**Structure Recommendations:**\n- ${analysis.metrics.maxDepth > 4 ? 'Reduce nesting depth by creating intermediate groupings' : 'Current depth is optimal for visualization'}\n- ${analysis.metrics.wideNodes > 4 ? 'Break down large sections into smaller, manageable chunks' : 'Node distribution is well-sized'}\n\n**Naming Optimization:**\n- Use consistent naming conventions across all levels\n- Keep node names concise but descriptive\n- Consider abbreviations for long technical terms\n\n**Grouping Strategy:**\n- ${analysis.metrics.leafNodes/analysis.metrics.totalNodes > 0.8 ? 'Consider adding more intermediate categories' : 'Good balance of categories and items'}\n- Group related functionality together\n- Separate core features from auxiliary ones\n\n**YAML Best Practices:**\n- Add meaningful comments for complex sections\n- Use consistent indentation (2 spaces recommended)\n- Order items logically (alphabetical or by importance)\n- Consider splitting very large files into modules`,
+            visualAnalysis: analysis
+          };
+        }
+      }
+      
+      else if (/identify.*issue|structural.*issue|issue.*tree|problem.*tree/i.test(userInput)) {
+        // Issue identification
+        return {
+          message: `## 🔍 Structural Issue Analysis\n\n**Issues Detected:** ${analysis.issues.length} potential concerns\n\n${analysis.issues.length > 0 ? 
+            analysis.issues.map((issue, idx) => 
+              `**${idx + 1}. ${issue.category}** (${issue.type})\n${issue.message}\n`
+            ).join('\n') : 
+            '✅ No critical structural issues detected!'
+          }\n\n**Health Indicators:**\n- **Depth:** ${analysis.metrics.maxDepth > 5 ? '❌ Too deep (consider flattening)' : '✅ Appropriate depth'}\n- **Balance:** ${analysis.metrics.balanceRatio < 0.5 ? '❌ Severely unbalanced' : analysis.metrics.balanceRatio < 0.7 ? '⚠️ Moderately unbalanced' : '✅ Well balanced'}\n- **Complexity:** ${analysis.metrics.totalNodes > 50 ? '⚠️ High complexity' : '✅ Manageable complexity'}\n\n**Immediate Actions:**\n${analysis.issues.length > 0 ? 
+            analysis.issues.slice(0, 3).map(issue => `- Fix: ${issue.message}`).join('\n') : 
+            '- Continue with current structure\n- Consider minor optimizations for performance'
+          }`,
+          visualAnalysis: analysis
+        };
+      }
+      
+      // Fallback - shouldn't reach here due to pattern matching
       return {
-        message: message.trim(),
-        visualAnalysis: analysis,
-        yaml: null
+        message: `## 🌳 Tree Analysis\n\nYour tree has ${analysis.metrics.totalNodes} nodes with a balance ratio of ${analysis.metrics.balanceRatio.toFixed(2)}. For more specific insights, try asking about structure, balance, improvements, optimization, or issues.`,
+        visualAnalysis: analysis
       };
       
     } catch (error) {
@@ -268,9 +276,15 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
       const openaiService = openaiServiceRef.current;
       let response;
 
-      // Check if this is an analysis request
-      const isAnalysisRequest = /analyze|analysis|check|review|inspect|evaluate|optimize|improve|performance|best.practices|issues|problems|recommendations/i.test(inputMessage);
-      const isVisualAnalysisRequest = /(visual.*analysis|analyze.*visual|tree.*analysis|analyze.*tree|visualization.*analysis|analyze.*visualization|structure.*analysis|analyze.*structure|balance.*analysis|analyze.*balance|visual.*insights|tree.*insights|visualization.*insights|structure.*insights|health.*score|tree.*health|visual.*health)/i.test(inputMessage);
+      // Check if this is an analysis request - be more specific to avoid overlaps
+      const isStructureAnalysis = /analyze.*tree.*structure|tree.*visualization.*structure|structure.*analysis.*tree/i.test(inputMessage);
+      const isBalanceAnalysis = /balance.*organization|organization.*balance|tree.*balance|balance.*tree|check.*balance/i.test(inputMessage);
+      const isVisualImprovement = /suggest.*visual|visual.*improvement|improve.*visual|visual.*enhance|improvement.*tree/i.test(inputMessage);
+      const isYamlOptimization = /optimize.*yaml|yaml.*optimization|optimize.*visualization|yaml.*better/i.test(inputMessage);
+      const isIssueIdentification = /identify.*issue|structural.*issue|issue.*tree|problem.*tree|find.*problem/i.test(inputMessage);
+      
+      const isVisualAnalysisRequest = isStructureAnalysis || isBalanceAnalysis || isVisualImprovement || isYamlOptimization || isIssueIdentification;
+      const isAnalysisRequest = !isVisualAnalysisRequest && /analyze|analysis|check|review|inspect|evaluate|performance|best.practices/i.test(inputMessage);
       
       if (isVisualAnalysisRequest) {
         // Provide visual analysis-based response
@@ -359,7 +373,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
               )}
             </div>
           </div>
-          <div className="header-actions">
+          <div className="clear-or-exit">
             <button 
               className="clear-chat-btn" 
               onClick={() => {

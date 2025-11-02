@@ -19,7 +19,8 @@ export default function SharedViewerWrapper() {
         const response = await apiService.getSharedYamlFile(shareId);
         
         if (response.yamlFile) {
-          setYamlText(response.yamlFile.content || "");
+          const content = response.yamlFile.content || "";
+          setYamlText(content);
         } else {
           setError("Shared file not found");
         }
@@ -43,7 +44,7 @@ export default function SharedViewerWrapper() {
       setError("Invalid share ID");
       setLoading(false);
     }
-  }, [shareId]);
+  }, [shareId, navigate]);
 
   if (loading) {
     return (
@@ -51,6 +52,9 @@ export default function SharedViewerWrapper() {
         <div className="loading-spinner">
           <div className="spinner"></div>
           <p>Loading shared content...</p>
+          <p style={{ fontSize: '0.9em', color: '#666', marginTop: '0.5rem' }}>
+            On mobile, you'll be redirected to the editor
+          </p>
         </div>
       </div>
     );

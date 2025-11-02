@@ -10,17 +10,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 1vh 1vw;
 }
 
 .ai-assistant-container {
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  max-width: 700px;
-  height: 80vh;
-  max-height: 600px;
+  width: 98vw;
+  max-width: none;
+  height: 98vh;
+  max-height: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -33,6 +33,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .header-content h3 {
@@ -69,10 +74,13 @@
   font-weight: 600;
 }
 
-.header-actions {
+.clear-or-exit {
   display: flex;
   gap: 12px;
   align-items: center;
+  margin-left: auto;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .api-key-btn {
@@ -281,11 +289,11 @@
 }
 
 .message.assistant {
-  align-items: flex-start;
+  align-items: flex;
 }
 
 .message-content {
-  max-width: 85%;
+  max-width: 100%;
   border-radius: 16px;
   padding: 12px 16px;
   word-wrap: break-word;
@@ -611,12 +619,61 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .ai-assistant-overlay {
-    padding: 10px;
+    padding: 3vh 3vw;
   }
   
   .ai-assistant-container {
+    width: 94vw;
     height: 90vh;
-    max-height: none;
+    border-radius: 12px;
+  }
+  
+  .ai-assistant-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+  }
+  
+  .header-content {
+    margin-bottom: 16px;
+  }
+  
+  .header-content h3 {
+    font-size: 1.2em;
+  }
+  
+  .header-content p {
+    font-size: 0.8em;
+    margin: 2px 0 0 0;
+  }
+  
+  .api-status {
+    margin-top: 4px;
+  }
+  
+  .clear-or-exit {
+    margin-left: 0 !important;
+    justify-content: space-between !important;
+    gap: 0;
+    width: 100%;
+    display: flex !important;
+    flex-direction: row !important;
+  }
+  
+  .clear-chat-btn {
+    order: 1 !important;
+    flex: 0 0 auto;
+    min-width: 120px;
+    text-align: center;
+    align-self: flex-start;
+  }
+  
+  .close-btn {
+    order: 2 !important;
+    flex: 0 0 auto;
+    min-width: 80px;
+    text-align: center;
+    align-self: flex-end;
   }
   
   .suggestions-grid {

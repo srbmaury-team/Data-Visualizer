@@ -3,6 +3,19 @@
   display: none !important;
 }
 
+/* Hide mobile-specific saved graphs button on desktop */
+.saved-graphs-mobile,
+.save-graph-mobile {
+  display: none;
+}
+
+/* Desktop: auth-line and saved-line act as inline containers */
+.auth-container,
+.first-line,
+.second-line {
+  display: contents;
+}
+
 /* Override DiagramViewer positioning when used in combined editor */
 .diagram-content .diagram-viewer {
   position: relative !important;
@@ -76,10 +89,11 @@
   transform: translateX(-2px);
 }
 
-.header-actions {
+.header-navs {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .right-controls {
@@ -345,27 +359,125 @@
     justify-content: center;
   }
   
+  /* Override main container for mobile to allow scrolling */
+  .simple-combined-editor {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important;
+  }
+  
+  .auth-section {
+    display: block !important;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .auth-container {
+    display: block !important;
+    width: 100%;
+  }
+  
+  .first-line {
+    display: block !important;
+    margin-bottom: 12px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .first-line .user-name,
+  .first-line .guest-name {
+    display: inline-block;
+    margin-right: 8px;
+  }
+  
+  .first-line .auth-btn {
+    display: inline-block;
+  }
+  
+  .second-line {
+    display: block !important;
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  .second-line .auth-btn {
+    display: inline-block !important;
+    margin: 0 4px;
+  }
+  
+  .save-graph-mobile {
+    display: inline-block !important;
+    background: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .save-graph-mobile:hover {
+    background: #45a049 !important;
+    border-color: #45a049 !important;
+  }
+  
+  .saved-graphs-mobile {
+    display: inline-block !important;
+    background: #2196F3 !important;
+    border-color: #2196F3 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .saved-graphs-mobile:hover {
+    background: #1976D2 !important;
+    border-color: #1976D2 !important;
+  }
+  
+  .saved-graphs-mobile.disabled {
+    background: #ccc !important;
+    border-color: #ccc !important;
+    cursor: not-allowed !important;
+  }
+  
+  /* Hide desktop buttons on mobile */
+  .save-btn,
+  .saved-btn {
+    display: none !important;
+  }
+  
   .resizer {
     display: none;
   }
   
   .split-container {
     flex-direction: column;
+    overflow-y: auto;
   }
   
   .left-panel {
     width: 100% !important;
-    height: 50%;
+    height: 100vh !important;
+    min-height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
   }
   
   .right-panel {
     width: 100% !important;
-    height: 50%;
+    height: 100vh !important;
+    min-height: 100vh;
     border-top: 1px solid #e2e8f0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
   
   .right-panel-container {
     flex-direction: column;
+    flex: 1;
+    height: 100%;
   }
   
   .search-panel-container {
@@ -374,6 +486,7 @@
     height: auto;
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
   }
   
   .search-panel-container .search-panel.expanded {
@@ -382,8 +495,17 @@
   }
   
   .diagram-area {
-    flex: 1;
+    flex: 1 !important;
     margin-left: 0 !important;
+    height: calc(100% - 60px); /* Account for search panel height */
+    overflow: hidden;
+  }
+  
+  /* Ensure YAML editor takes full height */
+  .left-panel .yaml-editor,
+  .left-panel .monaco-editor {
+    height: 100% !important;
+    flex: 1;
   }
 }
 

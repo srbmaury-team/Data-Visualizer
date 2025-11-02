@@ -54,13 +54,8 @@ export default function CombinedEditorPage({
     };
   }, []);
 
-  // Redirect mobile users to home page
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      navigate('/');
-    }
-  }, [navigate]);
+  // Note: Mobile users can now access combined view
+  // Removed automatic redirect to allow mobile access
   
   // Search handler - calls DiagramViewer's global search function
   const handleSearch = useCallback((term) => {
@@ -175,19 +170,38 @@ export default function CombinedEditorPage({
             </button>
             <div className="auth-section">
               {isAuthenticated ? (
-                <>
-                  <span className="user-name">Welcome, {user?.username || 'User'}!</span>
-                  <button className="auth-btn logout-btn" onClick={onLogout}>
-                    🚪 Logout
-                  </button>
-                </>
+                <div className="auth-container">
+                  <div className="first-line">
+                    <span className="user-name">Welcome, {user?.username || 'User'}!</span>
+                    <button className="auth-btn logout-btn" onClick={onLogout}>
+                      🚪 Logout
+                    </button>
+                  </div>
+                  <div className="second-line">
+                    <button className="auth-btn save-graph-mobile" onClick={handleSaveGraph} title="Save current graph">
+                      💾 Save
+                    </button>
+                    <button className="auth-btn saved-graphs-mobile" onClick={() => setShowSavedGraphs(true)} title="View saved graphs">
+                      📚 Saved ({savedGraphs.length})
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <span className="guest-name">Welcome, Guest!</span>
-                  <button className="auth-btn login-btn" onClick={onShowAuth}>
-                    🔐 Login / Sign Up
-                  </button>
-                </>
+                <div className="auth-container">
+                  <div className="first-line">
+                    <button className="auth-btn login-btn" onClick={onShowAuth}>
+                      🔐 Login / Sign Up
+                    </button>
+                  </div>
+                  <div className="second-line">
+                    <button className="auth-btn save-graph-mobile" onClick={handleSaveGraph} title="Save current graph">
+                      💾 Save
+                    </button>
+                    <button className="auth-btn saved-graphs-mobile disabled" onClick={() => setShowSavedGraphs(true)} title="Login to view saved graphs" disabled>
+                      📚 Saved (0)
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
