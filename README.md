@@ -8,6 +8,21 @@ A powerful full-stack application that converts YAML hierarchies into beautiful 
 
 ## 🌟 **Recently Added Features**
 
+### ✅ **User Profile Management System** (NEW!)
+- **Comprehensive Profile Page**: Three-tab interface (Profile, Dashboard, Security)
+- **Profile Editing**: Update username and email with real-time header updates
+- **Password Management**: Secure password change functionality
+- **Account Deletion**: Full account deletion with confirmation
+- **Dashboard Analytics**: Personal statistics and recent activity
+- **Clickable Username**: Navigate to profile by clicking username in header
+
+### ✅ **Enhanced Authentication & User Experience**
+- **Smart Error Handling**: Context-aware error messages and session management
+- **Graceful Logout Flow**: Proper success messaging and home page redirect
+- **Real-time Updates**: Profile changes instantly reflect across the app
+- **Session Management**: Automatic cleanup and token refresh
+- **CORS Optimization**: Multi-device development support (localhost + network IP)
+
 ### ✅ **User Authentication & File Management**
 - **JWT-based Authentication**: Secure user registration and login
 - **Personal File Library**: Save, organize, and manage YAML diagrams
@@ -151,11 +166,13 @@ npm install
 
 ### Basic Workflow
 
-1. **Register/Login** to save your work
+1. **Register/Login** to save your work and access profile features
 2. **Write YAML** in the left editor panel
 3. **View Diagram** updates in real-time on the right
 4. **Save & Share** your diagrams with custom names
-5. **Use AI Assistant** for generation and analysis
+5. **Manage Profile** by clicking your username in the header
+6. **Use AI Assistant** for generation and analysis
+7. **Access Dashboard** for personal analytics and file management
 
 ### YAML Format
 
@@ -213,6 +230,7 @@ React 19 + Vite 7
 │   ├── EditorPage.jsx      # Basic editor interface
 │   ├── CombinedEditorPage.jsx # Split-panel editor (main)
 │   ├── DiagramPage.jsx     # Diagram-only view
+│   ├── ProfilePage.jsx     # User profile management (NEW!)
 │   ├── SharedViewerPage.jsx   # Public sharing view
 │   ├── SharedViewerWrapper.jsx # Shared content wrapper
 │   └── DocsPage.jsx        # Documentation page
@@ -275,12 +293,12 @@ Node.js + Express 4.18 + MongoDB 8.0
 - `DELETE /api/yaml/:id` - Delete file
 - `GET /api/yaml/public/browse` - Browse public files
 
-### User Management
-- `GET /api/user/profile` - User profile with stats
-- `PUT /api/user/profile` - Update profile
-- `PUT /api/user/password` - Change password
-- `DELETE /api/user/account` - Delete user account
-- `GET /api/user/dashboard` - Get user dashboard data
+### User Management & Profile
+- `GET /api/user/profile` - Get detailed user profile with statistics
+- `PUT /api/user/profile` - Update username and email
+- `PUT /api/user/password` - Change user password (requires current password)
+- `DELETE /api/user/account` - Delete user account (requires password confirmation)
+- `GET /api/user/dashboard` - Get comprehensive dashboard data with analytics
 
 ---
 
@@ -302,12 +320,13 @@ Node.js + Express 4.18 + MongoDB 8.0
 | Click `+`/`−` | Expand/collapse node |
 | Click `📋` | Copy property value |
 | Drag Divider | Adjust panel widths |
+| **Click Username** | **Navigate to profile page** |
 
 ### 🎛️ Interface Buttons
 | Button | Function |
 |--------|----------|
-| `💾 Save Graph` | Save with custom name |
-| `📚 My Graphs` | Manage saved files |
+| `💾 Save Graph` | Save with custom name (auth required) |
+| `📚 My Graphs` | Manage saved files (auth required) |
 | `🤖 AI Assistant` | Open AI helper |
 | `🔍 Analysis` | Toggle analysis panel |
 | `📖 Docs` | View documentation |
