@@ -1,0 +1,619 @@
+.profile-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  background: white;
+  border-bottom: 1px solid #e1e5e9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.back-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
+
+.profile-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.profile-tabs {
+  display: flex;
+  background: white;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1;
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6c757d;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.tab.active {
+  background: white;
+  color: #2c3e50;
+  border-bottom-color: #3498db;
+}
+
+.tab-content {
+  background: white;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  min-height: 500px;
+}
+
+/* Profile Tab Styles */
+.profile-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.profile-info-card,
+.stats-card,
+.recent-files-card,
+.popular-files-card,
+.password-card,
+.danger-zone-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid #e9ecef;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.edit-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #2980b9;
+}
+
+.edit-btn.cancel {
+  background: #6c757d;
+}
+
+.edit-btn.cancel:hover {
+  background: #5a6268;
+}
+
+.profile-display {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-field label {
+  font-weight: 600;
+  color: #000000 !important;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field-value {
+  font-size: 16px;
+  color: #2c3e50;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.profile-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #000000 !important;
+  font-size: 14px;
+}
+
+.form-group input {
+  padding: 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 16px;
+  background: white;
+  color: #2c3e50;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3498db;
+  background: white;
+}
+
+.form-group input::placeholder {
+  color: #6c757d;
+}
+
+/* Specific styling for password inputs to ensure visibility */
+.form-group input[type="password"] {
+  background: white !important;
+  color: #2c3e50 !important;
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.form-group input[type="password"]:focus {
+  background: white !important;
+  color: #2c3e50 !important;
+}
+
+/* Additional form contrast improvements */
+.password-form input,
+.delete-confirm input {
+  background: white !important;
+  color: #2c3e50 !important;
+  border: 2px solid #dee2e6 !important;
+  font-weight: 500;
+}
+
+.password-form input:focus,
+.delete-confirm input:focus {
+  border-color: #3498db !important;
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Ensure all text inputs have proper contrast */
+.form-group input[type="text"],
+.form-group input[type="email"] {
+  background: white !important;
+  color: #2c3e50 !important;
+  font-weight: 500;
+}
+
+/* Additional specific label styling to override any global styles */
+.profile-container .form-group label,
+.profile-container .profile-field label,
+.password-form label,
+.delete-confirm label {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.form-actions,
+.delete-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.save-btn,
+.change-password-btn,
+.confirm-delete-btn {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover,
+.change-password-btn:hover {
+  background: #229954;
+  transform: translateY(-1px);
+}
+
+.confirm-delete-btn {
+  background: #e74c3c;
+}
+
+.confirm-delete-btn:hover {
+  background: #c0392b;
+}
+
+.confirm-delete-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-delete-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cancel-delete-btn:hover {
+  background: #5a6268;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #3498db;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Dashboard Tab */
+.dashboard-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.file-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  border-color: #3498db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+}
+
+.file-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.file-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.file-desc {
+  color: #495057;
+}
+
+.file-visibility {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.file-visibility.public {
+  background: #d4edda;
+  color: #155724;
+}
+
+.file-visibility.private {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.file-views {
+  font-weight: 500;
+}
+
+/* Security Tab */
+.security-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 400px;
+}
+
+.danger-zone-card {
+  border-color: #dc3545;
+  background: #f8d7da;
+}
+
+.danger-zone-card .card-header {
+  border-bottom-color: #dc3545;
+}
+
+.danger-zone-card h3 {
+  color: #721c24;
+}
+
+.danger-content {
+  color: #721c24;
+}
+
+.danger-content p {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.delete-account-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.delete-account-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.delete-confirm {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #dc3545;
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.spinner {
+  font-size: 48px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+  color: #3498db;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #2980b9;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-content {
+    padding: 20px 15px;
+  }
+  
+  .profile-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .profile-tabs {
+    flex-direction: column;
+  }
+  
+  .tab {
+    padding: 12px 16px;
+  }
+  
+  .tab-content {
+    padding: 20px 15px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .stat-item {
+    padding: 15px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .file-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .form-actions,
+  .delete-actions {
+    flex-direction: column;
+  }
+  
+  .password-form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-header h2 {
+    font-size: 20px;
+  }
+  
+  .tab {
+    font-size: 14px;
+  }
+}
+
+/* HIGH PRIORITY LABEL STYLING - Override any other CSS */
+.profile-container label,
+.profile-container .form-group label,
+.profile-container .profile-field label,
+.profile-container .password-form label,
+.profile-container .delete-confirm label {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}

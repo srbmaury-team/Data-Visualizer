@@ -98,6 +98,16 @@ body {
   color: #2c3e50;
 }
 
+.clickable-username {
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.clickable-username:hover {
+  color: #4CAF50;
+}
+
 .auth-btn {
   background: #4CAF50;
   color: white;

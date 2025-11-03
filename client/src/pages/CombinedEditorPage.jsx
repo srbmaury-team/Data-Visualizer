@@ -172,7 +172,13 @@ export default function CombinedEditorPage({
               {isAuthenticated ? (
                 <div className="auth-container">
                   <div className="first-line">
-                    <span className="user-name">Welcome, {user?.username || 'User'}!</span>
+                    <button 
+                      className="user-name-btn"
+                      onClick={() => navigate('/profile')}
+                      title="View Profile"
+                    >
+                      Welcome, {user?.username || 'User'}!
+                    </button>
                     <button className="auth-btn logout-btn" onClick={onLogout}>
                       🚪 Logout
                     </button>

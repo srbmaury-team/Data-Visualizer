@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './styles/Header.css';
 
 const Header = ({ onShowAuth, onShowSavedGraphs }) => {
+  const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -13,6 +15,10 @@ const Header = ({ onShowAuth, onShowSavedGraphs }) => {
     }
   };
 
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
   return (
     <header className="app-header">
       <div className="header-left">
@@ -21,7 +27,13 @@ const Header = ({ onShowAuth, onShowSavedGraphs }) => {
       <div className="header-right">
         {isAuthenticated ? (
           <div className="user-menu">
-            <span className="user-name">Welcome, {user?.username || 'User'}!</span>
+            <button 
+              className="user-name-btn"
+              onClick={handleProfileClick}
+              title="View Profile"
+            >
+              Welcome, {user?.username || 'User'}!
+            </button>
             <button 
               className="header-btn saved-graphs-btn" 
               onClick={onShowSavedGraphs}

@@ -185,10 +185,21 @@ class ApiService {
   }
 
   async changePassword(passwordData) {
-    return this.request('/user/change-password', {
-      method: 'POST',
+    return this.request('/user/password', {
+      method: 'PUT',
       body: JSON.stringify(passwordData),
     });
+  }
+
+  async deleteAccount(passwordData) {
+    return this.request('/user/account', {
+      method: 'DELETE',
+      body: JSON.stringify(passwordData),
+    });
+  }
+
+  async getDashboard() {
+    return this.request('/user/dashboard');
   }
 
   /**

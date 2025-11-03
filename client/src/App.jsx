@@ -11,6 +11,7 @@ import CombinedEditorPage from "./pages/CombinedEditorPage";
 import SharedViewerPage from "./pages/SharedViewerPage";
 import SharedViewerWrapper from "./pages/SharedViewerWrapper";
 import DocsPage from "./pages/DocsPage";
+import ProfilePage from "./pages/ProfilePage";
 import SavedGraphsModal from "./components/SavedGraphsModal";
 import SaveGraphModal from "./components/SaveGraphModal";
 import AuthModal from "./components/AuthModal";
@@ -32,7 +33,8 @@ function AppContent() {
     loadSavedGraphs, 
     saveGraph, 
     updateGraph, 
-    deleteGraph 
+    deleteGraph,
+    clearSavedGraphs
   } = useYamlFiles();
   
   const [yamlText, setYamlText] = useState(() => {
@@ -80,12 +82,15 @@ function AppContent() {
   const [showSaveGraphModal, setShowSaveGraphModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Load saved graphs when user authenticates
+  // Load saved graphs when user authenticates, clear when they logout
   useEffect(() => {
     if (isAuthenticated) {
       loadSavedGraphs();
+    } else {
+      // Clear saved graphs when user logs out
+      clearSavedGraphs();
     }
-  }, [isAuthenticated, loadSavedGraphs]);
+  }, [isAuthenticated, loadSavedGraphs, clearSavedGraphs]);
 
   // Listen for toast events from shared link redirects
   useEffect(() => {
@@ -295,6 +300,7 @@ function AppContent() {
         />
         <Route path="/shared/:shareId" element={<SharedViewerWrapper />} />
         <Route path="/docs" element={<DocsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
       
       <SavedGraphsModal

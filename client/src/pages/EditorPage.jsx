@@ -74,7 +74,13 @@ export default function EditorPage({
         <div className="auth-section">
           {isAuthenticated ? (
             <>
-              <span className="user-name">Welcome, {user?.username || 'User'}!</span>
+              <span 
+                className="user-name clickable-username" 
+                onClick={() => navigate('/profile')}
+                title="Go to profile"
+              >
+                Welcome, {user?.username || 'User'}!
+              </span>
               <button className="auth-btn logout-btn" onClick={onLogout}>
                 🚪 Logout
               </button>
@@ -95,12 +101,16 @@ export default function EditorPage({
             <button className="combined-editor-btn" onClick={() => navigate("/combined")} title="Combined Editor & Visualizer">
               🔗 Combined View
             </button>
-            <button className="save-graph-btn" onClick={handleSaveGraph} title="Save current graph">
-              💾 Save Graph
-            </button>
-            <button className="my-graphs-btn" onClick={() => setShowSavedGraphs(true)} title="View saved graphs">
-              📚 My Graphs ({savedGraphs.length})
-            </button>
+            {isAuthenticated && (
+              <>
+                <button className="save-graph-btn" onClick={handleSaveGraph} title="Save current graph">
+                  💾 Save Graph
+                </button>
+                <button className="my-graphs-btn" onClick={() => setShowSavedGraphs(true)} title="View saved graphs">
+                  📚 My Graphs ({savedGraphs.length})
+                </button>
+              </>
+            )}
             <button className="docs-btn" onClick={() => navigate("/docs")} title="Open project README">
               📖 Docs
             </button>

@@ -2,7 +2,7 @@
 
 A powerful full-stack application that converts YAML hierarchies into beautiful interactive tree diagrams. Features user authentication, file sharing, AI-powered assistance, and a professional editing experience.
 
-![React](https://img.shields.io/badge/React-19.1.1-blue) ![Node.js](https://img.shields.io/badge/Node.js-20+-green) ![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-brightgreen) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Express](https://img.shields.io/badge/Express-4.19+-red) ![OpenAI](https://img.shields.io/badge/OpenAI-API-purple)
+![React](https://img.shields.io/badge/React-19.1.1-blue) ![Node.js](https://img.shields.io/badge/Node.js-18+-green) ![MongoDB](https://img.shields.io/badge/MongoDB-8.0+-brightgreen) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Express](https://img.shields.io/badge/Express-4.18+-red) ![OpenAI](https://img.shields.io/badge/OpenAI-6.7.0-purple) ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF)
 
 ---
 
@@ -25,6 +25,20 @@ A powerful full-stack application that converts YAML hierarchies into beautiful 
 - **Network Accessibility**: Server configured for mobile device access
 - **CORS Optimization**: Seamless cross-device development and sharing
 - **Error Handling**: Comprehensive error boundaries and user feedback
+
+### ✅ **Enhanced AI & Analysis Features**
+- **AI Visual Intelligence**: AI-powered tree structure analysis and insights
+- **Multi-Service Analysis**: YAML, visual, and performance analysis services
+- **Smart Recommendations**: AI suggestions for optimization and improvements
+- **Interactive Analysis Panel**: Real-time YAML structure evaluation with scoring
+- **Context-Aware Responses**: AI maintains conversation context for better assistance
+
+### ✅ **Advanced UI Components**
+- **Minimap Navigation**: Overview navigation for large diagrams (implemented)
+- **Enhanced Search**: Real-time search with smart highlighting
+- **Professional Editor**: Syntax highlighting with validation
+- **Tree Info Panel**: Comprehensive tree statistics and metrics
+- **Node Filter Controls**: Advanced filtering capabilities
 
 ---
 
@@ -55,7 +69,7 @@ A powerful full-stack application that converts YAML hierarchies into beautiful 
 - **Smart Highlighting**: Visual feedback with match counters
 - **Zoom Controls**: Precise zoom in/out/reset functionality
 - **Fullscreen Mode**: Immersive viewing for large diagrams
-- **Minimap**: Overview navigation *(planned)*
+- **Minimap**: Overview navigation for large diagrams
 
 ### 💾 **Data Management**
 - **User Accounts**: Secure registration and login
@@ -122,7 +136,7 @@ npm install
    ```
 
 4. **Access the Application**:
-   - Frontend: `http://localhost:5174` (or network IP for mobile)
+   - Frontend: `http://localhost:5173` (or network IP for mobile)
    - Backend API: `http://localhost:5000`
 
 ### 🤖 AI Assistant Setup (Optional)
@@ -179,29 +193,51 @@ children:
 
 ### Frontend (`/client`)
 ```
-React 19 + Vite
+React 19 + Vite 7
 ├── components/          # Reusable UI components
 │   ├── YamlEditor.jsx      # Professional code editor
 │   ├── DiagramViewer.jsx   # D3.js tree visualization
 │   ├── AiAssistant.jsx     # AI-powered helper
 │   ├── AuthModal.jsx       # Login/register forms
-│   └── SavedGraphsModal.jsx # File management
+│   ├── SavedGraphsModal.jsx # File management
+│   ├── SaveGraphModal.jsx  # Save dialog
+│   ├── Minimap.jsx         # Diagram overview navigation
+│   ├── AnalysisPanel.jsx   # YAML analysis panel
+│   ├── SearchPanel.jsx     # Search functionality
+│   ├── TreeInfoPanel.jsx   # Tree statistics
+│   ├── NodeFilterPanel.jsx # Node filtering
+│   ├── ReadmeViewer.jsx    # Documentation viewer
+│   ├── Header.jsx          # Application header
+│   └── Toast.jsx           # Notification system
 ├── pages/               # Route components
-│   ├── CombinedEditorPage.jsx # Main editing interface
+│   ├── EditorPage.jsx      # Basic editor interface
+│   ├── CombinedEditorPage.jsx # Split-panel editor (main)
+│   ├── DiagramPage.jsx     # Diagram-only view
 │   ├── SharedViewerPage.jsx   # Public sharing view
-│   └── DiagramPage.jsx        # Diagram-only view
+│   ├── SharedViewerWrapper.jsx # Shared content wrapper
+│   └── DocsPage.jsx        # Documentation page
+├── contexts/            # React contexts
+│   ├── AuthContext.jsx     # Authentication context
+│   └── ToastContext.jsx    # Toast notification context
+├── hooks/               # Custom React hooks
+│   ├── useAuth.js          # Authentication hook
+│   ├── useToast.js         # Toast notification hook
+│   └── useYamlFiles.js     # YAML file management hook
 ├── services/            # API communication
 │   ├── apiService.js       # Backend API calls
 │   ├── openaiService.js    # AI integration
-│   └── yamlAnalysisService.js # Analysis logic
-└── utils/               # Helper functions
-    ├── treeBuilder.js      # YAML → Tree conversion
-    └── yamlValidator.js    # Validation logic
+│   ├── yamlAnalysisService.js # Analysis logic
+│   └── visualAnalysisService.js # Tree analysis
+├── utils/               # Helper functions
+│   ├── treeBuilder.js      # YAML → Tree conversion
+│   └── yamlValidator.js    # Validation logic
+└── assets/              # Static assets
+    └── default.yaml        # Default YAML content
 ```
 
 ### Backend (`/server`)
 ```
-Node.js + Express + MongoDB
+Node.js + Express 4.18 + MongoDB 8.0
 ├── src/
 │   ├── controllers/     # Business logic (MVC pattern)
 │   │   ├── authController.js   # Authentication
@@ -227,6 +263,7 @@ Node.js + Express + MongoDB
 ### Authentication
 - `POST /api/auth/register` - Create new account
 - `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
 - `GET /api/auth/me` - Get current user
 
 ### YAML Files
@@ -242,6 +279,8 @@ Node.js + Express + MongoDB
 - `GET /api/user/profile` - User profile with stats
 - `PUT /api/user/profile` - Update profile
 - `PUT /api/user/password` - Change password
+- `DELETE /api/user/account` - Delete user account
+- `GET /api/user/dashboard` - Get user dashboard data
 
 ---
 
@@ -270,9 +309,12 @@ Node.js + Express + MongoDB
 | `💾 Save Graph` | Save with custom name |
 | `📚 My Graphs` | Manage saved files |
 | `🤖 AI Assistant` | Open AI helper |
+| `🔍 Analysis` | Toggle analysis panel |
+| `📖 Docs` | View documentation |
 | `🔍 Search` | Find nodes in diagram |
 | `⛶ Fullscreen` | Toggle fullscreen mode |
 | `⟲ Reset View` | Center and reset zoom |
+| `🔗 Combined View` | Switch to split-panel editor |
 
 ---
 
@@ -294,7 +336,7 @@ Node.js + Express + MongoDB
 
 ### 🎯 **Next Phase Features**
 - [ ] **Real-time Collaborative Editing**: WebSocket-based multi-user editing
-- [ ] **AI-Powered Generation**: Natural language to YAML conversion
+- [ ] **Enhanced AI Features**: Advanced natural language to YAML conversion
 - [ ] **Interactive Diagram Builder**: Drag-and-drop visual editor
 - [ ] **Version Control**: Git-like history with visual diffs
 - [ ] **Advanced Exports**: PowerPoint, Figma, Draw.io integration

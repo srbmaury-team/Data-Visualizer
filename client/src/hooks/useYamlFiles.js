@@ -189,6 +189,12 @@ export const useYamlFiles = () => {
     }
   }, []);
 
+  // Clear saved graphs (for logout)
+  const clearSavedGraphs = useCallback(() => {
+    setSavedGraphs([]);
+    setError(null);
+  }, []);
+
   return {
     savedGraphs,
     loading,
@@ -198,5 +204,6 @@ export const useYamlFiles = () => {
     updateGraph,
     deleteGraph,
     loadSharedGraph,
+    clearSavedGraphs,
   };
 };

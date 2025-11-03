@@ -41,7 +41,7 @@ const LoginForm = ({ onToggleMode, onClose }) => {
     <div className="auth-form">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div className="form-group auth-labels">
           <label htmlFor="email">Email</label>
           <input
             type="email"
@@ -53,7 +53,7 @@ const LoginForm = ({ onToggleMode, onClose }) => {
             disabled={isLoading}
           />
         </div>
-        <div className="form-group">
+        <div className="form-group auth-labels">
           <label htmlFor="password">Password</label>
           <input
             type="password"
@@ -126,7 +126,7 @@ const RegisterForm = ({ onToggleMode, onClose }) => {
     <div className="auth-form">
       <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div className="form-group auth-labels">
           <label htmlFor="username">Username</label>
           <input
             type="text"
@@ -142,7 +142,7 @@ const RegisterForm = ({ onToggleMode, onClose }) => {
             title="Username must be 3-30 characters and contain only letters, numbers, underscores, and hyphens"
           />
         </div>
-        <div className="form-group">
+        <div className="form-group auth-labels">
           <label htmlFor="email">Email</label>
           <input
             type="email"
@@ -154,7 +154,7 @@ const RegisterForm = ({ onToggleMode, onClose }) => {
             disabled={isLoading}
           />
         </div>
-        <div className="form-group">
+        <div className="form-group auth-labels">
           <label htmlFor="password">Password</label>
           <input
             type="password"
@@ -167,7 +167,7 @@ const RegisterForm = ({ onToggleMode, onClose }) => {
             minLength="6"
           />
         </div>
-        <div className="form-group">
+        <div className="form-group auth-labels">
           <label htmlFor="confirmPassword">Confirm Password</label>
           <input
             type="password"
