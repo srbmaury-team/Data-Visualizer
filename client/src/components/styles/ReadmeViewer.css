@@ -34,9 +34,50 @@
 
 .readme-loading,
 .readme-error {
-  padding: 24px;
+  padding: 48px 24px;
   text-align: center;
   color: #475569;
+  margin: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(10, 10, 10, 0.06);
+}
+
+.readme-error {
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+}
+
+.readme-error h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #dc2626;
+}
+
+.readme-error p {
+  margin: 8px 0;
+}
+
+.readme-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .docs-container {

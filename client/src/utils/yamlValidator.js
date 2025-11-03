@@ -2,10 +2,39 @@
  * YAML Validator Utility
  * Checks for common issues in YAML structure
  */
+import yaml from 'js-yaml';
 
 export function validateYAML(yamlText) {
   const issues = [];
   const warnings = [];
+  
+  // First, try to parse the YAML to catch syntax errors
+  try {
+    yaml.load(yamlText);
+  } catch (parseError) {
+    // YAML parsing failed - this is a critical error
+    const lineMatch = parseError.message.match(/at line (\d+)/);
+    const lineNumber = lineMatch ? parseInt(lineMatch[1]) : 1;
+    
+    issues.push({
+      line: lineNumber,
+      type: 'YAML Syntax Error',
+      message: parseError.message,
+      suggestion: 'Fix the YAML syntax error'
+    });
+    
+    // Return early if YAML can't be parsed
+    return {
+      valid: false,
+      issues,
+      warnings,
+      stats: {
+        totalLines: yamlText.split('\n').length,
+        nonEmptyLines: yamlText.split('\n').filter(l => l.trim().length > 0).length,
+        commentLines: yamlText.split('\n').filter(l => l.trim().startsWith('#')).length
+      }
+    };
+  }
   
   const lines = yamlText.split('\n');
   

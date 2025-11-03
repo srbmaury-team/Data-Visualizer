@@ -9,25 +9,48 @@ export default function ReadmeViewer() {
 
   useEffect(() => {
     let cancelled = false;
-    // Fetch README from repo root served by dev server
-    fetch("/README.md")
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.text();
-      })
-      .then((text) => {
-        if (!cancelled) setContent(text);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message);
-      });
+    
+    const loadReadme = async () => {
+      try {
+        // First try to fetch from public directory
+        const response = await fetch("/README.md");
+        if (response.ok) {
+          const text = await response.text();
+          // Check if we got HTML instead of markdown (Netlify redirect issue)
+          if (text.includes("<!doctype html>") || text.includes("<html")) {
+            throw new Error("Received HTML instead of README content");
+          }
+          if (!cancelled) setContent(text);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: Failed to load README`);
+      } catch (err) {
+        console.warn("Failed to fetch README:", err);
+        if (!cancelled) setError(`Unable to load documentation: ${err.message}`);
+      }
+    };
+
+    loadReadme();
+    
     return () => {
       cancelled = true;
     };
   }, []);
 
-  if (error) return <div className="readme-error">Failed to load README: {error}</div>;
-  if (content === null) return <div className="readme-loading">Loading README…</div>;
+  if (error) return (
+    <div className="readme-error">
+      <h3>📚 Documentation Loading Error</h3>
+      <p>{error}</p>
+      <p>Please ensure the README.md file is properly deployed and accessible.</p>
+    </div>
+  );
+  
+  if (content === null) return (
+    <div className="readme-loading">
+      <div className="loading-spinner"></div>
+      <p>Loading documentation...</p>
+    </div>
+  );
 
   return (
     <div className="readme-container">

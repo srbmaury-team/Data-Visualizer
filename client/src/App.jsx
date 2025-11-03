@@ -76,6 +76,7 @@ function AppContent() {
 
   const [parsedData, setParsedData] = useState(null);
   const [treeInfo, setTreeInfo] = useState(null);
+  const [treeData, setTreeData] = useState(null); // Store the raw tree data for export
   const [error, setError] = useState("");
   const [validation, setValidation] = useState(null);
   const [showSavedGraphs, setShowSavedGraphs] = useState(false);
@@ -122,13 +123,47 @@ function AppContent() {
     }
   }, [yamlText]);
 
+  // Real-time YAML validation as user types
+  useEffect(() => {
+    if (yamlText && yamlText.trim() !== '') {
+      try {
+        const validationResult = validateYAML(yamlText);
+        setValidation(validationResult);
+        
+        // Clear error if YAML becomes valid
+        if (validationResult.valid) {
+          setError(null);
+        }
+      } catch (err) {
+        // Handle validation errors
+        setValidation({
+          valid: false,
+          issues: [{
+            line: 1,
+            type: 'Validation Error',
+            message: err.message
+          }],
+          warnings: [],
+          stats: { nonEmptyLines: 0 }
+        });
+      }
+    } else {
+      // Clear validation when YAML is empty
+      setValidation(null);
+      setError(null);
+    }
+  }, [yamlText]);
+
   const handleVisualize = () => {
     try {
       const validationResult = validateYAML(yamlText);
       setValidation(validationResult);
 
       if (!validationResult.valid) {
-        setError(`Found ${validationResult.issues.length} issue(s) in YAML. Check validation panel below.`);
+        const issueCount = validationResult.issues.length;
+        const errorMessage = `Cannot visualize: Found ${issueCount} error${issueCount !== 1 ? 's' : ''} in YAML`;
+        setError(`${errorMessage}. Check validation panel below.`);
+        showError(`${errorMessage}. Please fix the issues first.`);
         return;
       }
 
@@ -149,11 +184,14 @@ function AppContent() {
 
       setParsedData(hierarchical);
       setTreeInfo(info);
+      setTreeData(tree); // Store the raw tree data for export sizing
       setError("");
       navigate("/diagram");
     } catch (e) {
       console.error("Parsing error:", e);
-      setError("Invalid YAML: " + e.message);
+      const errorMessage = "Invalid YAML: " + e.message;
+      setError(errorMessage);
+      showError(errorMessage);
       setValidation(null);
     }
   };
@@ -164,6 +202,7 @@ function AppContent() {
       setYamlText(DEFAULT_YAML);
       setParsedData(null);
       setTreeInfo(null);
+      setTreeData(null);
       setError("");
       setValidation(null);
     }
@@ -275,6 +314,7 @@ function AppContent() {
             <DiagramPage 
               parsedData={parsedData} 
               treeInfo={treeInfo}
+              treeData={treeData}
             />
           } 
         />

@@ -4,15 +4,16 @@ import DiagramViewer from "../components/DiagramViewer";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import yaml from "js-yaml";
 
-export default function DiagramPage({ parsedData: propParsedData, treeInfo: propTreeInfo }) {
+export default function DiagramPage({ parsedData: propParsedData, treeInfo: propTreeInfo, treeData: propTreeData }) {
   const navigate = useNavigate();
   const [parsedData, setParsedData] = useState(propParsedData);
   const [treeInfo, setTreeInfo] = useState(propTreeInfo);
+  const [treeData, setTreeData] = useState(propTreeData);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // If data is not provided via props, try to load from localStorage
-    if (!parsedData || !treeInfo) {
+    if (!parsedData || !treeInfo || !treeData) {
       setLoading(true);
       try {
         const saved = localStorage.getItem('yaml-diagram-data');
@@ -38,6 +39,7 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
 
             setParsedData(hierarchical);
             setTreeInfo(info);
+            setTreeData(tree); // Store the raw tree data
           }
         }
         // Don't redirect if no data - just show "No Data Available" state
@@ -48,7 +50,7 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
         setLoading(false);
       }
     }
-  }, [parsedData, treeInfo]); // Removed navigate dependency
+  }, [parsedData, treeInfo, treeData]); // Removed navigate dependency
 
   if (loading) {
     return (
@@ -101,7 +103,7 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
           </div>
         )}
       </div>
-      <DiagramViewer data={parsedData} treeInfo={treeInfo} />
+            <DiagramViewer data={parsedData} treeInfo={treeInfo} treeData={treeData} />
     </div>
   );
 }

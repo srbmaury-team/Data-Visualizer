@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperat
 import * as d3 from "d3";
 import TreeInfoPanel from "./TreeInfoPanel";
 import SearchPanel from "./SearchPanel";
+import { exportDiagramAsPNG } from "../utils/pngExport";
 import "./styles/DiagramViewer.css";
 
 const DiagramViewer = forwardRef(({ 
   data, 
   treeInfo, 
+  treeData,
   externalSearch = false,
   hideSearch = false,
   onSearchResults,
@@ -1140,6 +1142,30 @@ const DiagramViewer = forwardRef(({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // PNG Export handler
+  const handleExportPNG = useCallback(() => {
+    const svg = svgRef.current;
+    if (svg) {
+      exportDiagramAsPNG(svg, null, treeData);
+    } else {
+      alert('No diagram found to export. Please create a diagram first.');
+    }
+  }, [treeData]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Export: Ctrl+E or Cmd+E
+      if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
+        event.preventDefault();
+        handleExportPNG();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleExportPNG]);
+
   // Mobile header toggle handler with scroll detection
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   
@@ -1245,6 +1271,13 @@ const DiagramViewer = forwardRef(({
             title="Reset view (R)"
           >
             🏠
+          </button>
+          <button 
+            className="zoom-btn export-btn"
+            onClick={handleExportPNG}
+            title="Export as PNG (Ctrl+E)"
+          >
+            📷
           </button>
           <button 
             className="zoom-btn fullscreen-btn"

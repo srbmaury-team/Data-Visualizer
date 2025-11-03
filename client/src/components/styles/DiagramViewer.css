@@ -248,6 +248,17 @@
   border-color: transparent;
 }
 
+.export-btn {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.export-btn:hover {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border-color: transparent;
+}
+
 .fit-btn:hover,
 .actual-size-btn:hover {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);

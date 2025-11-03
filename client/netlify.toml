@@ -5,6 +5,33 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Serve static files directly without redirecting
+[[redirects]]
+  from = "/*.md"
+  to = "/:splat.md"
+  status = 200
+
+[[redirects]]
+  from = "/*.json"
+  to = "/:splat.json"
+  status = 200
+
+[[redirects]]
+  from = "/*.css"
+  to = "/:splat.css"
+  status = 200
+
+[[redirects]]
+  from = "/*.js"
+  to = "/:splat.js"
+  status = 200
+
+[[redirects]]
+  from = "/*.svg"
+  to = "/:splat.svg"
+  status = 200
+
+# Catch-all redirect for SPA routing (must be last)
 [[redirects]]
   from = "/*"
   to = "/index.html"

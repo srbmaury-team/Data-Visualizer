@@ -12,7 +12,7 @@
 }
 
 .auth-modal {
-  background: white;
+  background: white !important;
   border-radius: 8px;
   max-width: 400px;
   width: 90%;
@@ -30,7 +30,7 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: #666 !important;
   padding: 0;
   width: 30px;
   height: 30px;
@@ -52,7 +52,7 @@
 .auth-form h2 {
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  color: #333 !important;
   font-size: 24px;
 }
 
@@ -64,7 +64,7 @@
   display: block;
   margin-bottom: 5px;
   font-weight: 500;
-  color: white !important;
+  color: #333 !important;
 }
 
 .form-group input {
@@ -75,6 +75,8 @@
   font-size: 16px;
   transition: border-color 0.2s;
   box-sizing: border-box;
+  background-color: white !important;
+  color: #333 !important;
 }
 
 .form-group input:focus {
@@ -123,7 +125,7 @@
 .auth-toggle {
   text-align: center;
   margin-top: 20px;
-  color: #666;
+  color: #666 !important;
 }
 
 .link-button {
@@ -140,46 +142,46 @@
   color: #45a049;
 }
 
-/* Dark theme support */
+/* Dark theme support - only when explicitly preferred */
 @media (prefers-color-scheme: dark) {
   .auth-modal {
-    background: #2d2d2d;
-    color: #fff;
+    background: #2d2d2d !important;
+    color: #fff !important;
   }
 
   .auth-form h2 {
-    color: #fff;
+    color: #fff !important;
   }
 
   .form-group label {
-    color: #fff;
+    color: #fff !important;
   }
 
   .form-group input {
-    background-color: #3d3d3d;
-    border-color: #555;
-    color: #fff;
+    background-color: #3d3d3d !important;
+    border-color: #555 !important;
+    color: #fff !important;
   }
 
   .form-group input:focus {
-    border-color: #4CAF50;
+    border-color: #4CAF50 !important;
   }
 
   .auth-modal-close {
-    color: #ccc;
+    color: #ccc !important;
   }
 
   .auth-modal-close:hover {
-    background-color: #3d3d3d;
+    background-color: #3d3d3d !important;
   }
 
   .auth-error {
-    background-color: #4a2c2a;
-    color: #ffcdd2;
-    border-color: #6d4c41;
+    background-color: #4a2c2a !important;
+    color: #ffcdd2 !important;
+    border-color: #6d4c41 !important;
   }
 
   .auth-toggle {
-    color: #ccc;
+    color: #ccc !important;
   }
 }
