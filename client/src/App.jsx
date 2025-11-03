@@ -295,7 +295,20 @@ function AppContent() {
     }
     
     setYamlText(importData.yamlText);
-    showSuccess(`Repository imported successfully! Analysis: ${importData.analysis.totalFiles} files, ${importData.analysis.totalDirectories} directories`);
+    
+    // Enhanced success message with processing stats
+    let successMessage = `Repository imported successfully! Analysis: ${importData.analysis.totalFiles} files, ${importData.analysis.totalDirectories} directories`;
+    
+    if (importData.processingStats) {
+      const stats = importData.processingStats;
+      if (stats.truncated) {
+        successMessage += ` (Large repository - showing ${stats.totalNodes} representative nodes)`;
+      } else {
+        successMessage += ` (${stats.totalNodes} nodes processed)`;
+      }
+    }
+    
+    showSuccess(successMessage);
     
     // Process the YAML for visualization without navigating
     try {

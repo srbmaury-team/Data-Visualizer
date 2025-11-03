@@ -23,20 +23,31 @@ export default function RepositoryImporter({ onImport, onClose }) {
       const { owner, repo } = githubService.parseGitHubURL(url.trim());
       setProgress(`Analyzing ${owner}/${repo}...`);
 
-      // Process the repository
+      // Process the repository with progress updates
       const result = await githubService.processRepository(url.trim());
 
       if (result.success) {
         setProgress("Converting to YAML format...");
         
+        // Show processing stats if available
+        if (result.analysis.processingStats) {
+          const stats = result.analysis.processingStats;
+          console.log(`Repository processed: ${stats.totalNodes} nodes, ${stats.totalApiCalls} API calls, ${stats.processingTime}ms`);
+          
+          if (stats.truncated) {
+            setProgress("Large repository detected - showing representative structure...");
+          }
+        }
+        
         // Convert to YAML string
         const yamlString = convertToYamlString(result.yaml);
         
-        // Pass results to parent
+        // Pass results to parent with enhanced info
         onImport({
           yamlText: yamlString,
           analysis: result.analysis,
-          repoInfo: result.repoInfo
+          repoInfo: result.repoInfo,
+          processingStats: result.analysis.processingStats
         });
 
         // Close modal

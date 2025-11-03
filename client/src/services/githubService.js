@@ -72,11 +72,31 @@ class GitHubService {
   }
 
   /**
-   * Fetch repository tree structure recursively
+   * Fetch repository tree structure recursively with enhanced large repo protection
    */
-  async getRepositoryTree(owner, repo, path = '', maxDepth = 4, currentDepth = 0) {
+  async getRepositoryTree(owner, repo, path = '', maxDepth = 4, currentDepth = 0, options = {}) {
+    const {
+      maxTotalNodes = 500,        // Maximum total nodes to prevent memory issues
+      maxApiCalls = 50,           // Maximum API calls to prevent rate limiting
+      timeoutMs = 30000,          // 30 second timeout
+      currentStats = { nodes: 0, apiCalls: 0, startTime: Date.now() }
+    } = options;
+
+    // Safety checks for large repositories
     if (currentDepth >= maxDepth) {
-      return { type: 'directory', name: '...', truncated: true };
+      return { type: 'directory', name: '...', truncated: true, reason: 'max_depth' };
+    }
+
+    if (currentStats.nodes >= maxTotalNodes) {
+      return { type: 'directory', name: '...', truncated: true, reason: 'max_nodes' };
+    }
+
+    if (currentStats.apiCalls >= maxApiCalls) {
+      return { type: 'directory', name: '...', truncated: true, reason: 'max_api_calls' };
+    }
+
+    if (Date.now() - currentStats.startTime > timeoutMs) {
+      return { type: 'directory', name: '...', truncated: true, reason: 'timeout' };
     }
 
     const cacheKey = `tree-${owner}-${repo}-${path}`;
@@ -86,7 +106,10 @@ class GitHubService {
 
     try {
       const url = `${this.baseURL}/repos/${owner}/${repo}/contents/${path}`;
-      console.log(`Fetching: ${url} (depth: ${currentDepth})`);
+      console.log(`Fetching: ${url} (depth: ${currentDepth}, nodes: ${currentStats.nodes}, calls: ${currentStats.apiCalls})`);
+      
+      // Increment API call counter
+      currentStats.apiCalls++;
       
       const response = await fetch(url, {
         headers: {
@@ -111,15 +134,32 @@ class GitHubService {
       
       // Handle single file
       if (!Array.isArray(contents)) {
+        currentStats.nodes++;
         return this.processFile(contents);
+      }
+
+      // Early detection of very large directories
+      if (contents.length > 100) {
+        console.warn(`Large directory detected: ${path || 'root'} has ${contents.length} items`);
+        
+        // For very large directories, be more aggressive with filtering
+        const filteredContents = this.filterLargeDirectory(contents, currentDepth);
+        
+        if (filteredContents.length < contents.length) {
+          console.log(`Filtered large directory from ${contents.length} to ${filteredContents.length} items`);
+        }
+        
+        // Use filtered contents
+        contents.splice(0, contents.length, ...filteredContents);
       }
 
       // Process directory contents
       const tree = {
         type: 'directory',
         name: path || repo,
-        size: 0,
-        children: []
+        size: contents.length,
+        children: [],
+        ...(contents.length > 50 && { isLarge: true })
       };
 
       // Sort: directories first, then files
@@ -130,49 +170,79 @@ class GitHubService {
         return a.name.localeCompare(b.name);
       });
 
-      // Dynamic limit based on depth and repository size
-      const getItemLimit = (depth, totalItems) => {
-        if (depth === 0) return Math.min(totalItems, 25); // Root level: up to 25 items
-        if (depth === 1) return Math.min(totalItems, 20); // First level: up to 20 items  
-        if (depth === 2) return Math.min(totalItems, 15); // Second level: up to 15 items
-        return Math.min(totalItems, 10); // Deeper levels: up to 10 items
+      // Dynamic limit based on depth, repository size, and current stats
+      const getItemLimit = (depth, totalItems, stats) => {
+        // More aggressive limits as we process more nodes
+        const progressiveFactor = Math.max(0.5, 1 - (stats.nodes / maxTotalNodes));
+        
+        let baseLimit;
+        if (depth === 0) baseLimit = 25;
+        else if (depth === 1) baseLimit = 20;
+        else if (depth === 2) baseLimit = 15;
+        else baseLimit = 10;
+        
+        // Apply progressive factor and ensure minimum of 5 items
+        const adjustedLimit = Math.max(5, Math.floor(baseLimit * progressiveFactor));
+        return Math.min(totalItems, adjustedLimit);
       };
 
-      const itemsToProcess = sorted.slice(0, getItemLimit(currentDepth, sorted.length));
+      const itemsToProcess = sorted.slice(0, getItemLimit(currentDepth, sorted.length, currentStats));
       
+      // Show truncation info if we're limiting items
+      if (itemsToProcess.length < sorted.length) {
+        tree.truncated = true;
+        tree.truncatedCount = sorted.length - itemsToProcess.length;
+      }
+
       for (const item of itemsToProcess) {
+        // Safety check on each iteration
+        if (currentStats.nodes >= maxTotalNodes || currentStats.apiCalls >= maxApiCalls) {
+          break;
+        }
+
         if (item.type === 'dir') {
-          // Skip common build/dependency directories at deeper levels to save API calls
-          const skipDirs = ['node_modules', '.git', 'dist', 'build', '__pycache__', '.next', '.nuxt', 'vendor'];
-          if (currentDepth >= 2 && skipDirs.includes(item.name.toLowerCase())) {
+          // Enhanced directory skipping for large repos
+          const skipDirs = [
+            'node_modules', '.git', 'dist', 'build', '__pycache__', '.next', '.nuxt', 'vendor',
+            '.vscode', '.idea', 'logs', 'tmp', 'temp', 'cache', '.cache', 'coverage',
+            'test_data', 'tests/__snapshots__', 'e2e', 'cypress/videos', 'cypress/screenshots'
+          ];
+          
+          if (this.shouldSkipDirectory(item.name, currentDepth, skipDirs)) {
             tree.children.push({
               type: 'directory',
               name: item.name,
               size: '(skipped)',
+              skipped: true,
               children: []
             });
             continue;
           }
 
-          // Recursively fetch subdirectories
+          // Recursively fetch subdirectories with shared stats
           const subTree = await this.getRepositoryTree(
             owner, 
             repo, 
             item.path, 
             maxDepth, 
-            currentDepth + 1
+            currentDepth + 1,
+            { maxTotalNodes, maxApiCalls, timeoutMs, currentStats }
           );
           tree.children.push(subTree);
+          currentStats.nodes++;
         } else {
           tree.children.push(this.processFile(item));
+          currentStats.nodes++;
         }
         
-        // Progressive delay based on depth to manage rate limits
-        const delay = currentDepth === 0 ? 30 : currentDepth === 1 ? 50 : 80;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        // Progressive delay based on depth and load
+        const delay = this.calculateDelay(currentDepth, currentStats);
+        if (delay > 0) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
 
-      console.log(`Processed tree for ${path || 'root'}: ${tree.children.length} children`);
+      console.log(`Processed tree for ${path || 'root'}: ${tree.children.length} children (total nodes: ${currentStats.nodes})`);
       this.cache.set(cacheKey, tree);
       return tree;
 
@@ -182,9 +252,114 @@ class GitHubService {
         type: 'directory',
         name: path || repo,
         error: error.message,
+        failed: true,
         children: []
       };
     }
+  }
+
+  /**
+   * Filter large directories to focus on important content
+   */
+  filterLargeDirectory(contents, depth) {
+    // Prioritize important files and directories
+    const priorityPatterns = [
+      // Important files
+      /^(readme|license|changelog|contributing|package\.json|tsconfig|webpack|vite|next|nuxt)(\.|$)/i,
+      // Source directories
+      /^(src|lib|app|pages|components|utils|hooks|api|server|client)$/i,
+      // Config directories
+      /^(config|configs|public|static|assets)$/i,
+      // Documentation
+      /^(docs|documentation)$/i
+    ];
+
+    const lowPriorityPatterns = [
+      // Test files (keep some but not all)
+      /^(test|tests|spec|__tests__|__mocks__|cypress|jest)$/i,
+      // Build outputs (skip most)
+      /^(dist|build|out|target|bin)$/i,
+      // Logs and temp
+      /^(logs|tmp|temp|cache|\.cache)$/i
+    ];
+
+    const highPriority = [];
+    const normalPriority = [];
+    const lowPriority = [];
+
+    contents.forEach(item => {
+      const name = item.name.toLowerCase();
+      
+      if (priorityPatterns.some(pattern => pattern.test(name))) {
+        highPriority.push(item);
+      } else if (lowPriorityPatterns.some(pattern => pattern.test(name))) {
+        lowPriority.push(item);
+      } else {
+        normalPriority.push(item);
+      }
+    });
+
+    // Return a balanced selection based on depth
+    const maxItems = depth === 0 ? 30 : depth === 1 ? 25 : 20;
+    
+    return [
+      ...highPriority,
+      ...normalPriority.slice(0, Math.max(0, maxItems - highPriority.length - 3)),
+      ...lowPriority.slice(0, 3) // Keep just a few low priority items
+    ].slice(0, maxItems);
+  }
+
+  /**
+   * Enhanced directory skipping logic
+   */
+  shouldSkipDirectory(dirName, depth, skipDirs) {
+    const name = dirName.toLowerCase();
+    
+    // Always skip certain directories
+    if (skipDirs.includes(name)) {
+      return true;
+    }
+    
+    // Skip at any depth for these patterns
+    const alwaysSkipPatterns = [
+      /^\.git$/,
+      /^node_modules$/,
+      /^\.vscode$/,
+      /^\.idea$/
+    ];
+    
+    if (alwaysSkipPatterns.some(pattern => pattern.test(name))) {
+      return true;
+    }
+    
+    // Skip at deeper levels for these patterns
+    if (depth >= 2) {
+      const deepSkipPatterns = [
+        /^(dist|build|out|target)$/,
+        /^(logs|log|tmp|temp)$/,
+        /^(cache|\.cache|\.next|\.nuxt)$/,
+        /^(coverage|\.nyc_output)$/,
+        /^__pycache__$/,
+        /^\.(pytest_cache|tox|coverage)$/
+      ];
+      
+      return deepSkipPatterns.some(pattern => pattern.test(name));
+    }
+    
+    return false;
+  }
+
+  /**
+   * Calculate progressive delay based on current load
+   */
+  calculateDelay(depth, stats) {
+    const baseDelay = depth === 0 ? 30 : depth === 1 ? 50 : 80;
+    
+    // Increase delay as we approach limits
+    const loadFactor = stats.nodes / 500; // Assuming maxTotalNodes = 500
+    const progressiveDelay = baseDelay * (1 + loadFactor);
+    
+    return Math.min(progressiveDelay, 200); // Cap at 200ms
   }
 
   /**
@@ -483,24 +658,69 @@ class GitHubService {
   }
 
   /**
-   * Main method to process GitHub repository
+   * Main method to process GitHub repository with enhanced large repo protection
    */
-  async processRepository(url) {
+  async processRepository(url, options = {}) {
     try {
       // Parse URL
       const { owner, repo } = this.parseGitHubURL(url);
       
-      // Get repository info
+      // Get repository info first to check size
       const repoInfo = await this.getRepositoryInfo(owner, repo);
       
-      // Get repository tree
-      const tree = await this.getRepositoryTree(owner, repo);
+      // Adjust limits based on repository size
+      const repoSizeKB = repoInfo.size || 0;
+      let enhancedOptions = {
+        maxTotalNodes: 500,
+        maxApiCalls: 50,
+        timeoutMs: 30000,
+        ...options
+      };
+
+      // For very large repositories, be more conservative
+      if (repoSizeKB > 50000) { // > 50MB
+        console.warn(`Large repository detected (${repoSizeKB}KB). Using conservative limits.`);
+        enhancedOptions = {
+          ...enhancedOptions,
+          maxTotalNodes: 300,
+          maxApiCalls: 30,
+          maxDepth: 3
+        };
+      } else if (repoSizeKB > 20000) { // > 20MB
+        enhancedOptions = {
+          ...enhancedOptions,
+          maxTotalNodes: 400,
+          maxApiCalls: 40
+        };
+      }
+
+      console.log(`Processing repository with limits:`, enhancedOptions);
+      
+      // Get repository tree with enhanced protection
+      const tree = await this.getRepositoryTree(
+        owner, 
+        repo, 
+        '', 
+        enhancedOptions.maxDepth || 4, 
+        0, 
+        enhancedOptions
+      );
       
       // Convert to YAML
       const yamlStructure = this.convertToYAML(tree, repoInfo);
       
       // Analyze structure
       const analysis = this.analyzeRepository(tree, repoInfo);
+      
+      // Add protection info to analysis
+      if (enhancedOptions.currentStats) {
+        analysis.processingStats = {
+          totalNodes: enhancedOptions.currentStats.nodes,
+          totalApiCalls: enhancedOptions.currentStats.apiCalls,
+          processingTime: Date.now() - enhancedOptions.currentStats.startTime,
+          truncated: tree.truncated || false
+        };
+      }
       
       return {
         yaml: yamlStructure,

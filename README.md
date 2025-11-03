@@ -13,6 +13,7 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 - **Smart Tree Building**: Automatically converts repository directories and files into hierarchical YAML
 - **Rate Limit Handling**: Intelligent API management to avoid GitHub rate limits
 - **Progressive Loading**: Loads repository structure with optimized depth to balance detail and performance
+- **Node Limit Protection**: Auto-limited to 500 nodes to ensure smooth performance and prevent memory issues
 - **Proper YAML Formatting**: Generates clean YAML with hyphens, proper extensions, and directory structure
 - **Error Handling**: Comprehensive error messages for private repos, rate limits, and invalid URLs
 - **Seamless Integration**: Import button available in Header, Editor, and Combined Editor pages
@@ -41,8 +42,8 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 - **Dashboard Analytics**: Personal statistics and recent activity
 - **Clickable Username**: Navigate to profile by clicking username in header
 
-### ✅ **Enhanced Authentication & Dark UI**
-- **Dark Theme Auth Modals**: Professional dark-themed login/signup forms
+### ✅ **Enhanced Authentication & UI**
+- **Professional Auth Modals**: Clean, responsive login/signup forms with modern styling
 - **Smart Error Handling**: Context-aware error messages and session management
 - **Graceful Logout Flow**: Proper success messaging and home page redirect
 - **Real-time Updates**: Profile changes instantly reflect across the app
@@ -244,6 +245,14 @@ children:
 - `https://github.com/owner/repo/tree/branch`
 - `github.com/owner/repo`
 
+**Safety Features:**
+- **Node Limit Protection**: Automatically limited to 500 nodes to prevent memory issues
+- **API Rate Limiting**: Intelligent delay system to avoid GitHub API limits
+- **Timeout Protection**: 30-second timeout to prevent hanging requests
+- **Smart Filtering**: Automatically skips common directories like `node_modules`, `.git`, `build`, `dist`
+- **Progress Tracking**: Real-time feedback showing nodes processed and API calls made
+- **Graceful Degradation**: Shows partial results if limits are reached
+
 ### Manual YAML Format
 - `name`: Required node identifier
 - `children` or `nodes`: Array of child nodes
@@ -407,25 +416,25 @@ Node.js + Express 4.18 + MongoDB 8.0
 
 ## 🚧 Roadmap
 
-> **Current Status**: The application is **stable and production-ready** with all core features implemented. Recent updates have improved auth modal styling and export functionality. The roadmap below outlines planned enhancements and new capabilities.
+> **Current Status**: The application is **stable and production-ready** with all core features implemented. Recent updates have enhanced the GitHub repository import feature with large repository protection and safety mechanisms. The roadmap below outlines planned enhancements and new capabilities.
 
 ### 🎯 **Next Phase Features**
 - [ ] **SVG Export**: Vector format export for scalability and editing
 - [ ] **PDF Export**: Professional documentation-ready exports
-- [ ] **Diagram Themes**: Multiple color themes (dark mode, minimal, corporate)
 - [ ] **Node Customization**: User-customizable colors, shapes, and sizes
 - [ ] **Template Library**: Pre-built YAML templates for common use cases
 - [ ] **Real-time Collaborative Editing**: WebSocket-based multi-user editing
 - [ ] **Mobile Responsiveness**: Enhanced touch controls and mobile layout
 
 ### 🔮 **Future Vision**
-- [ ] **Performance Optimizations**: Advanced rendering for 1000+ node diagrams
+- [ ] **Performance Optimizations**: Advanced rendering for 500+ node diagrams
 - [ ] **Interactive Diagram Builder**: Drag-and-drop visual editor
 - [ ] **Version Control**: Git-like history with visual diffs
 - [ ] **Advanced Exports**: PowerPoint, Figma, Draw.io integration
 - [ ] **Enhanced AI Features**: Advanced natural language to YAML conversion
 - [ ] **Smart Data Import**: HR systems, Jira, database schema sync
 - [ ] **Advanced Visualization**: 3D diagrams, animations, custom themes
+- [ ] **Diagram Themes**: Multiple color themes (dark mode, minimal, corporate)
 - [ ] **Team Workspaces**: Role-based permissions and workflows
 - [ ] **Plugin System**: Extensible architecture for custom features
 - [ ] **Mobile Apps**: Native iOS/Android applications
@@ -528,22 +537,23 @@ cd server && npm test
 
 ### Recommended Limits
 - **YAML Files**: < 1MB for optimal performance
-- **Node Count**: < 1000 nodes for smooth interaction
+- **Node Count**: < 500 nodes for optimal interaction (GitHub imports auto-limited to 500 nodes)
 - **Browser Storage**: ~5-10MB localStorage limit
 
 ---
 
 ## 🐛 Known Issues & Limitations
 
-- **Large YAML files** (>1000 nodes): May experience performance degradation during rendering
+- **Large YAML files** (>500 nodes): May experience performance degradation during rendering
 - **Search functionality**: Only searches visible (expanded) nodes in the diagram
 - **OpenAI API**: Requires active internet connection and valid API key for AI features
 - **Browser storage**: localStorage size limits vary by browser (~5-10MB typical limit)
 - **Mobile interactions**: Some advanced features work better on desktop/tablet devices
+- **GitHub imports**: Auto-limited to 500 nodes to ensure smooth performance and prevent memory issues
 
 > 💡 **Tip**: For large hierarchies, consider using the collapse/expand features to improve performance and navigation.
 
-> 🛠️ **Recent Fixes**: Auth modal styling issues have been resolved in the latest version.
+> 🛠️ **Recent Updates**: Enhanced GitHub repository import with large repository protection and 500-node safety limits.
 
 ---
 
