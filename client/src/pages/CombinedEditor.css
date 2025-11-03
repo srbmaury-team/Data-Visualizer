@@ -148,7 +148,7 @@
   border-radius: 0.25rem;
 }
 
-.save-btn, .saved-btn {
+.save-btn, .saved-btn, .repo-import-btn {
   padding: 0.5rem 1rem;
   border: 1px solid;
   border-radius: 0.375rem;
@@ -156,6 +156,17 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.repo-import-btn {
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
+}
+
+.repo-import-btn:hover {
+  background: #d97706;
+  border-color: #d97706;
 }
 
 .save-btn {

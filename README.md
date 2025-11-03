@@ -8,6 +8,15 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 
 ## 🌟 **Recently Added Features**
 
+### ✅ **GitHub Repository Import** (NEW!)
+- **One-Click Repository Import**: Import any public GitHub repository structure as YAML
+- **Smart Tree Building**: Automatically converts repository directories and files into hierarchical YAML
+- **Rate Limit Handling**: Intelligent API management to avoid GitHub rate limits
+- **Progressive Loading**: Loads repository structure with optimized depth to balance detail and performance
+- **Proper YAML Formatting**: Generates clean YAML with hyphens, proper extensions, and directory structure
+- **Error Handling**: Comprehensive error messages for private repos, rate limits, and invalid URLs
+- **Seamless Integration**: Import button available in Header, Editor, and Combined Editor pages
+
 ### ✅ **User Profile Management System** (NEW!)
 ### ✅ **Advanced Export System** (NEW!)
 - **High-Quality PNG Export**: Professional diagram exports with intelligent sizing
@@ -102,6 +111,7 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 - **Share Links**: Generate public URLs for sharing
 - **Export Options**: High-quality PNG export with professional styling
 - **Real-time Validation**: Live YAML syntax checking with error notifications
+- **GitHub Import**: One-click import of any public GitHub repository structure as YAML
 
 ### 🤖 **AI-Powered Assistant**
 - **OpenAI Integration**: Generate YAML from natural language
@@ -177,7 +187,7 @@ npm install
 ### Basic Workflow
 
 1. **Register/Login** to save your work and access profile features
-2. **Write YAML** in the left editor panel
+2. **Write YAML** in the left editor panel OR **Import from GitHub** using any public repository URL
 3. **View Diagram** updates in real-time on the right
 4. **Save & Share** your diagrams with custom names
 5. **Manage Profile** by clicking your username in the header
@@ -187,28 +197,54 @@ npm install
 ### YAML Format
 
 ```yaml
-name: RootNode
-version: 1.0.0
-environment: production
+name: My-React-App
+language: JavaScript
 children:
-  - name: Frontend
-    framework: React
+  - name: public
+    type: directory
     children:
-      - name: Components
-        count: 25
-      - name: Pages
-        count: 8
-  - name: Backend
-    framework: Node.js
-    database: MongoDB
+      - name: index.html
+        type: file
+      - name: favicon.ico
+        type: file
+  - name: src
+    type: directory
     children:
-      - name: API Routes
-        count: 12
-      - name: Controllers
-        count: 8
+      - name: components
+        type: directory
+        children:
+          - name: Header.jsx
+            type: file
+          - name: App.jsx
+            type: file
+      - name: styles
+        type: directory
+        children:
+          - name: App.css
+            type: file
+      - name: index.js
+        type: file
+  - name: package.json
+    type: file
+  - name: README.md
+    type: file
 ```
 
-**Key Structure:**
+### GitHub Repository Import
+
+**Import any public GitHub repository structure:**
+
+1. Click **"📁 Import from GitHub"** button (available in Header, Editor, and Combined Editor)
+2. Enter the GitHub repository URL (e.g., `https://github.com/facebook/react`)
+3. Click **"Import Repository"** to fetch and convert the structure
+4. The repository structure will be automatically converted to YAML format and loaded into the editor
+
+**Supported URL formats:**
+- `https://github.com/owner/repo`
+- `https://github.com/owner/repo/tree/branch`
+- `github.com/owner/repo`
+
+### Manual YAML Format
 - `name`: Required node identifier
 - `children` or `nodes`: Array of child nodes
 - Custom properties: Displayed in node boxes
@@ -224,6 +260,7 @@ React 19 + Vite 7
 ├── components/          # Reusable UI components
 │   ├── YamlEditor.jsx      # Professional code editor
 │   ├── DiagramViewer.jsx   # D3.js tree visualization
+│   ├── RepositoryImporter.jsx # GitHub repository import (NEW!)
 │   ├── AiAssistant.jsx     # AI-powered helper
 │   ├── AuthModal.jsx       # Login/register forms
 │   ├── SavedGraphsModal.jsx # File management
@@ -254,6 +291,7 @@ React 19 + Vite 7
 ├── services/            # API communication
 │   ├── apiService.js       # Backend API calls
 │   ├── openaiService.js    # AI integration
+│   ├── githubService.js    # GitHub API integration (NEW!)
 │   ├── yamlAnalysisService.js # Analysis logic
 │   └── visualAnalysisService.js # Tree analysis
 ├── utils/               # Helper functions
@@ -342,7 +380,8 @@ Node.js + Express 4.18 + MongoDB 8.0
 | `🤖 AI Assistant` | Open AI helper |
 | `🔍 Analysis` | Toggle analysis panel |
 | `📖 Docs` | View documentation |
-| `🔍 Search` | Find nodes in diagram |
+| `� Import GitHub` | **Import any public GitHub repository structure as YAML** |
+| `�🔍 Search` | Find nodes in diagram |
 | `⛶ Fullscreen` | Toggle fullscreen mode |
 | `⟲ Reset View` | Center and reset zoom |
 | `📷 Export PNG` | **Download high-quality diagram as PNG image** |
@@ -356,7 +395,8 @@ Node.js + Express 4.18 + MongoDB 8.0
 - **🏢 System Architecture**: Visualize microservices and dependencies
 - **📋 Configuration Docs**: Map complex config file structures
 - **🗂️ Data Hierarchies**: Explore nested data relationships
-- **🔌 API Documentation**: Show endpoint relationships and structure
+- **� Code Repository Structure**: Import and visualize GitHub repository hierarchies
+- **�🔌 API Documentation**: Show endpoint relationships and structure
 - **🧩 Component Trees**: Display UI component hierarchies
 - **🚀 CI/CD Pipelines**: Map deployment and build processes
 - **🗄️ Database Schemas**: Visualize table relationships

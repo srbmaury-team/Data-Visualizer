@@ -76,7 +76,8 @@ body {
   .ai-btn,
   .visualize-btn,
   .analysis-btn,
-  .combined-editor-btn {
+  .combined-editor-btn,
+  .repo-import-btn {
     padding: 6px 22px;
     font-size: 0.87em;
   }
@@ -164,7 +165,8 @@ body {
 .ai-btn,
 .visualize-btn,
 .analysis-btn,
-.combined-editor-btn {
+.combined-editor-btn,
+.repo-import-btn {
   padding: 6px 20px;
   font-size: 0.85em;
   font-weight: 600;
@@ -255,6 +257,19 @@ body {
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
+.repo-import-btn {
+  background: white;
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.repo-import-btn:hover {
+  background: #f59e0b;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
 /* Editor Layout */
 .editor-layout {
   display: flex;
@@ -324,7 +339,8 @@ body {
   .ai-btn,
   .visualize-btn,
   .analysis-btn,
-  .combined-editor-btn {
+  .combined-editor-btn,
+  .repo-import-btn {
     padding: 4px 16px;
     font-size: 0.8em;
     white-space: nowrap;

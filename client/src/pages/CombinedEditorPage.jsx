@@ -19,6 +19,7 @@ export default function CombinedEditorPage({
   isAuthenticated,
   user,
   onShowAuth,
+  onShowRepositoryImporter,
   onLogout,
 }) {
   const navigate = useNavigate();
@@ -162,6 +163,13 @@ export default function CombinedEditorPage({
         
         <div className="header-actions">
           <div className="right-controls">
+            <button 
+              className="repo-import-btn" 
+              onClick={onShowRepositoryImporter}
+              title="Import GitHub Repository"
+            >
+              📂 Import Repo
+            </button>
             <button className="save-btn" onClick={handleSaveGraph} disabled={!parsedData}>
               💾 Save
             </button>

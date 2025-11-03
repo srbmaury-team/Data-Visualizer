@@ -18,6 +18,7 @@ export default function EditorPage({
   isAuthenticated,
   user,
   onShowAuth,
+  onShowRepositoryImporter,
   onLogout,
 }) {
   const navigate = useNavigate();
@@ -98,6 +99,13 @@ export default function EditorPage({
           <h1>🧩 YAML Diagram Visualizer</h1>
           <p>Convert YAML hierarchy into interactive tree diagrams</p>
           <div className="header-actions">
+            <button 
+              className="repo-import-btn" 
+              onClick={onShowRepositoryImporter}
+              title="Import GitHub Repository"
+            >
+              📂 Import Repo
+            </button>
             <button className="combined-editor-btn" onClick={() => navigate("/combined")} title="Combined Editor & Visualizer">
               🔗 Combined View
             </button>

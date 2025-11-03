@@ -15,6 +15,7 @@ import ProfilePage from "./pages/ProfilePage";
 import SavedGraphsModal from "./components/SavedGraphsModal";
 import SaveGraphModal from "./components/SaveGraphModal";
 import AuthModal from "./components/AuthModal";
+import RepositoryImporter from "./components/RepositoryImporter";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "./utils/treeBuilder";
 import { validateYAML } from "./utils/yamlValidator";
@@ -82,6 +83,7 @@ function AppContent() {
   const [showSavedGraphs, setShowSavedGraphs] = useState(false);
   const [showSaveGraphModal, setShowSaveGraphModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showRepositoryImporter, setShowRepositoryImporter] = useState(false);
 
   // Load saved graphs when user authenticates, clear when they logout
   useEffect(() => {
@@ -285,6 +287,48 @@ function AppContent() {
     }
   };
 
+  const handleRepositoryImport = (importData) => {
+    if (yamlText !== DEFAULT_YAML && yamlText.trim() !== "") {
+      if (!window.confirm("Importing a repository will replace your current YAML. Continue?")) {
+        return;
+      }
+    }
+    
+    setYamlText(importData.yamlText);
+    showSuccess(`Repository imported successfully! Analysis: ${importData.analysis.totalFiles} files, ${importData.analysis.totalDirectories} directories`);
+    
+    // Process the YAML for visualization without navigating
+    try {
+      const validationResult = validateYAML(importData.yamlText);
+      setValidation(validationResult);
+
+      if (validationResult.valid) {
+        const data = yaml.load(importData.yamlText);
+        const tree = buildTreeFromYAML(data);
+        const hierarchical = convertToD3Hierarchy(tree);
+
+        const info = {
+          totalNodes: tree.nodes.length,
+          totalEdges: tree.edges.length,
+          maxDepth: Math.max(...tree.nodes.map(n => n.level)),
+          nodesPerLevel: Array.from(tree.levels.entries()).map(([level, nodes]) => ({
+            level,
+            count: nodes.length,
+            nodes: nodes.map(n => n.name),
+          })),
+        };
+
+        setParsedData(hierarchical);
+        setTreeInfo(info);
+        setTreeData(tree);
+        setError("");
+      }
+    } catch (e) {
+      console.error("Parsing error after import:", e);
+      setError("Imported YAML has parsing issues: " + e.message);
+    }
+  };
+
   return (
     <div className="app">
       <Routes>
@@ -304,6 +348,7 @@ function AppContent() {
               isAuthenticated={isAuthenticated}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
+              onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
               onLogout={logout}
             />
           } 
@@ -334,6 +379,7 @@ function AppContent() {
               isAuthenticated={isAuthenticated}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
+              onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
               onLogout={logout}
             />
           } 
@@ -365,6 +411,13 @@ function AppContent() {
         onSave={handleSaveGraphFromModal}
         existingGraphs={savedGraphs}
       />
+
+      {showRepositoryImporter && (
+        <RepositoryImporter
+          onImport={handleRepositoryImport}
+          onClose={() => setShowRepositoryImporter(false)}
+        />
+      )}
     </div>
   );
 }

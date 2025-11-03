@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './styles/Header.css';
 
-const Header = ({ onShowAuth, onShowSavedGraphs }) => {
+const Header = ({ onShowAuth, onShowSavedGraphs, onShowRepositoryImporter }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
 
@@ -25,6 +25,13 @@ const Header = ({ onShowAuth, onShowSavedGraphs }) => {
         <h1>🔄 YAML Visualizer</h1>
       </div>
       <div className="header-right">
+        <button 
+          className="header-btn repo-import-btn" 
+          onClick={onShowRepositoryImporter}
+          title="Import GitHub Repository"
+        >
+          📂 Import Repo
+        </button>
         {isAuthenticated ? (
           <div className="user-menu">
             <button 

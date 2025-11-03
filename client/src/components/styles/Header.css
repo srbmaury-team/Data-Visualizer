@@ -104,6 +104,21 @@
   border-color: #1976D2;
 }
 
+.repo-import-btn {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+  border: 2px solid #FF9800;
+}
+
+.repo-import-btn:hover {
+  background: linear-gradient(45deg, #F57C00, #E65100);
+  border-color: #F57C00;
+}
+
+.saved-graphs-btn:hover {
+  background: linear-gradient(45deg, #1976D2, #1565C0);
+  border-color: #1976D2;
+}
+
 .logout-btn {
   background: linear-gradient(45deg, #f44336, #d32f2f);
   border: 2px solid #f44336;
