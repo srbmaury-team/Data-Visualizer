@@ -146,6 +146,28 @@ export default function ProfilePage() {
     }
   };
 
+  const handleLoadFile = async (file) => {
+    try {
+      // Fetch the full file content
+      const fileData = await apiService.getYamlFile(file._id);
+      
+      // Navigate to the editor with the file content and ID
+      // We'll pass the content via state so it can be loaded into the editor
+      navigate('/', { 
+        state: { 
+          yamlContent: fileData.content,
+          fileName: fileData.title,
+          fileId: file._id,
+          loadFile: true
+        }
+      });
+      
+      showSuccess(`Loaded "${file.title}" into editor`);
+    } catch (error) {
+      showError(error.message || 'Failed to load file');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -331,7 +353,12 @@ export default function ProfilePage() {
                 {dashboardData.recentFiles.length > 0 ? (
                   <div className="files-list">
                     {dashboardData.recentFiles.map((file) => (
-                      <div key={file._id} className="file-item">
+                      <div 
+                        key={file._id} 
+                        className="file-item clickable"
+                        onClick={() => handleLoadFile(file)}
+                        title="Click to open in editor"
+                      >
                         <div className="file-info">
                           <div className="file-title">{file.title}</div>
                           <div className="file-meta">
@@ -360,7 +387,12 @@ export default function ProfilePage() {
                 {dashboardData.popularFiles.length > 0 ? (
                   <div className="files-list">
                     {dashboardData.popularFiles.map((file) => (
-                      <div key={file._id} className="file-item">
+                      <div 
+                        key={file._id} 
+                        className="file-item clickable"
+                        onClick={() => handleLoadFile(file)}
+                        title="Click to open in editor"
+                      >
                         <div className="file-info">
                           <div className="file-title">{file.title}</div>
                           <div className="file-meta">

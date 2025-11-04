@@ -6,9 +6,17 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 
 ---
 
-## 🌟 **Recently Added Features**
+## 🌟 **Key Features**
 
-### ✅ **GitHub Repository Import** (NEW!)
+### ✅ **Enhanced Version History Modal**
+- **Optimized Modal Layout**: Version history modal uses 95% of screen space for better content viewing
+- **Scroll Position Preservation**: Clicking to view version content preserves scroll position
+- **Individual Loading States**: Loading indicators per version instead of full modal reload
+- **Improved User Experience**: Smooth interactions with preserved navigation state
+- **Full-Width Content**: Modal header and content properly utilize available space
+- **Responsive Design**: Consistent behavior across all device sizes
+
+### ✅ **GitHub Repository Import**
 - **One-Click Repository Import**: Import any public GitHub repository structure as YAML
 - **Smart Tree Building**: Automatically converts repository directories and files into hierarchical YAML
 - **Rate Limit Handling**: Intelligent API management to avoid GitHub rate limits
@@ -18,8 +26,8 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 - **Error Handling**: Comprehensive error messages for private repos, rate limits, and invalid URLs
 - **Seamless Integration**: Import button available in Header, Editor, and Combined Editor pages
 
-### ✅ **User Profile Management System** (NEW!)
-### ✅ **Advanced Export System** (NEW!)
+### ✅ **User Profile Management System**
+### ✅ **Advanced Export System**
 - **High-Quality PNG Export**: Professional diagram exports with intelligent sizing
 - **White Node Backgrounds**: Clean, readable node styling with dark text
 - **Dotted Background Pattern**: Professional appearance with subtle texture
@@ -269,7 +277,8 @@ React 19 + Vite 7
 ├── components/          # Reusable UI components
 │   ├── YamlEditor.jsx      # Professional code editor
 │   ├── DiagramViewer.jsx   # D3.js tree visualization
-│   ├── RepositoryImporter.jsx # GitHub repository import (NEW!)
+│   ├── VersionHistoryModal.jsx # Optimized version history with scroll preservation
+│   ├── RepositoryImporter.jsx # GitHub repository import
 │   ├── AiAssistant.jsx     # AI-powered helper
 │   ├── AuthModal.jsx       # Login/register forms
 │   ├── SavedGraphsModal.jsx # File management
@@ -286,7 +295,7 @@ React 19 + Vite 7
 │   ├── EditorPage.jsx      # Basic editor interface
 │   ├── CombinedEditorPage.jsx # Split-panel editor (main)
 │   ├── DiagramPage.jsx     # Diagram-only view
-│   ├── ProfilePage.jsx     # User profile management (NEW!)
+│   ├── ProfilePage.jsx     # User profile management
 │   ├── SharedViewerPage.jsx   # Public sharing view
 │   ├── SharedViewerWrapper.jsx # Shared content wrapper
 │   └── DocsPage.jsx        # Documentation page
@@ -300,13 +309,13 @@ React 19 + Vite 7
 ├── services/            # API communication
 │   ├── apiService.js       # Backend API calls
 │   ├── openaiService.js    # AI integration
-│   ├── githubService.js    # GitHub API integration (NEW!)
+│   ├── githubService.js    # GitHub API integration
 │   ├── yamlAnalysisService.js # Analysis logic
 │   └── visualAnalysisService.js # Tree analysis
 ├── utils/               # Helper functions
 │   ├── treeBuilder.js      # YAML → Tree conversion
 │   ├── yamlValidator.js    # Validation logic
-│   └── pngExport.js        # PNG export functionality (NEW!)
+│   └── pngExport.js        # PNG export functionality
 └── assets/              # Static assets
     └── default.yaml        # Default YAML content
 ```
@@ -368,7 +377,7 @@ Node.js + Express 4.18 + MongoDB 8.0
 | `Tab` | Indent (2 spaces) |
 | `Enter` | New line with auto-indent |
 | `Ctrl/Cmd + F` | Search in editor |
-| `Ctrl/Cmd + E` | **Export diagram as PNG** |
+| `Ctrl/Cmd + E` | Export diagram as PNG |
 
 ### 🖱️ Mouse Controls
 | Action | Result |
@@ -379,23 +388,24 @@ Node.js + Express 4.18 + MongoDB 8.0
 | Click `+`/`−` | Expand/collapse node |
 | Click `📋` | Copy property value |
 | Drag Divider | Adjust panel widths |
-| **Click Username** | **Navigate to profile page** |
+| **Click Username** | Navigate to profile page |
 
 ### 🎛️ Interface Buttons
 | Button | Function |
 |--------|----------|
 | `💾 Save Graph` | Save with custom name (auth required) |
 | `📚 My Graphs` | Manage saved files (auth required) |
+| `📜 Version History` | View, load, and revert file versions with optimized scroll preservation |
 | `🤖 AI Assistant` | Open AI helper |
 | `🔍 Analysis` | Toggle analysis panel |
 | `📖 Docs` | View documentation |
-| `� Import GitHub` | **Import any public GitHub repository structure as YAML** |
-| `�🔍 Search` | Find nodes in diagram |
+| `📁 Import GitHub` | Import any public GitHub repository structure as YAML |
+| `🔍 Search` | Find nodes in diagram |
 | `⛶ Fullscreen` | Toggle fullscreen mode |
 | `⟲ Reset View` | Center and reset zoom |
-| `📷 Export PNG` | **Download high-quality diagram as PNG image** |
+| `📷 Export PNG` | Download high-quality diagram as PNG image |
 | `🔄 Combined View` | Switch to split-panel editor |
-| **`👤 Profile`** | **Access user profile and settings** |
+| `👤 Profile` | Access user profile and settings |
 
 ---
 
@@ -404,8 +414,8 @@ Node.js + Express 4.18 + MongoDB 8.0
 - **🏢 System Architecture**: Visualize microservices and dependencies
 - **📋 Configuration Docs**: Map complex config file structures
 - **🗂️ Data Hierarchies**: Explore nested data relationships
-- **� Code Repository Structure**: Import and visualize GitHub repository hierarchies
-- **�🔌 API Documentation**: Show endpoint relationships and structure
+- **📁 Code Repository Structure**: Import and visualize GitHub repository hierarchies
+- **🔌 API Documentation**: Show endpoint relationships and structure
 - **🧩 Component Trees**: Display UI component hierarchies
 - **🚀 CI/CD Pipelines**: Map deployment and build processes
 - **🗄️ Database Schemas**: Visualize table relationships
@@ -416,7 +426,7 @@ Node.js + Express 4.18 + MongoDB 8.0
 
 ## 🚧 Roadmap
 
-> **Current Status**: The application is **stable and production-ready** with all core features implemented. Recent updates have enhanced the GitHub repository import feature with large repository protection and safety mechanisms. The roadmap below outlines planned enhancements and new capabilities.
+> **Current Status**: The application is stable and production-ready with all core features implemented. The application includes enhanced version history modal with optimized layout and scroll preservation, along with GitHub repository import with large repository protection and safety mechanisms. The roadmap below outlines planned enhancements and capabilities.
 
 ### 🎯 **Next Phase Features**
 - [ ] **SVG Export**: Vector format export for scalability and editing
@@ -443,7 +453,7 @@ Node.js + Express 4.18 + MongoDB 8.0
 
 ## 🛠️ Development
 
-> **Note**: This project is actively maintained with regular updates. See the [Recently Added Features](#-recently-added-features) section for the latest enhancements.
+> **Note**: This project is actively maintained with regular updates. Enhancements include optimized version history modal with scroll preservation and improved user experience. See the [Key Features](#-key-features) section for the latest enhancements.
 
 ### Available Scripts
 
@@ -553,7 +563,7 @@ cd server && npm test
 
 > 💡 **Tip**: For large hierarchies, consider using the collapse/expand features to improve performance and navigation.
 
-> 🛠️ **Recent Updates**: Enhanced GitHub repository import with large repository protection and 500-node safety limits.
+> 🛠️ **Updates**: Enhanced version history modal with optimized layout and scroll preservation, plus GitHub repository import with large repository protection and 500-node safety limits.
 
 ---
 

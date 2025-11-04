@@ -20,6 +20,7 @@ export default function CombinedEditorPage({
   user,
   onShowAuth,
   onShowRepositoryImporter,
+  onShowVersionHistory,
   onLogout,
 }) {
   const navigate = useNavigate();
@@ -35,14 +36,12 @@ export default function CombinedEditorPage({
   useEffect(() => {
     const handleSearchComplete = (event) => {
       const { results, currentIndex } = event.detail;
-      console.log('CombinedEditorPage: Search complete', { resultsCount: results.length, currentIndex });
       setSearchResults(results);
       setCurrentSearchIndex(currentIndex);
     };
 
     const handleNavigationComplete = (event) => {
       const { currentIndex } = event.detail;
-      console.log('CombinedEditorPage: Navigation complete', { currentIndex });
       setCurrentSearchIndex(currentIndex);
     };
 
@@ -60,8 +59,6 @@ export default function CombinedEditorPage({
   
   // Search handler - calls DiagramViewer's global search function
   const handleSearch = useCallback((term) => {
-    console.log('CombinedEditorPage: Search triggered with term:', term);
-    
     if (!term || !term.trim()) {
       // Clear results immediately for empty search
       setSearchResults([]);
@@ -76,8 +73,6 @@ export default function CombinedEditorPage({
 
   // Navigation handler - calls DiagramViewer's global navigate function
   const handleSearchNavigation = useCallback((direction) => {
-    console.log('CombinedEditorPage: Navigate triggered:', direction);
-    
     // Call DiagramViewer's navigate function (will dispatch event with new index)
     if (window.combinedEditorDiagramNavigate) {
       window.combinedEditorDiagramNavigate(direction);
@@ -172,6 +167,14 @@ export default function CombinedEditorPage({
             </button>
             <button className="save-btn" onClick={handleSaveGraph} disabled={!parsedData}>
               💾 Save
+            </button>
+            <button 
+              className="version-history-btn" 
+              onClick={onShowVersionHistory}
+              title="View Version History"
+              disabled={!isAuthenticated}
+            >
+              📜 History
             </button>
             <button className="saved-btn" onClick={() => setShowSavedGraphs(true)}>
               📚 Saved ({savedGraphs.length})

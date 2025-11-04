@@ -6,10 +6,28 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 
 ---
 
-## 🌟 **Recently Added Features**
+## 🌟 **Key Features**
 
-### ✅ **User Profile Management System** (NEW!)
-### ✅ **Advanced Export System** (NEW!)
+### ✅ **Enhanced Version History Modal**
+- **Optimized Modal Layout**: Version history modal uses 95% of screen space for better content viewing
+- **Scroll Position Preservation**: Clicking to view version content preserves scroll position
+- **Individual Loading States**: Loading indicators per version instead of full modal reload
+- **Improved User Experience**: Smooth interactions with preserved navigation state
+- **Full-Width Content**: Modal header and content properly utilize available space
+- **Responsive Design**: Consistent behavior across all device sizes
+
+### ✅ **GitHub Repository Import**
+- **One-Click Repository Import**: Import any public GitHub repository structure as YAML
+- **Smart Tree Building**: Automatically converts repository directories and files into hierarchical YAML
+- **Rate Limit Handling**: Intelligent API management to avoid GitHub rate limits
+- **Progressive Loading**: Loads repository structure with optimized depth to balance detail and performance
+- **Node Limit Protection**: Auto-limited to 500 nodes to ensure smooth performance and prevent memory issues
+- **Proper YAML Formatting**: Generates clean YAML with hyphens, proper extensions, and directory structure
+- **Error Handling**: Comprehensive error messages for private repos, rate limits, and invalid URLs
+- **Seamless Integration**: Import button available in Header, Editor, and Combined Editor pages
+
+### ✅ **User Profile Management System**
+### ✅ **Advanced Export System**
 - **High-Quality PNG Export**: Professional diagram exports with intelligent sizing
 - **White Node Backgrounds**: Clean, readable node styling with dark text
 - **Dotted Background Pattern**: Professional appearance with subtle texture
@@ -32,8 +50,8 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 - **Dashboard Analytics**: Personal statistics and recent activity
 - **Clickable Username**: Navigate to profile by clicking username in header
 
-### ✅ **Enhanced Authentication & Dark UI**
-- **Dark Theme Auth Modals**: Professional dark-themed login/signup forms
+### ✅ **Enhanced Authentication & UI**
+- **Professional Auth Modals**: Clean, responsive login/signup forms with modern styling
 - **Smart Error Handling**: Context-aware error messages and session management
 - **Graceful Logout Flow**: Proper success messaging and home page redirect
 - **Real-time Updates**: Profile changes instantly reflect across the app
@@ -102,6 +120,7 @@ A powerful, production-ready full-stack application that converts YAML hierarchi
 - **Share Links**: Generate public URLs for sharing
 - **Export Options**: High-quality PNG export with professional styling
 - **Real-time Validation**: Live YAML syntax checking with error notifications
+- **GitHub Import**: One-click import of any public GitHub repository structure as YAML
 
 ### 🤖 **AI-Powered Assistant**
 - **OpenAI Integration**: Generate YAML from natural language
@@ -177,7 +196,7 @@ npm install
 ### Basic Workflow
 
 1. **Register/Login** to save your work and access profile features
-2. **Write YAML** in the left editor panel
+2. **Write YAML** in the left editor panel OR **Import from GitHub** using any public repository URL
 3. **View Diagram** updates in real-time on the right
 4. **Save & Share** your diagrams with custom names
 5. **Manage Profile** by clicking your username in the header
@@ -187,28 +206,62 @@ npm install
 ### YAML Format
 
 ```yaml
-name: RootNode
-version: 1.0.0
-environment: production
+name: My-React-App
+language: JavaScript
 children:
-  - name: Frontend
-    framework: React
+  - name: public
+    type: directory
     children:
-      - name: Components
-        count: 25
-      - name: Pages
-        count: 8
-  - name: Backend
-    framework: Node.js
-    database: MongoDB
+      - name: index.html
+        type: file
+      - name: favicon.ico
+        type: file
+  - name: src
+    type: directory
     children:
-      - name: API Routes
-        count: 12
-      - name: Controllers
-        count: 8
+      - name: components
+        type: directory
+        children:
+          - name: Header.jsx
+            type: file
+          - name: App.jsx
+            type: file
+      - name: styles
+        type: directory
+        children:
+          - name: App.css
+            type: file
+      - name: index.js
+        type: file
+  - name: package.json
+    type: file
+  - name: README.md
+    type: file
 ```
 
-**Key Structure:**
+### GitHub Repository Import
+
+**Import any public GitHub repository structure:**
+
+1. Click **"📁 Import from GitHub"** button (available in Header, Editor, and Combined Editor)
+2. Enter the GitHub repository URL (e.g., `https://github.com/facebook/react`)
+3. Click **"Import Repository"** to fetch and convert the structure
+4. The repository structure will be automatically converted to YAML format and loaded into the editor
+
+**Supported URL formats:**
+- `https://github.com/owner/repo`
+- `https://github.com/owner/repo/tree/branch`
+- `github.com/owner/repo`
+
+**Safety Features:**
+- **Node Limit Protection**: Automatically limited to 500 nodes to prevent memory issues
+- **API Rate Limiting**: Intelligent delay system to avoid GitHub API limits
+- **Timeout Protection**: 30-second timeout to prevent hanging requests
+- **Smart Filtering**: Automatically skips common directories like `node_modules`, `.git`, `build`, `dist`
+- **Progress Tracking**: Real-time feedback showing nodes processed and API calls made
+- **Graceful Degradation**: Shows partial results if limits are reached
+
+### Manual YAML Format
 - `name`: Required node identifier
 - `children` or `nodes`: Array of child nodes
 - Custom properties: Displayed in node boxes
@@ -224,6 +277,8 @@ React 19 + Vite 7
 ├── components/          # Reusable UI components
 │   ├── YamlEditor.jsx      # Professional code editor
 │   ├── DiagramViewer.jsx   # D3.js tree visualization
+│   ├── VersionHistoryModal.jsx # Optimized version history with scroll preservation
+│   ├── RepositoryImporter.jsx # GitHub repository import
 │   ├── AiAssistant.jsx     # AI-powered helper
 │   ├── AuthModal.jsx       # Login/register forms
 │   ├── SavedGraphsModal.jsx # File management
@@ -240,7 +295,7 @@ React 19 + Vite 7
 │   ├── EditorPage.jsx      # Basic editor interface
 │   ├── CombinedEditorPage.jsx # Split-panel editor (main)
 │   ├── DiagramPage.jsx     # Diagram-only view
-│   ├── ProfilePage.jsx     # User profile management (NEW!)
+│   ├── ProfilePage.jsx     # User profile management
 │   ├── SharedViewerPage.jsx   # Public sharing view
 │   ├── SharedViewerWrapper.jsx # Shared content wrapper
 │   └── DocsPage.jsx        # Documentation page
@@ -254,12 +309,13 @@ React 19 + Vite 7
 ├── services/            # API communication
 │   ├── apiService.js       # Backend API calls
 │   ├── openaiService.js    # AI integration
+│   ├── githubService.js    # GitHub API integration
 │   ├── yamlAnalysisService.js # Analysis logic
 │   └── visualAnalysisService.js # Tree analysis
 ├── utils/               # Helper functions
 │   ├── treeBuilder.js      # YAML → Tree conversion
 │   ├── yamlValidator.js    # Validation logic
-│   └── pngExport.js        # PNG export functionality (NEW!)
+│   └── pngExport.js        # PNG export functionality
 └── assets/              # Static assets
     └── default.yaml        # Default YAML content
 ```
@@ -321,7 +377,7 @@ Node.js + Express 4.18 + MongoDB 8.0
 | `Tab` | Indent (2 spaces) |
 | `Enter` | New line with auto-indent |
 | `Ctrl/Cmd + F` | Search in editor |
-| `Ctrl/Cmd + E` | **Export diagram as PNG** |
+| `Ctrl/Cmd + E` | Export diagram as PNG |
 
 ### 🖱️ Mouse Controls
 | Action | Result |
@@ -332,22 +388,24 @@ Node.js + Express 4.18 + MongoDB 8.0
 | Click `+`/`−` | Expand/collapse node |
 | Click `📋` | Copy property value |
 | Drag Divider | Adjust panel widths |
-| **Click Username** | **Navigate to profile page** |
+| **Click Username** | Navigate to profile page |
 
 ### 🎛️ Interface Buttons
 | Button | Function |
 |--------|----------|
 | `💾 Save Graph` | Save with custom name (auth required) |
 | `📚 My Graphs` | Manage saved files (auth required) |
+| `📜 Version History` | View, load, and revert file versions with optimized scroll preservation |
 | `🤖 AI Assistant` | Open AI helper |
 | `🔍 Analysis` | Toggle analysis panel |
 | `📖 Docs` | View documentation |
+| `📁 Import GitHub` | Import any public GitHub repository structure as YAML |
 | `🔍 Search` | Find nodes in diagram |
 | `⛶ Fullscreen` | Toggle fullscreen mode |
 | `⟲ Reset View` | Center and reset zoom |
-| `📷 Export PNG` | **Download high-quality diagram as PNG image** |
+| `📷 Export PNG` | Download high-quality diagram as PNG image |
 | `🔄 Combined View` | Switch to split-panel editor |
-| **`👤 Profile`** | **Access user profile and settings** |
+| `👤 Profile` | Access user profile and settings |
 
 ---
 
@@ -356,6 +414,7 @@ Node.js + Express 4.18 + MongoDB 8.0
 - **🏢 System Architecture**: Visualize microservices and dependencies
 - **📋 Configuration Docs**: Map complex config file structures
 - **🗂️ Data Hierarchies**: Explore nested data relationships
+- **📁 Code Repository Structure**: Import and visualize GitHub repository hierarchies
 - **🔌 API Documentation**: Show endpoint relationships and structure
 - **🧩 Component Trees**: Display UI component hierarchies
 - **🚀 CI/CD Pipelines**: Map deployment and build processes
@@ -367,25 +426,25 @@ Node.js + Express 4.18 + MongoDB 8.0
 
 ## 🚧 Roadmap
 
-> **Current Status**: The application is **stable and production-ready** with all core features implemented. Recent updates have improved auth modal styling and export functionality. The roadmap below outlines planned enhancements and new capabilities.
+> **Current Status**: The application is stable and production-ready with all core features implemented. The application includes enhanced version history modal with optimized layout and scroll preservation, along with GitHub repository import with large repository protection and safety mechanisms. The roadmap below outlines planned enhancements and capabilities.
 
 ### 🎯 **Next Phase Features**
 - [ ] **SVG Export**: Vector format export for scalability and editing
 - [ ] **PDF Export**: Professional documentation-ready exports
-- [ ] **Diagram Themes**: Multiple color themes (dark mode, minimal, corporate)
 - [ ] **Node Customization**: User-customizable colors, shapes, and sizes
 - [ ] **Template Library**: Pre-built YAML templates for common use cases
 - [ ] **Real-time Collaborative Editing**: WebSocket-based multi-user editing
 - [ ] **Mobile Responsiveness**: Enhanced touch controls and mobile layout
 
 ### 🔮 **Future Vision**
-- [ ] **Performance Optimizations**: Advanced rendering for 1000+ node diagrams
+- [ ] **Performance Optimizations**: Advanced rendering for 500+ node diagrams
 - [ ] **Interactive Diagram Builder**: Drag-and-drop visual editor
 - [ ] **Version Control**: Git-like history with visual diffs
 - [ ] **Advanced Exports**: PowerPoint, Figma, Draw.io integration
 - [ ] **Enhanced AI Features**: Advanced natural language to YAML conversion
 - [ ] **Smart Data Import**: HR systems, Jira, database schema sync
 - [ ] **Advanced Visualization**: 3D diagrams, animations, custom themes
+- [ ] **Diagram Themes**: Multiple color themes (dark mode, minimal, corporate)
 - [ ] **Team Workspaces**: Role-based permissions and workflows
 - [ ] **Plugin System**: Extensible architecture for custom features
 - [ ] **Mobile Apps**: Native iOS/Android applications
@@ -394,7 +453,7 @@ Node.js + Express 4.18 + MongoDB 8.0
 
 ## 🛠️ Development
 
-> **Note**: This project is actively maintained with regular updates. See the [Recently Added Features](#-recently-added-features) section for the latest enhancements.
+> **Note**: This project is actively maintained with regular updates. Enhancements include optimized version history modal with scroll preservation and improved user experience. See the [Key Features](#-key-features) section for the latest enhancements.
 
 ### Available Scripts
 
@@ -488,22 +547,23 @@ cd server && npm test
 
 ### Recommended Limits
 - **YAML Files**: < 1MB for optimal performance
-- **Node Count**: < 1000 nodes for smooth interaction
+- **Node Count**: < 500 nodes for optimal interaction (GitHub imports auto-limited to 500 nodes)
 - **Browser Storage**: ~5-10MB localStorage limit
 
 ---
 
 ## 🐛 Known Issues & Limitations
 
-- **Large YAML files** (>1000 nodes): May experience performance degradation during rendering
+- **Large YAML files** (>500 nodes): May experience performance degradation during rendering
 - **Search functionality**: Only searches visible (expanded) nodes in the diagram
 - **OpenAI API**: Requires active internet connection and valid API key for AI features
 - **Browser storage**: localStorage size limits vary by browser (~5-10MB typical limit)
 - **Mobile interactions**: Some advanced features work better on desktop/tablet devices
+- **GitHub imports**: Auto-limited to 500 nodes to ensure smooth performance and prevent memory issues
 
 > 💡 **Tip**: For large hierarchies, consider using the collapse/expand features to improve performance and navigation.
 
-> 🛠️ **Recent Fixes**: Auth modal styling issues have been resolved in the latest version.
+> 🛠️ **Updates**: Enhanced version history modal with optimized layout and scroll preservation, plus GitHub repository import with large repository protection and 500-node safety limits.
 
 ---
 

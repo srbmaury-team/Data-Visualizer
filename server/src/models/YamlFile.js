@@ -47,6 +47,12 @@ const yamlFileSchema = new mongoose.Schema({
     fileSize: Number,
     lastValidated: Date
   },
+  // Current version number
+  currentVersion: {
+    type: Number,
+    default: 1
+  },
+  // Legacy version system (deprecated - keeping for backward compatibility)
   versions: [{
     content: String,
     createdAt: {

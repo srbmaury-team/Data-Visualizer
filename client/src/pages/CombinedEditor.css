@@ -148,7 +148,7 @@
   border-radius: 0.25rem;
 }
 
-.save-btn, .saved-btn, .repo-import-btn {
+.save-btn, .saved-btn, .repo-import-btn, .version-history-btn {
   padding: 0.5rem 1rem;
   border: 1px solid;
   border-radius: 0.375rem;
@@ -196,6 +196,24 @@
   color: white;
 }
 
+.version-history-btn {
+  background: white;
+  color: #10b981;
+  border-color: #10b981;
+}
+
+.version-history-btn:hover:not(:disabled) {
+  background: #10b981;
+  color: white;
+}
+
+.version-history-btn:disabled {
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
 .shared-badge {
   padding: 0.5rem 1rem;
   background: #f0f9ff;
@@ -233,6 +251,17 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+}
+
+/* Ensure YAML editor takes full height in combined view */
+.left-panel .yaml-editor-wrapper {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  height: 100%;
+  flex: 1;
+  overflow-y: scroll;
 }
 
 /* Right Panel - Visualization */
@@ -465,6 +494,25 @@
   }
   
   .saved-graphs-mobile.disabled {
+    background: #ccc !important;
+    border-color: #ccc !important;
+    cursor: not-allowed !important;
+  }
+
+  .version-history-mobile {
+    display: inline-block !important;
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .version-history-mobile:hover:not(:disabled) {
+    background: #059669 !important;
+    border-color: #059669 !important;
+  }
+  
+  .version-history-mobile.disabled {
     background: #ccc !important;
     border-color: #ccc !important;
     cursor: not-allowed !important;

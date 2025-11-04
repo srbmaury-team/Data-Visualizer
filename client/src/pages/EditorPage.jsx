@@ -19,6 +19,7 @@ export default function EditorPage({
   user,
   onShowAuth,
   onShowRepositoryImporter,
+  onShowVersionHistory,
   onLogout,
 }) {
   const navigate = useNavigate();
@@ -113,6 +114,9 @@ export default function EditorPage({
               <>
                 <button className="save-graph-btn" onClick={handleSaveGraph} title="Save current graph">
                   💾 Save Graph
+                </button>
+                <button className="version-history-btn" onClick={onShowVersionHistory} title="View version history">
+                  📜 History
                 </button>
                 <button className="my-graphs-btn" onClick={() => setShowSavedGraphs(true)} title="View saved graphs">
                   📚 My Graphs ({savedGraphs.length})

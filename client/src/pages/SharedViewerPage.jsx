@@ -25,14 +25,12 @@ export default function SharedViewerPage({
   useEffect(() => {
     const handleSearchComplete = (event) => {
       const { results, currentIndex } = event.detail;
-      console.log('SharedViewerPage: Search complete', { resultsCount: results.length, currentIndex });
       setSearchResults(results);
       setCurrentSearchIndex(currentIndex);
     };
 
     const handleNavigationComplete = (event) => {
       const { currentIndex } = event.detail;
-      console.log('SharedViewerPage: Navigation complete', { currentIndex });
       setCurrentSearchIndex(currentIndex);
     };
 
@@ -50,8 +48,6 @@ export default function SharedViewerPage({
   
   // Search handler - calls DiagramViewer's global search function
   const handleSearch = useCallback((term) => {
-    console.log('SharedViewerPage: Search triggered with term:', term);
-    
     if (!term || !term.trim()) {
       // Clear results immediately for empty search
       setSearchResults([]);
@@ -66,8 +62,6 @@ export default function SharedViewerPage({
 
   // Navigation handler - calls DiagramViewer's global navigate function
   const handleSearchNavigation = useCallback((direction) => {
-    console.log('SharedViewerPage: Navigate triggered:', direction);
-    
     // Call DiagramViewer's navigate function (will dispatch event with new index)
     if (window.combinedEditorDiagramNavigate) {
       window.combinedEditorDiagramNavigate(direction);

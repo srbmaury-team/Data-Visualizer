@@ -147,8 +147,8 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
             const tree = buildTreeFromYAML(data);
             treeData = convertToD3Hierarchy(tree);
           }
-        } catch (error) {
-          console.log("Could not generate tree data for visual analysis:", error.message);
+        } catch {
+          // Could not generate tree data for visual analysis
         }
       }
       

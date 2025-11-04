@@ -72,6 +72,7 @@ body {
   
   .save-graph-btn,
   .my-graphs-btn,
+  .version-history-btn,
   .docs-btn,
   .ai-btn,
   .visualize-btn,
@@ -161,6 +162,7 @@ body {
 
 .save-graph-btn,
 .my-graphs-btn,
+.version-history-btn,
 .docs-btn,
 .ai-btn,
 .visualize-btn,
@@ -202,6 +204,19 @@ body {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.version-history-btn {
+  color: #dc2626;
+  background: white;
+  border-color: #dc2626;
+}
+
+.version-history-btn:hover {
+  background: #dc2626;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 .docs-btn {
@@ -335,6 +350,7 @@ body {
 
   .save-graph-btn,
   .my-graphs-btn,
+  .version-history-btn,
   .docs-btn,
   .ai-btn,
   .visualize-btn,

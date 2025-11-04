@@ -32,7 +32,6 @@ export default function RepositoryImporter({ onImport, onClose }) {
         // Show processing stats if available
         if (result.analysis.processingStats) {
           const stats = result.analysis.processingStats;
-          console.log(`Repository processed: ${stats.totalNodes} nodes, ${stats.totalApiCalls} API calls, ${stats.processingTime}ms`);
           
           if (stats.truncated) {
             setProgress("Large repository detected - showing representative structure...");

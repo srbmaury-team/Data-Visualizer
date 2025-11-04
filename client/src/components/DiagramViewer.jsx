@@ -912,8 +912,6 @@ const DiagramViewer = forwardRef(({
   }, [externalSearch, externalSearchIndex, searchResults, zoomToNode]);
 
   const handleNavigate = useCallback((direction) => {
-    console.log('DiagramViewer handleNavigate called with:', direction, 'currentIndex:', currentSearchIndex, 'resultsLength:', searchResults.length);
-    
     if (externalSearch) {
       // In external search mode, just zoom to current result
       // Navigation is handled by parent component
@@ -936,7 +934,6 @@ const DiagramViewer = forwardRef(({
       newIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     }
 
-    console.log('DiagramViewer: Navigating from index', currentSearchIndex, 'to', newIndex);
     setCurrentSearchIndex(newIndex);
     onSearchIndexChange && onSearchIndexChange(newIndex);
     zoomToNode(searchResults[newIndex].node);
@@ -971,10 +968,6 @@ const DiagramViewer = forwardRef(({
       // Use refs for getters to always return current state
       window.getCombinedEditorSearchResults = () => searchResultsRef.current;
       window.getCombinedEditorCurrentIndex = () => currentSearchIndexRef.current;
-      console.log('DiagramViewer: Exposing global functions for combined editor', {
-        resultsCount: searchResultsRef.current.length,
-        currentIndex: currentSearchIndexRef.current
-      });
     }
     return () => {
       if (hideSearch) {
@@ -982,7 +975,6 @@ const DiagramViewer = forwardRef(({
         delete window.combinedEditorDiagramNavigate;
         delete window.getCombinedEditorSearchResults;
         delete window.getCombinedEditorCurrentIndex;
-        console.log('DiagramViewer: Cleaning up global functions');
       }
     };
   }, [hideSearch, handleSearch, handleNavigate]); // Only re-create when functions change, not state

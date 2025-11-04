@@ -1,6 +1,8 @@
 import { validationResult } from 'express-validator';
 import YamlFile from '../models/YamlFile.js';
+import VersionHistory from '../models/VersionHistory.js';
 import User from '../models/User.js';
+import { calculateChangeStats, generateChangeSummary, calculateDelta, shouldCreateSnapshot } from '../services/deltaService.js';
 
 export const createYamlFile = async (req, res) => {
   try {
@@ -18,10 +20,33 @@ export const createYamlFile = async (req, res) => {
       owner: req.user._id,
       isPublic,
       tags: tags.slice(0, 10), // Limit to 10 tags
-      metadata
+      metadata,
+      currentVersion: 1
     });
 
     await yamlFile.save();
+
+    // Create initial version history entry as a snapshot
+    await VersionHistory.create({
+      fileId: yamlFile._id,
+      version: 1,
+      delta: [],
+      isSnapshot: true,
+      snapshotContent: content,
+      author: req.user._id,
+      message: 'Initial version',
+      changeMetadata: {
+        summary: 'Initial file creation',
+        linesChanged: {
+          added: (content.match(/\n/g) || []).length + 1,
+          removed: 0,
+          modified: 0
+        },
+        characterDelta: content.length,
+        saveType: 'initial'
+      },
+      deltaSize: 0
+    });
 
     // Add to user's yamlFiles array
     await User.findByIdAndUpdate(
@@ -36,7 +61,8 @@ export const createYamlFile = async (req, res) => {
         title: yamlFile.title,
         shareId: yamlFile.shareId,
         isPublic: yamlFile.isPublic,
-        createdAt: yamlFile.createdAt
+        createdAt: yamlFile.createdAt,
+        currentVersion: yamlFile.currentVersion
       }
     });
   } catch (error) {
@@ -165,19 +191,62 @@ export const updateYamlFile = async (req, res) => {
       return res.status(404).json({ error: 'YAML file not found' });
     }
 
-    // If content is being updated, save as version
+    // If content is being updated, create a new version using the new version history system
     if (content && content !== yamlFile.content) {
-      await yamlFile.addVersion(content, versionDescription);
-    } else {
-      // Update other fields
-      if (title) yamlFile.title = title;
-      if (description !== undefined) yamlFile.description = description;
-      if (isPublic !== undefined) yamlFile.isPublic = isPublic;
-      if (tags) yamlFile.tags = tags.slice(0, 10);
-      if (metadata) yamlFile.metadata = { ...yamlFile.metadata, ...metadata };
+      console.log('Content change detected, creating version history...');
+      // Get the latest version number
+      const latestVersion = await VersionHistory.getLatestVersion(yamlFile._id);
+      const newVersionNumber = latestVersion + 1;
+
+      // Get the previous content for delta calculation
+      let previousContent = yamlFile.content || '';
+
+      // Calculate delta
+      const delta = calculateDelta(previousContent, content);
+      const changeStats = calculateChangeStats(delta);
+      const summary = generateChangeSummary(delta, previousContent, content);
+
+      // Check if we should create a snapshot
+      const shouldSnapshot = shouldCreateSnapshot(newVersionNumber, delta.length);
       
-      await yamlFile.save();
+      // Create version record
+      const versionData = {
+        fileId: yamlFile._id,
+        version: newVersionNumber,
+        delta: shouldSnapshot ? [] : delta,
+        isSnapshot: shouldSnapshot,
+        snapshotContent: shouldSnapshot ? content : null,
+        author: req.user._id,
+        message: versionDescription || '',
+        changeMetadata: {
+          summary,
+          linesChanged: {
+            added: changeStats.linesAdded,
+            removed: changeStats.linesRemoved,
+            modified: Math.max(changeStats.linesAdded, changeStats.linesRemoved)
+          },
+          characterDelta: changeStats.characterDelta,
+          saveType: 'manual'
+        },
+        deltaSize: delta.length
+      };
+
+      await VersionHistory.create(versionData);
+
+      // Update the main file's content and version
+      yamlFile.content = content;
+      yamlFile.currentVersion = newVersionNumber;
+      yamlFile.updatedAt = new Date();
     }
+
+    // Update other fields
+    if (title) yamlFile.title = title;
+    if (description !== undefined) yamlFile.description = description;
+    if (isPublic !== undefined) yamlFile.isPublic = isPublic;
+    if (tags) yamlFile.tags = tags.slice(0, 10);
+    if (metadata) yamlFile.metadata = { ...yamlFile.metadata, ...metadata };
+    
+    await yamlFile.save();
 
     res.json({
       message: 'YAML file updated successfully',
@@ -187,7 +256,8 @@ export const updateYamlFile = async (req, res) => {
         shareId: yamlFile.shareId,
         isPublic: yamlFile.isPublic,
         createdAt: yamlFile.createdAt,
-        updatedAt: yamlFile.updatedAt
+        updatedAt: yamlFile.updatedAt,
+        currentVersion: yamlFile.currentVersion
       }
     });
   } catch (error) {

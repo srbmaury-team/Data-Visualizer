@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { useAuth } from "./hooks/useAuth";
@@ -16,6 +16,7 @@ import SavedGraphsModal from "./components/SavedGraphsModal";
 import SaveGraphModal from "./components/SaveGraphModal";
 import AuthModal from "./components/AuthModal";
 import RepositoryImporter from "./components/RepositoryImporter";
+import VersionHistoryModal from "./components/VersionHistoryModal";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "./utils/treeBuilder";
 import { validateYAML } from "./utils/yamlValidator";
@@ -27,6 +28,7 @@ const DEFAULT_YAML = defaultYamlContent;
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user, logout } = useAuth();
   const { showSuccess, showError } = useToast();
   const { 
@@ -84,6 +86,8 @@ function AppContent() {
   const [showSaveGraphModal, setShowSaveGraphModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showRepositoryImporter, setShowRepositoryImporter] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [currentFileId, setCurrentFileId] = useState(null);
 
   // Load saved graphs when user authenticates, clear when they logout
   useEffect(() => {
@@ -109,6 +113,25 @@ function AppContent() {
     window.addEventListener('showToast', handleToastEvent);
     return () => window.removeEventListener('showToast', handleToastEvent);
   }, [showSuccess, showError]);
+
+  // Handle file loading from profile page navigation
+  useEffect(() => {
+    if (location.state?.loadFile && location.state?.yamlContent) {
+      setYamlText(location.state.yamlContent);
+      
+      // Set the file ID if provided
+      if (location.state.fileId) {
+        setCurrentFileId(location.state.fileId);
+      }
+      
+      // Clear the navigation state to prevent re-loading on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+      
+      if (location.state.fileName) {
+        showSuccess(`Loaded "${location.state.fileName}" into editor`);
+      }
+    }
+  }, [location.state, location.pathname, navigate, showSuccess]);
 
   useEffect(() => {
     try {
@@ -223,28 +246,55 @@ function AppContent() {
     try {
       if (graphData.isUpdate) {
         // Update existing graph
-        await updateGraph(graphData.existingId, {
+        const result = await updateGraph(graphData.existingId, {
           title: graphData.title,
           yamlContent: yamlText,
           description: graphData.description,
           isPublic: graphData.isPublic
         });
         
+        // Set the current file ID for version history
+        if (result && result.id) {
+          setCurrentFileId(result.id);
+        }
+        
         showSuccess(`Graph "${graphData.title}" updated successfully!`);
       } else {
         // Create new graph
-        await saveGraph({
+        const result = await saveGraph({
           title: graphData.title,
           yamlContent: yamlText,
           description: graphData.description,
           isPublic: graphData.isPublic
         });
+        
+        // Set the current file ID for version history
+        if (result && result.id) {
+          setCurrentFileId(result.id);
+        }
         
         showSuccess(`Graph "${graphData.title}" saved successfully!`);
       }
     } catch (err) {
       showError(`Failed to save graph: ${err.message}`);
     }
+  };
+
+  const handleShowVersionHistory = () => {
+    if (!isAuthenticated) {
+      showError('Please login to view version history');
+      return;
+    }
+    if (!currentFileId) {
+      // For new unsaved files, prompt user to save first
+      if (window.confirm('This file needs to be saved before viewing version history. Would you like to save it now?')) {
+        handleSaveGraph();
+        return;
+      } else {
+        return;
+      }
+    }
+    setShowVersionHistory(true);
   };
 
   const handleLoadGraph = (graph) => {
@@ -254,6 +304,7 @@ function AppContent() {
       }
     }
     setYamlText(graph.content);
+    setCurrentFileId(graph.id || graph._id); // Set the file ID for version history
     setShowSavedGraphs(false);
     navigate("/");
   };
@@ -362,6 +413,7 @@ function AppContent() {
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
+              onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
             />
           } 
@@ -393,6 +445,7 @@ function AppContent() {
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
+              onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
             />
           } 
@@ -431,6 +484,17 @@ function AppContent() {
           onClose={() => setShowRepositoryImporter(false)}
         />
       )}
+
+      <VersionHistoryModal
+        isOpen={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
+        fileId={currentFileId}
+        fileName="Current YAML File"
+        onLoadVersion={(content, message) => {
+          setYamlText(content);
+          showSuccess(message);
+        }}
+      />
     </div>
   );
 }

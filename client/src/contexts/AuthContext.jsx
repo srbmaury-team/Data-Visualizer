@@ -44,13 +44,11 @@ export const AuthProvider = ({ children }) => {
           // Only clear auth if it's a 401 (unauthorized) error
           // For network errors or 500 errors, keep the user logged in
           if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-            console.log('Token invalid, logging out');
             apiService.setToken(null);
             setIsAuthenticated(false);
             setUser(null);
             clearUserFromStorage();
           } else {
-            console.log('Network error, keeping user logged in with cached token');
             // Try to load user from storage for offline experience
             const cachedUser = loadUserFromStorage();
             if (cachedUser) {

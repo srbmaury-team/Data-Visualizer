@@ -203,6 +203,40 @@ class ApiService {
   }
 
   /**
+   * Version History API calls
+   */
+  async createVersion(fileId, versionData) {
+    return this.request(`/files/${fileId}/versions`, {
+      method: 'POST',
+      body: JSON.stringify(versionData),
+    });
+  }
+
+  async getVersionHistory(fileId, params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/files/${fileId}/versions?${queryString}` : `/files/${fileId}/versions`;
+    return this.request(endpoint);
+  }
+
+  async getVersion(fileId, versionNumber) {
+    return this.request(`/files/${fileId}/versions/${versionNumber}`);
+  }
+
+  async revertToVersion(fileId, versionNumber, message) {
+    return this.request(`/files/${fileId}/versions/${versionNumber}/revert`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  }
+
+  async cleanupVersionHistory(fileId, keepVersions = 50) {
+    return this.request(`/files/${fileId}/versions/cleanup`, {
+      method: 'DELETE',
+      body: JSON.stringify({ keepVersions }),
+    });
+  }
+
+  /**
    * Check if user is authenticated
    */
   isAuthenticated() {

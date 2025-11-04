@@ -388,6 +388,17 @@
   transition: all 0.2s ease;
 }
 
+.file-item.clickable {
+  cursor: pointer;
+}
+
+.file-item.clickable:hover {
+  border-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+  background: #f8fffe;
+}
+
 .file-item:hover {
   border-color: #3498db;
   transform: translateY(-1px);
