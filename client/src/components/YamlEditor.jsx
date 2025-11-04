@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./styles/YamlEditor.css";
 
 export default function YamlEditor({ value, onChange, readOnly = false }) {
@@ -17,42 +17,29 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
   useEffect(() => {
     const safeValue = value || '';
     setLineCount(safeValue.split('\n').length);
-    updateSyntaxHighlighting();
   }, [value]);
 
-  // Find matches for search
+  // Update syntax highlighting when value changes
   useEffect(() => {
-    const safeValue = value || '';
-    if (searchTerm) {
-      const flags = matchCase ? 'g' : 'gi';
-      const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
-      const foundMatches = [];
-      let match;
-      while ((match = regex.exec(safeValue)) !== null) {
-        foundMatches.push({
-          index: match.index,
-          length: match[0].length,
-          text: match[0]
-        });
-      }
-      setMatches(foundMatches);
-      setCurrentMatchIndex(0);
-    } else {
-      setMatches([]);
-      setCurrentMatchIndex(0);
-    }
-  }, [searchTerm, value, matchCase]);
-
-  const updateSyntaxHighlighting = useCallback(() => {
     if (!highlighterRef.current) return;
 
     const safeValue = value || '';
     const lines = safeValue.split('\n');
-    const highlightedLines = lines.map((line, index) => {
+    const highlightedLines = lines.map((line) => {
       // YAML syntax highlighting patterns
       let highlightedLine = line;
 
-      // Highlight YAML keys (text before colon)
+      // First, highlight keys that don't have a colon yet (incomplete lines)
+      if (!line.includes(':') && !line.trim().startsWith('#') && !line.trim().startsWith('-') && line.trim().length > 0) {
+        highlightedLine = highlightedLine.replace(
+          /^(\s*)([^\s#].*)$/,
+          (match, indent, key) => {
+            return `${indent}<span class="yaml-key">${key}</span>`;
+          }
+        );
+      }
+
+      // Highlight complete YAML keys (text before colon)
       highlightedLine = highlightedLine.replace(
         /^(\s*)([^:\s#][^:#]*?)(\s*:)(\s*)(.*)$/,
         (match, indent, key, colon, space, val) => {
@@ -120,6 +107,29 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
 
     highlighterRef.current.innerHTML = finalContent;
   }, [value, searchTerm, matches, currentMatchIndex, matchCase]);
+
+  // Find matches for search
+  useEffect(() => {
+    const safeValue = value || '';
+    if (searchTerm) {
+      const flags = matchCase ? 'g' : 'gi';
+      const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
+      const foundMatches = [];
+      let match;
+      while ((match = regex.exec(safeValue)) !== null) {
+        foundMatches.push({
+          index: match.index,
+          length: match[0].length,
+          text: match[0]
+        });
+      }
+      setMatches(foundMatches);
+      setCurrentMatchIndex(0);
+    } else {
+      setMatches([]);
+      setCurrentMatchIndex(0);
+    }
+  }, [searchTerm, value, matchCase]);
 
   const handleScroll = (e) => {
     if (lineNumbersRef.current) {
@@ -229,10 +239,6 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
       setSearchTerm('');
     }
   };
-
-  useEffect(() => {
-    updateSyntaxHighlighting();
-  }, [updateSyntaxHighlighting]);
 
   // Generate indent guides
   const renderIndentGuides = () => {
