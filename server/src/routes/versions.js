@@ -7,7 +7,9 @@ import {
   getVersion,
   revertToVersion,
   compareVersions,
-  cleanupVersionHistory
+  cleanupVersionHistory,
+  debugVersionHistory,
+  repairVersionHistory
 } from '../controllers/versionController.js';
 
 const router = express.Router();
@@ -45,6 +47,16 @@ router.get('/:fileId/versions', auth, [
     .isIn(['true', 'false'])
     .withMessage('includeDeltas must be true or false')
 ], getVersionHistory);
+
+// Repair corrupted version history
+router.post('/:fileId/versions/repair', auth, [
+  param('fileId').isMongoId().withMessage('Invalid file ID')
+], repairVersionHistory);
+
+// Debug version history data
+router.get('/:fileId/versions/debug', auth, [
+  param('fileId').isMongoId().withMessage('Invalid file ID')
+], debugVersionHistory);
 
 // Compare two versions (must be before /:versionNumber route)
 router.get('/:fileId/versions/compare', auth, [

@@ -6,6 +6,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
   const highlighterRef = useRef(null);
   const lineNumbersRef = useRef(null);
   const guidesRef = useRef(null);
+  const previousValueRef = useRef(value);
   const [lineCount, setLineCount] = useState(1);
   const [showSearchReplace, setShowSearchReplace] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,10 +15,42 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [matches, setMatches] = useState([]);
 
+  // Function to close search and clear terms
+  const closeSearchReplace = () => {
+    setShowSearchReplace(false);
+    setSearchTerm("");
+    setReplaceTerm("");
+    setCurrentMatchIndex(0);
+    setMatches([]);
+  };
+
   useEffect(() => {
     const safeValue = value || '';
+    const previousValue = previousValueRef.current || '';
+    
     setLineCount(safeValue.split('\n').length);
-  }, [value]);
+    
+    // Clear search terms when content changes significantly (like when loading a different file)
+    if (searchTerm && previousValue !== safeValue) {
+      const valueLength = safeValue.length;
+      const previousLength = previousValue.length;
+      
+      // If the content length changed by more than 50% or content is completely different, clear search
+      const significantChange = Math.abs(valueLength - previousLength) > Math.max(valueLength, previousLength) * 0.5;
+      const completelyDifferent = valueLength > 100 && previousLength > 100 && !safeValue.includes(previousValue.substring(0, 50));
+      
+      if (significantChange || completelyDifferent) {
+        setSearchTerm("");
+        setReplaceTerm("");
+        setCurrentMatchIndex(0);
+        setMatches([]);
+        setShowSearchReplace(false);
+      }
+    }
+    
+    // Update the ref for next comparison
+    previousValueRef.current = safeValue;
+  }, [value, searchTerm]);
 
   // Update syntax highlighting when value changes
   useEffect(() => {
@@ -164,7 +197,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
 
     // Escape to close search
     if (e.key === 'Escape' && showSearchReplace) {
-      setShowSearchReplace(false);
+      closeSearchReplace();
       return;
     }
 
@@ -292,7 +325,13 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
         <div className="toolbar-right">
           <button 
             className="search-toggle-btn"
-            onClick={() => setShowSearchReplace(!showSearchReplace)}
+            onClick={() => {
+              if (showSearchReplace) {
+                closeSearchReplace();
+              } else {
+                setShowSearchReplace(true);
+              }
+            }}
             title="Search & Replace (Ctrl+F)"
           >
             🔍 Search
@@ -334,7 +373,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
             />
             <button onClick={replaceOne} disabled={matches.length === 0}>Replace</button>
             <button onClick={replaceAll} disabled={matches.length === 0}>Replace All</button>
-            <button onClick={() => setShowSearchReplace(false)} className="close-search">✕</button>
+            <button onClick={closeSearchReplace} className="close-search">✕</button>
           </div>
         </div>
       )}

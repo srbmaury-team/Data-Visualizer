@@ -14,7 +14,7 @@ const VersionHistoryModal = ({
   const [loading, setLoading] = useState(false);
   const [loadingVersions, setLoadingVersions] = useState(new Set());
   const [selectedVersion, setSelectedVersion] = useState(null);
-  const { showSuccess, showError } = useToast();
+  const { showError } = useToast();
   const scrollContainerRef = useRef(null);
 
   const loadVersionHistory = useCallback(async () => {
@@ -44,6 +44,7 @@ const VersionHistoryModal = ({
     try {
       setLoadingVersions(prev => new Set([...prev, version.version]));
       const response = await apiService.getVersion(fileId, version.version);
+      
       setSelectedVersion({
         ...version,
         content: response.content
@@ -100,10 +101,9 @@ const VersionHistoryModal = ({
       const response = await apiService.getVersion(fileId, version.version);
       
       if (onLoadVersion) {
-        onLoadVersion(response.content, `Loaded version ${version.version}`);
+        onLoadVersion(response.content, `Loaded version ${version.version} into editor`);
       }
       
-      showSuccess(`Loaded version ${version.version} into editor`);
       onClose();
       
     } catch {

@@ -5,6 +5,7 @@ import { ToastProvider } from "./contexts/ToastContext";
 import { useAuth } from "./hooks/useAuth";
 import { useYamlFiles } from "./hooks/useYamlFiles";
 import { useToast } from "./hooks/useToast";
+import { useDebounce } from "./hooks/useDebounce";
 import EditorPage from "./pages/EditorPage";
 import DiagramPage from "./pages/DiagramPage";
 import CombinedEditorPage from "./pages/CombinedEditorPage";
@@ -89,6 +90,9 @@ function AppContent() {
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [currentFileId, setCurrentFileId] = useState(null);
 
+  // Debounce yamlText for validation and expensive operations
+  const debouncedYamlText = useDebounce(yamlText, 500); // 500ms delay
+
   // Load saved graphs when user authenticates, clear when they logout
   useEffect(() => {
     if (isAuthenticated) {
@@ -148,11 +152,11 @@ function AppContent() {
     }
   }, [yamlText]);
 
-  // Real-time YAML validation as user types
+  // Real-time YAML validation with debouncing
   useEffect(() => {
-    if (yamlText && yamlText.trim() !== '') {
+    if (debouncedYamlText && debouncedYamlText.trim() !== '') {
       try {
-        const validationResult = validateYAML(yamlText);
+        const validationResult = validateYAML(debouncedYamlText);
         setValidation(validationResult);
         
         // Clear error if YAML becomes valid
@@ -177,9 +181,9 @@ function AppContent() {
       setValidation(null);
       setError(null);
     }
-  }, [yamlText]);
+  }, [debouncedYamlText]);
 
-  const handleVisualize = () => {
+  const handleVisualize = (fileId = null) => {
     try {
       const validationResult = validateYAML(yamlText);
       setValidation(validationResult);
@@ -211,7 +215,13 @@ function AppContent() {
       setTreeInfo(info);
       setTreeData(tree); // Store the raw tree data for export sizing
       setError("");
-      navigate("/diagram");
+      
+      // Navigate to diagram route with file ID if available
+      if (fileId) {
+        navigate(`/diagram/${fileId}`);
+      } else {
+        navigate("/diagram");
+      }
     } catch (e) {
       console.error("Parsing error:", e);
       const errorMessage = "Invalid YAML: " + e.message;
@@ -231,6 +241,17 @@ function AppContent() {
       setError("");
       setValidation(null);
     }
+  };
+
+  const handleNewFile = (navigateTo = "/") => {
+    setYamlText(DEFAULT_YAML);
+    setParsedData(null);
+    setTreeInfo(null);
+    setTreeData(null);
+    setError("");
+    setValidation(null);
+    setCurrentFileId(null);
+    navigate(navigateTo);
   };
 
   const handleSaveGraph = async () => {
@@ -297,16 +318,59 @@ function AppContent() {
     setShowVersionHistory(true);
   };
 
-  const handleLoadGraph = (graph) => {
-    if (yamlText !== graph.content && yamlText !== DEFAULT_YAML) {
-      if (!window.confirm("Loading this graph will replace your current YAML. Continue?")) {
+  const handleLoadGraph = (graph, viewType = 'editor') => {
+    const fileId = graph.id || graph._id;
+    if (!fileId) {
+      showError("No file ID found for this graph");
+      return;
+    }
+    
+    // Check if user is trying to load the same file on the same page
+    const currentPath = location.pathname;
+    const targetPath = `/${viewType}/${fileId}`;
+    const isCurrentFile = currentPath === targetPath;
+    
+    if (isCurrentFile) {
+      // Show confirmation dialog for reloading same file
+      const confirmReload = window.confirm(
+        `You are already viewing this file.\n\n` +
+        `"${graph.title || 'Untitled Graph'}"\n\n` +
+        `Do you want to reload the content from the server? This will replace any unsaved changes in the editor.`
+      );
+      
+      if (!confirmReload) {
+        setShowSavedGraphs(false);
         return;
       }
+      
+      // Dispatch a custom event to trigger reload in the current page
+      const reloadEvent = new CustomEvent('forceReloadYamlFile', {
+        detail: { fileId, graph }
+      });
+      window.dispatchEvent(reloadEvent);
+      
+      setShowSavedGraphs(false);
+      showSuccess(`Reloading "${graph.title || 'Untitled Graph'}" from server...`);
+      return;
     }
-    setYamlText(graph.content);
-    setCurrentFileId(graph.id || graph._id); // Set the file ID for version history
+    
     setShowSavedGraphs(false);
-    navigate("/");
+    setCurrentFileId(fileId);
+    
+    // Navigate to the new ID-based routes
+    switch (viewType) {
+      case 'editor':
+        navigate(`/editor/${fileId}`);
+        break;
+      case 'combined':
+        navigate(`/combined/${fileId}`);
+        break;
+      case 'diagram':
+        navigate(`/diagram/${fileId}`);
+        break;
+      default:
+        navigate(`/editor/${fileId}`);
+    }
   };
 
   const handleDeleteGraph = async (graphId) => {
@@ -409,6 +473,30 @@ function AppContent() {
               savedGraphs={savedGraphs}
               setShowSavedGraphs={setShowSavedGraphs}
               handleClearData={handleClearData}
+              handleNewFile={handleNewFile}
+              isAuthenticated={isAuthenticated}
+              user={user}
+              onShowAuth={() => setShowAuthModal(true)}
+              onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
+              onShowVersionHistory={handleShowVersionHistory}
+              onLogout={logout}
+            />
+          } 
+        />
+        <Route 
+          path="/editor/:id" 
+          element={
+            <EditorPage
+              yamlText={yamlText}
+              setYamlText={setYamlText}
+              handleVisualize={handleVisualize}
+              error={error}
+              validation={validation}
+              handleSaveGraph={handleSaveGraph}
+              savedGraphs={savedGraphs}
+              setShowSavedGraphs={setShowSavedGraphs}
+              handleClearData={handleClearData}
+              handleNewFile={handleNewFile}
               isAuthenticated={isAuthenticated}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
@@ -425,6 +513,18 @@ function AppContent() {
               parsedData={parsedData} 
               treeInfo={treeInfo}
               treeData={treeData}
+              isAuthenticated={isAuthenticated}
+            />
+          } 
+        />
+        <Route 
+          path="/diagram/:id" 
+          element={
+            <DiagramPage 
+              parsedData={parsedData} 
+              treeInfo={treeInfo}
+              treeData={treeData}
+              isAuthenticated={isAuthenticated}
             />
           } 
         />
@@ -441,6 +541,30 @@ function AppContent() {
               savedGraphs={savedGraphs}
               setShowSavedGraphs={setShowSavedGraphs}
               handleClearData={handleClearData}
+              handleNewFile={handleNewFile}
+              isAuthenticated={isAuthenticated}
+              user={user}
+              onShowAuth={() => setShowAuthModal(true)}
+              onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
+              onShowVersionHistory={handleShowVersionHistory}
+              onLogout={logout}
+            />
+          } 
+        />
+        <Route 
+          path="/combined/:id" 
+          element={
+            <CombinedEditorPage
+              yamlText={yamlText}
+              setYamlText={setYamlText}
+              handleVisualize={handleVisualize}
+              error={error}
+              validation={validation}
+              handleSaveGraph={handleSaveGraph}
+              savedGraphs={savedGraphs}
+              setShowSavedGraphs={setShowSavedGraphs}
+              handleClearData={handleClearData}
+              handleNewFile={handleNewFile}
               isAuthenticated={isAuthenticated}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}

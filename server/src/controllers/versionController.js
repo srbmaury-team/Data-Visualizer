@@ -138,6 +138,90 @@ export const getVersionHistory = async (req, res) => {
 };
 
 /**
+ * Emergency repair function for corrupted version history
+ */
+export const repairVersionHistory = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    
+    // Verify file ownership
+    const yamlFile = await YamlFile.findOne({ _id: fileId, owner: req.user._id });
+    if (!yamlFile) {
+      return res.status(404).json({ error: 'File not found or access denied' });
+    }
+    
+    // Check if version 1 exists and is corrupted
+    const version1 = await VersionHistory.findOne({ fileId, version: 1 });
+    if (!version1 || !version1.isSnapshot) {
+      // Delete existing version 1 if it exists
+      if (version1) {
+        await VersionHistory.deleteOne({ _id: version1._id });
+      }
+      
+      // Create proper snapshot version 1
+      await VersionHistory.create({
+        fileId: yamlFile._id,
+        version: 1,
+        delta: [],
+        isSnapshot: true,
+        snapshotContent: yamlFile.content,
+        author: req.user._id,
+        message: 'Repaired initial version',
+        changeMetadata: {
+          summary: 'Emergency repair of initial version',
+          linesChanged: {
+            added: (yamlFile.content.match(/\n/g) || []).length + 1,
+            removed: 0,
+            modified: 0
+          },
+          characterDelta: yamlFile.content.length,
+          saveType: 'initial'
+        },
+        deltaSize: 0
+      });
+      
+      res.json({ message: 'Version history repaired successfully' });
+    } else {
+      res.json({ message: 'Version history is already correct' });
+    }
+    
+  } catch (error) {
+    console.error('Repair version history error:', error);
+    res.status(500).json({ error: 'Failed to repair version history' });
+  }
+};
+
+/**
+ * Debug endpoint to show version history data
+ */
+export const debugVersionHistory = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    
+    const versions = await VersionHistory.find({ fileId })
+      .populate('author', 'username')
+      .sort({ version: 1 });
+    
+    const debugData = versions.map(v => ({
+      version: v.version,
+      isSnapshot: v.isSnapshot,
+      hasSnapshotContent: !!v.snapshotContent,
+      snapshotContentLength: v.snapshotContent?.length || 0,
+      snapshotContentPreview: v.snapshotContent?.substring(0, 100) || '',
+      deltaLength: v.delta?.length || 0,
+      delta: v.delta,
+      message: v.message,
+      saveType: v.changeMetadata?.saveType
+    }));
+    
+    res.json({ debugData });
+  } catch (error) {
+    console.error('Debug version history error:', error);
+    res.status(500).json({ error: 'Failed to debug version history' });
+  }
+};
+
+/**
  * Get a specific version of a file
  */
 export const getVersion = async (req, res) => {
@@ -167,8 +251,15 @@ export const getVersion = async (req, res) => {
       return res.status(404).json({ error: 'Version not found' });
     }
 
-    // Reconstruct content at this version
-    const content = await reconstructContentAtVersion(fileId, parsedVersionNumber);
+    let content = '';
+    
+    // If this is a snapshot, use the snapshot content directly
+    if (version.isSnapshot && version.snapshotContent) {
+      content = version.snapshotContent;
+    } else {
+      // Reconstruct content at this version
+      content = await reconstructContentAtVersion(fileId, parsedVersionNumber);
+    }
 
     res.json({
       version: version.toObject(),
@@ -236,7 +327,6 @@ export const revertToVersion = async (req, res) => {
     yamlFile.currentVersion = result.version.version; // Use the version number, not the version object
     yamlFile.updatedAt = new Date();
     await yamlFile.save();
-    console.log('File updated successfully');
 
     res.json({
       success: true,
@@ -262,21 +352,15 @@ export const compareVersions = async (req, res) => {
     const { fromVersion, toVersion } = req.query;
     const userId = req.user._id;
 
-    console.log('compareVersions called with:', { fileId, fromVersion, toVersion, userId });
-
     // Validate version numbers
     const parsedFromVersion = parseInt(fromVersion);
     const parsedToVersion = parseInt(toVersion);
     
-    console.log('Parsed versions:', { parsedFromVersion, parsedToVersion });
-    
     if (isNaN(parsedFromVersion) || parsedFromVersion < 1) {
-      console.log('Invalid fromVersion:', fromVersion, 'parsed to:', parsedFromVersion);
       return res.status(400).json({ error: 'Invalid fromVersion number' });
     }
     
     if (isNaN(parsedToVersion) || parsedToVersion < 1) {
-      console.log('Invalid toVersion:', toVersion, 'parsed to:', parsedToVersion);
       return res.status(400).json({ error: 'Invalid toVersion number' });
     }
 
@@ -388,11 +472,24 @@ async function reconstructContentAtVersion(fileId, targetVersion) {
       isSnapshot: true
     }).sort({ version: -1 });
 
+    // CRITICAL FIX: If version 1 is not a snapshot, we have a data integrity issue
+    const allVersions = await VersionHistory.find({ fileId }).select('version isSnapshot snapshotContent delta').sort({ version: 1 });
+    
+    if (allVersions.length > 0 && !allVersions[0].isSnapshot) {
+      // Try to get the current content from the main file as emergency fallback
+      const yamlFile = await YamlFile.findById(fileId);
+      if (yamlFile && yamlFile.content && targetVersion === 1) {
+        return yamlFile.content;
+      }
+      
+      return '';
+    }
+
     let baseContent = '';
     let startVersion = 1;
 
     if (snapshot) {
-      baseContent = snapshot.snapshotContent;
+      baseContent = snapshot.snapshotContent || '';
       startVersion = snapshot.version + 1;
     }
 

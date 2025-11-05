@@ -42,11 +42,21 @@ export default function SearchPanel({ onSearch, searchResults, currentIndex, onN
     }
   };
 
+  const handleToggleExpanded = () => {
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    
+    // Clear search when closing the panel
+    if (!newExpandedState) {
+      handleClear();
+    }
+  };
+
   return (
     <div className={`search-panel ${isExpanded ? "expanded" : "collapsed"}`}>
       <button
         className="search-toggle"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggleExpanded}
         title={isExpanded ? "Hide search" : "Show search"}
       >
         🔍 {isExpanded ? "Hide" : "Search"}

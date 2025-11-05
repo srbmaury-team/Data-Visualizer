@@ -183,9 +183,36 @@ const SavedGraphsModal = ({
                     )}
                   </div>
                   <div className="graph-actions">
-                    <button className="load-btn" onClick={() => handleLoadGraph(graph)}>📂 Load</button>
-                    <button className="update-btn" onClick={() => handleUpdateGraph(graph)}>✏️ Update</button>
-                    <button className="delete-btn" onClick={() => handleDeleteGraph(graph.id)}>🗑️</button>
+                    <div className="load-options">
+                      <span className="load-label">Open in:</span>
+                      <div className="view-buttons">
+                        <button 
+                          className="view-btn editor-btn"
+                          onClick={() => handleLoadGraph(graph, 'editor')}
+                          title="Editor View"
+                        >
+                          📝
+                        </button>
+                        <button 
+                          className="view-btn combined-btn"
+                          onClick={() => handleLoadGraph(graph, 'combined')}
+                          title="Combined Editor & Visualizer"
+                        >
+                          🔗
+                        </button>
+                        <button 
+                          className="view-btn diagram-btn"
+                          onClick={() => handleLoadGraph(graph, 'diagram')}
+                          title="Diagram View"
+                        >
+                          📊
+                        </button>
+                      </div>
+                    </div>
+                    <div className="management-options">
+                      <button className="update-btn" onClick={() => handleUpdateGraph(graph)}>✏️ Update</button>
+                      <button className="delete-btn" onClick={() => handleDeleteGraph(graph.id)}>🗑️</button>
+                    </div>
                   </div>
                 </div>
               ))}

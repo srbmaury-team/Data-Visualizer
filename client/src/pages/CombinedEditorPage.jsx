@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
 import DiagramViewer from "../components/DiagramViewer";
 import SearchPanel from "../components/SearchPanel";
+import { useYamlFile } from "../hooks/useYamlFile";
+import { useDebounce } from "../hooks/useDebounce";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import { validateYAML } from "../utils/yamlValidator";
@@ -16,6 +18,7 @@ export default function CombinedEditorPage({
   handleSaveGraph,
   savedGraphs,
   setShowSavedGraphs,
+  handleNewFile,
   isAuthenticated,
   user,
   onShowAuth,
@@ -24,6 +27,7 @@ export default function CombinedEditorPage({
   onLogout,
 }) {
   const navigate = useNavigate();
+  const { id: currentFileId } = useParams(); // Get current file ID from URL
   const [parsedData, setParsedData] = useState(null);
   const [treeInfo, setTreeInfo] = useState(null);
   const [localError, setLocalError] = useState("");
@@ -31,6 +35,29 @@ export default function CombinedEditorPage({
   const [isDragging, setIsDragging] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const previousAuthState = useRef(isAuthenticated);
+  
+  // Debounce yamlText for expensive operations like validation and graph rendering
+  const debouncedYamlText = useDebounce(yamlText, 300); // 300ms delay for more responsive combined view
+  
+  // Use the custom hook to load YAML file by ID if present in URL
+  const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated);
+
+  // Redirect to home if invalid ID error
+  useEffect(() => {
+    if (fileError && fileError.includes('Invalid file ID format')) {
+      navigate('/', { replace: true });
+    }
+  }, [fileError, navigate]);
+
+  // Redirect to remove file ID from URL when user logs out
+  useEffect(() => {
+    // Only redirect if user was previously authenticated and now is not
+    if (previousAuthState.current && !isAuthenticated && currentFileId) {
+      navigate('/combined', { replace: true });
+    }
+    previousAuthState.current = isAuthenticated;
+  }, [isAuthenticated, currentFileId, navigate]);
   
   // Listen for search results from DiagramViewer via custom events
   useEffect(() => {
@@ -79,13 +106,13 @@ export default function CombinedEditorPage({
     }
   }, []);
 
-  // Auto-visualize when YAML changes
+  // Auto-visualize when YAML changes (debounced)
   useEffect(() => {
-    if (yamlText) {
+    if (debouncedYamlText) {
       try {
-        const result = validateYAML(yamlText);
+        const result = validateYAML(debouncedYamlText);
         if (result.valid) {
-          const parsedData = yaml.load(yamlText);
+          const parsedData = yaml.load(debouncedYamlText);
           const treeData = buildTreeFromYAML(parsedData);
           const d3Data = convertToD3Hierarchy(treeData);
           setParsedData(d3Data);
@@ -103,7 +130,7 @@ export default function CombinedEditorPage({
         setTreeInfo(null);
       }
     }
-  }, [yamlText]);
+  }, [debouncedYamlText]);
 
   // Handle resizer drag
   const handleMouseDown = useCallback((e) => {
@@ -145,10 +172,31 @@ export default function CombinedEditorPage({
       {/* Minimal Header */}
       <div className="simple-header">
         <div className="header-left">
-          <button className="back-btn" onClick={() => navigate("/")}>
+          <button className="back-btn" onClick={() => {
+            if (currentFileId) {
+              navigate(`/editor/${currentFileId}`);
+            } else {
+              navigate("/");
+            }
+          }}>
             ← Back
           </button>
           <h1>YAML Editor & Visualizer</h1>
+          {fileLoading && (
+            <span className="file-loading" style={{ color: '#666', fontSize: '14px', marginLeft: '10px' }}>
+              📄 Loading file...
+            </span>
+          )}
+          {fileError && (
+            <span className="file-error" style={{ color: '#d32f2f', fontSize: '14px', marginLeft: '10px' }}>
+              ❌ Error: {fileError}
+            </span>
+          )}
+          {fileData && (
+            <span className="file-info" style={{ color: '#2e7d32', fontSize: '14px', marginLeft: '10px' }}>
+              📁 {fileData.title}
+            </span>
+          )}
           {treeInfo && (
             <span className="tree-info">
               {treeInfo.totalNodes} nodes • {treeInfo.maxDepth + 1} levels
@@ -165,6 +213,15 @@ export default function CombinedEditorPage({
             >
               📂 Import Repo
             </button>
+            {currentFileId && (
+              <button 
+                className="new-file-btn" 
+                onClick={() => handleNewFile("/combined")}
+                title="Start new file (clear current)"
+              >
+                📄 New File
+              </button>
+            )}
             <button className="save-btn" onClick={handleSaveGraph} disabled={!parsedData}>
               💾 Save
             </button>

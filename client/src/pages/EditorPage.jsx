@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
 import AiAssistant from "../components/AiAssistant";
 import AnalysisPanel from "../components/AnalysisPanel";
 import YamlAnalysisService from "../services/yamlAnalysisService";
+import { useYamlFile } from "../hooks/useYamlFile";
+import { useDebounce } from "../hooks/useDebounce";
 import yaml from "js-yaml";
 
 export default function EditorPage({
@@ -15,6 +17,7 @@ export default function EditorPage({
   handleSaveGraph,
   savedGraphs,
   setShowSavedGraphs,
+  handleNewFile,
   isAuthenticated,
   user,
   onShowAuth,
@@ -23,19 +26,41 @@ export default function EditorPage({
   onLogout,
 }) {
   const navigate = useNavigate();
+  const { id: currentFileId } = useParams(); // Get current file ID from URL
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const previousAuthState = useRef(isAuthenticated);
 
-  // Memoized analysis that updates when YAML changes
+  // Debounce yamlText for analysis to prevent excessive computation
+  const debouncedYamlText = useDebounce(yamlText, 500); // 500ms delay for analysis
+
+  // Use the custom hook to load YAML file by ID if present in URL
+  const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated);
+
+  // Redirect to home if invalid ID error
+  useEffect(() => {
+    if (fileError && fileError.includes('Invalid file ID format')) {
+      navigate('/', { replace: true });
+    }
+  }, [fileError, navigate]);
+
+  // Redirect to remove file ID from URL when user logs out
+  useEffect(() => {
+    // Only redirect if user was previously authenticated and now is not
+    if (previousAuthState.current && !isAuthenticated && currentFileId) {
+      navigate('/', { replace: true });
+    }
+    previousAuthState.current = isAuthenticated;
+  }, [isAuthenticated, currentFileId, navigate]);  // Memoized analysis that updates when debounced YAML changes
   const analysis = useMemo(() => {
-    if (!yamlText || yamlText.trim() === '') {
+    if (!debouncedYamlText || debouncedYamlText.trim() === '') {
       return null;
     }
 
     try {
-      const parsedYaml = yaml.load(yamlText);
-      return YamlAnalysisService.analyzeYaml(parsedYaml, yamlText);
+      const parsedYaml = yaml.load(debouncedYamlText);
+      return YamlAnalysisService.analyzeYaml(parsedYaml, debouncedYamlText);
     } catch (error) {
       // Return error analysis for invalid YAML
       return {
@@ -59,16 +84,16 @@ export default function EditorPage({
         }
       };
     }
-  }, [yamlText]);
+  }, [debouncedYamlText]);
 
-  // Simulate loading for analysis updates
+  // Simulate loading for analysis updates (debounced)
   useEffect(() => {
-    if (yamlText && yamlText.trim() !== '') {
+    if (debouncedYamlText && debouncedYamlText.trim() !== '') {
       setAnalysisLoading(true);
       const timer = setTimeout(() => setAnalysisLoading(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [yamlText]);
+  }, [debouncedYamlText]);
 
   return (
     <div className="editor-container">
@@ -99,6 +124,21 @@ export default function EditorPage({
         <div className="header-main">
           <h1>🧩 YAML Diagram Visualizer</h1>
           <p>Convert YAML hierarchy into interactive tree diagrams</p>
+          {fileLoading && (
+            <div className="file-loading" style={{ padding: '10px', textAlign: 'center', color: '#666' }}>
+              📄 Loading file...
+            </div>
+          )}
+          {fileError && (
+            <div className="file-error" style={{ padding: '10px', textAlign: 'center', color: '#d32f2f', backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '4px', margin: '10px 0' }}>
+              ❌ Error loading file: {fileError}
+            </div>
+          )}
+          {fileData && (
+            <div className="file-info" style={{ padding: '10px', textAlign: 'center', color: '#2e7d32', backgroundColor: '#e8f5e8', border: '1px solid #c8e6c9', borderRadius: '4px', margin: '10px 0' }}>
+              📁 Loaded: {fileData.title}
+            </div>
+          )}
           <div className="header-actions">
             <button 
               className="repo-import-btn" 
@@ -107,9 +147,20 @@ export default function EditorPage({
             >
               📂 Import Repo
             </button>
-            <button className="combined-editor-btn" onClick={() => navigate("/combined")} title="Combined Editor & Visualizer">
+            <button className="combined-editor-btn" onClick={() => {
+              if (currentFileId) {
+                navigate(`/combined/${currentFileId}`);
+              } else {
+                navigate("/combined");
+              }
+            }} title="Combined Editor & Visualizer">
               🔗 Combined View
             </button>
+            {currentFileId && (
+              <button className="new-file-btn" onClick={() => handleNewFile("/")} title="Start new file (clear current)">
+                📄 New File
+              </button>
+            )}
             {isAuthenticated && (
               <>
                 <button className="save-graph-btn" onClick={handleSaveGraph} title="Save current graph">
@@ -129,7 +180,7 @@ export default function EditorPage({
             <button className="ai-btn" onClick={() => setShowAiAssistant(true)} title="AI YAML Assistant">
               🤖 AI Assistant
             </button>
-            <button className="visualize-btn" onClick={handleVisualize} title="Create Interactive Diagram">
+            <button className="visualize-btn" onClick={() => handleVisualize(currentFileId)} title="Create Interactive Diagram">
               🎨 Visualize
             </button>
             <button 

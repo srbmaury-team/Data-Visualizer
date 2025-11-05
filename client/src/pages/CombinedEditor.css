@@ -148,7 +148,7 @@
   border-radius: 0.25rem;
 }
 
-.save-btn, .saved-btn, .repo-import-btn, .version-history-btn {
+.save-btn, .saved-btn, .repo-import-btn, .version-history-btn, .new-file-btn {
   padding: 0.5rem 1rem;
   border: 1px solid;
   border-radius: 0.375rem;
@@ -212,6 +212,17 @@
   border-color: #d1d5db;
   color: #9ca3af;
   cursor: not-allowed;
+}
+
+.new-file-btn {
+  background: white;
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.new-file-btn:hover {
+  background: #f59e0b;
+  color: white;
 }
 
 .shared-badge {

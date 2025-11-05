@@ -10,6 +10,20 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Mongoose cast error (invalid ObjectId)
+  if (err.name === 'CastError') {
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({
+        error: 'Invalid ID format',
+        message: 'The provided ID is not a valid MongoDB ObjectId'
+      });
+    }
+    return res.status(400).json({
+      error: 'Cast Error',
+      message: `Invalid ${err.path}: ${err.value}`
+    });
+  }
+
   // Mongoose duplicate key error
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern)[0];
@@ -29,6 +43,14 @@ export const errorHandler = (err, req, res, next) => {
   if (err.name === 'TokenExpiredError') {
     return res.status(401).json({
       error: 'Token expired'
+    });
+  }
+
+  // MongoDB connection errors
+  if (err.name === 'MongoServerError' || err.name === 'MongoError') {
+    return res.status(503).json({
+      error: 'Database connection error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'Service temporarily unavailable'
     });
   }
 

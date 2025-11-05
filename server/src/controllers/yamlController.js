@@ -124,22 +124,46 @@ export const getYamlFileById = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        error: 'Invalid request parameters',
+        details: errors.array()
+      });
+    }
+
+    // Additional check for valid ObjectId format
+    const { id } = req.params;
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ 
+        error: 'Invalid file ID format. Must be a valid MongoDB ObjectId.'
+      });
     }
 
     const yamlFile = await YamlFile.findOne({
-      _id: req.params.id,
+      _id: id,
       owner: req.user._id
     });
 
     if (!yamlFile) {
-      return res.status(404).json({ error: 'YAML file not found' });
+      return res.status(404).json({ 
+        error: 'YAML file not found or you do not have permission to access it.'
+      });
     }
 
     res.json({ yamlFile });
   } catch (error) {
     console.error('Get YAML file error:', error);
-    res.status(500).json({ error: 'Server error while fetching YAML file' });
+    
+    // Handle specific MongoDB errors
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ 
+        error: 'Invalid file ID format. Must be a valid MongoDB ObjectId.'
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Server error while fetching YAML file',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 };
 
@@ -147,20 +171,36 @@ export const getSharedYamlFile = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        error: 'Invalid request parameters',
+        details: errors.array()
+      });
     }
 
-    const yamlFile = await YamlFile.findOne({ shareId: req.params.shareId })
+    const { shareId } = req.params;
+    
+    // Validate shareId format (should be 10 characters)
+    if (!shareId || shareId.length !== 10) {
+      return res.status(400).json({ 
+        error: 'Invalid share ID format. Must be a 10-character string.'
+      });
+    }
+
+    const yamlFile = await YamlFile.findOne({ shareId })
       .populate('owner', 'username')
       .select('-versions'); // Exclude versions for public access
 
     if (!yamlFile) {
-      return res.status(404).json({ error: 'Shared file not found' });
+      return res.status(404).json({ 
+        error: 'Shared file not found or has been removed.'
+      });
     }
 
     // Check if file is public or user is owner
     if (!yamlFile.isPublic && (!req.user || yamlFile.owner._id.toString() !== req.user._id.toString())) {
-      return res.status(403).json({ error: 'Access denied to private file' });
+      return res.status(403).json({ 
+        error: 'Access denied. This file is private and you do not have permission to access it.'
+      });
     }
 
     // Increment view count (don't await to not slow down response)
@@ -169,7 +209,10 @@ export const getSharedYamlFile = async (req, res) => {
     res.json({ yamlFile });
   } catch (error) {
     console.error('Get shared YAML file error:', error);
-    res.status(500).json({ error: 'Server error while fetching shared file' });
+    res.status(500).json({ 
+      error: 'Server error while fetching shared file',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 };
 
@@ -193,7 +236,6 @@ export const updateYamlFile = async (req, res) => {
 
     // If content is being updated, create a new version using the new version history system
     if (content && content !== yamlFile.content) {
-      console.log('Content change detected, creating version history...');
       // Get the latest version number
       const latestVersion = await VersionHistory.getLatestVersion(yamlFile._id);
       const newVersionNumber = latestVersion + 1;
