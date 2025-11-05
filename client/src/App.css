@@ -160,6 +160,7 @@ body {
   display: contents;
 }
 
+
 .save-graph-btn,
 .my-graphs-btn,
 .version-history-btn,
@@ -169,6 +170,7 @@ body {
 .analysis-btn,
 .combined-editor-btn,
 .repo-import-btn,
+.diff-compare-btn,
 .new-file-btn {
   padding: 6px 20px;
   font-size: 0.85em;
@@ -299,6 +301,19 @@ body {
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
+.diff-compare-btn {
+  background: white;
+  color: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
+.diff-compare-btn:hover {
+  background: #8b5cf6;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
 /* Editor Layout */
 .editor-layout {
   display: flex;
@@ -370,7 +385,8 @@ body {
   .visualize-btn,
   .analysis-btn,
   .combined-editor-btn,
-  .repo-import-btn {
+  .repo-import-btn,
+  .diff-compare-btn {
     padding: 4px 16px;
     font-size: 0.8em;
     white-space: nowrap;

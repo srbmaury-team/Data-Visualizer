@@ -141,6 +141,13 @@ export default function EditorPage({
           )}
           <div className="header-actions">
             <button 
+              className="diff-compare-btn" 
+              onClick={() => navigate('/diff')}
+              title="Compare YAML Files"
+            >
+              🔍 Diff Compare
+            </button>
+            <button 
               className="repo-import-btn" 
               onClick={onShowRepositoryImporter}
               title="Import GitHub Repository"

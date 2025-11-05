@@ -1,0 +1,395 @@
+/* DiffComparePage.css - Unique classes to avoid conflicts */
+.yaml-diff-compare-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8f9fa;
+}
+
+.yaml-diff-header-section {
+  background: white;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.yaml-diff-title-container {
+  margin-bottom: 1.5rem;
+}
+
+.yaml-diff-back-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.yaml-diff-back-btn:hover {
+  background: #545b62;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.yaml-diff-main-title {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.yaml-diff-subtitle {
+  margin: 0;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.yaml-diff-controls-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.yaml-diff-view-controls {
+  display: flex;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.25rem;
+  border: 1px solid #e0e0e0;
+}
+
+.yaml-diff-view-toggle {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.yaml-diff-view-toggle:hover {
+  background: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.yaml-diff-view-toggle.yaml-diff-active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.yaml-diff-action-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.yaml-diff-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.yaml-diff-btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.yaml-diff-btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.yaml-diff-btn-primary:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.yaml-diff-btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.yaml-diff-btn-secondary:hover {
+  background: #545b62;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.yaml-diff-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.yaml-diff-editors-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #e0e0e0;
+  overflow: hidden;
+}
+
+.yaml-diff-editor-panel {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.yaml-diff-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.yaml-diff-editor-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.yaml-diff-paste-btn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.yaml-diff-paste-btn:hover {
+  background: #138496;
+  transform: translateY(-1px);
+}
+
+.yaml-diff-unified-view {
+  flex: 1;
+  overflow: hidden;
+}
+
+.yaml-diff-summary-section {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.yaml-diff-summary-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.yaml-diff-stat {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.yaml-diff-stat.yaml-diff-stat-added {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.yaml-diff-stat.yaml-diff-stat-deleted {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.yaml-diff-stat.yaml-diff-stat-modified {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.yaml-diff-copy-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.yaml-diff-copy-btn:hover {
+  background: #1e7e34;
+  transform: translateY(-1px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1024px) {
+  .yaml-diff-header-section {
+    padding: 1rem;
+  }
+
+  .yaml-diff-main-title {
+    font-size: 1.75rem;
+  }
+
+  .yaml-diff-controls-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .yaml-diff-action-controls {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .yaml-diff-header-section {
+    padding: 0.75rem;
+  }
+
+  .yaml-diff-back-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .yaml-diff-main-title {
+    font-size: 1.5rem;
+  }
+
+  .yaml-diff-subtitle {
+    font-size: 1rem;
+  }
+
+  .yaml-diff-content-area {
+    margin: 0.5rem;
+  }
+
+  .yaml-diff-editors-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .yaml-diff-view-controls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .yaml-diff-view-toggle {
+    flex: 1;
+    text-align: center;
+  }
+
+  .yaml-diff-action-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .yaml-diff-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .yaml-diff-editor-header {
+    padding: 0.75rem;
+  }
+
+  .yaml-diff-editor-label {
+    font-size: 0.875rem;
+  }
+
+  .yaml-diff-paste-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .yaml-diff-summary-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .yaml-diff-summary-stats {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .yaml-diff-stat {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .yaml-diff-copy-btn {
+    align-self: center;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .yaml-diff-header-section {
+    padding: 0.5rem;
+  }
+
+  .yaml-diff-main-title {
+    font-size: 1.25rem;
+  }
+
+  .yaml-diff-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .yaml-diff-summary-stats {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .yaml-diff-stat {
+    text-align: center;
+  }
+}

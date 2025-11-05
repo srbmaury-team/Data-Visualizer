@@ -9,6 +9,7 @@ import { useDebounce } from "./hooks/useDebounce";
 import EditorPage from "./pages/EditorPage";
 import DiagramPage from "./pages/DiagramPage";
 import CombinedEditorPage from "./pages/CombinedEditorPage";
+import DiffComparePage from "./pages/DiffComparePage";
 import SharedViewerPage from "./pages/SharedViewerPage";
 import SharedViewerWrapper from "./pages/SharedViewerWrapper";
 import DocsPage from "./pages/DocsPage";
@@ -425,7 +426,7 @@ function AppContent() {
     
     showSuccess(successMessage);
     
-    // Process the YAML for visualization without navigating
+    // Process the YAML for visualization
     try {
       const validationResult = validateYAML(importData.yamlText);
       setValidation(validationResult);
@@ -450,6 +451,24 @@ function AppContent() {
         setTreeInfo(info);
         setTreeData(tree);
         setError("");
+        
+        // Context-aware navigation after successful import
+        const currentPath = location.pathname;
+        if (currentPath.includes('/combined')) {
+          // If we're on a combined page, stay on combined page
+          if (currentFileId) {
+            navigate(`/combined/${currentFileId}`);
+          } else {
+            navigate('/combined');
+          }
+        } else {
+          // If we're on editor page or any other page, go to editor
+          if (currentFileId) {
+            navigate(`/editor/${currentFileId}`);
+          } else {
+            navigate('/');
+          }
+        }
       }
     } catch (e) {
       console.error("Parsing error after import:", e);
@@ -571,6 +590,14 @@ function AppContent() {
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
               onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
+            />
+          } 
+        />
+        <Route 
+          path="/diff" 
+          element={
+            <DiffComparePage 
+              isAuthenticated={isAuthenticated}
             />
           } 
         />

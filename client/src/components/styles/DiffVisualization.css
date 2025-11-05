@@ -1,0 +1,370 @@
+/* DiffVisualization.css - Unique classes to avoid conflicts */
+.yaml-diff-visualization {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.yaml-diff-visualization.yaml-diff-visualization-empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.yaml-diff-empty-state {
+  text-align: center;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.yaml-diff-empty-state p {
+  margin: 0.5rem 0;
+}
+
+.yaml-diff-stats {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.yaml-diff-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.yaml-diff-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-added {
+  border-left: 4px solid #28a745;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-deleted {
+  border-left: 4px solid #dc3545;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-modified {
+  border-left: 4px solid #ffc107;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-unchanged {
+  border-left: 4px solid #6c757d;
+}
+
+.yaml-diff-stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-added .yaml-diff-stat-number {
+  color: #28a745;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-deleted .yaml-diff-stat-number {
+  color: #dc3545;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-modified .yaml-diff-stat-number {
+  color: #ffc107;
+}
+
+.yaml-diff-stat-item.yaml-diff-stat-unchanged .yaml-diff-stat-number {
+  color: #6c757d;
+}
+
+.yaml-diff-stat-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Unified Diff View */
+.yaml-diff-unified-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.yaml-diff-view-header {
+  padding: 1rem;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.yaml-diff-view-title {
+  margin: 0;
+  color: #495057;
+}
+
+.yaml-diff-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.yaml-diff-legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.yaml-diff-legend-item.yaml-diff-legend-added {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.yaml-diff-legend-item.yaml-diff-legend-deleted {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.yaml-diff-legend-item.yaml-diff-legend-modified {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.yaml-diff-view-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #fefefe;
+}
+
+.yaml-diff-line {
+  display: flex;
+  margin-bottom: 1px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.yaml-diff-line.yaml-diff-line-delete {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.yaml-diff-line.yaml-diff-line-insert {
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.yaml-diff-line.yaml-diff-line-modify {
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.yaml-diff-line-numbers {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 100px;
+  padding: 0.25rem 0.5rem;
+  background: #f8f9fa;
+  border-right: 1px solid #e0e0e0;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.yaml-diff-left-line-num,
+.yaml-diff-right-line-num {
+  width: 40px;
+  text-align: right;
+}
+
+.yaml-diff-line-content {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+}
+
+.yaml-diff-deleted-line,
+.yaml-diff-added-line {
+  display: flex;
+  align-items: flex-start;
+}
+
+.yaml-diff-marker {
+  min-width: 20px;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.yaml-diff-deleted-line .yaml-diff-marker {
+  color: #dc3545;
+}
+
+.yaml-diff-added-line .yaml-diff-marker {
+  color: #28a745;
+}
+
+.yaml-diff-line-text {
+  flex: 1;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Side-by-Side Diff View */
+.yaml-diff-side-by-side-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.yaml-diff-panels {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #e0e0e0;
+  overflow: hidden;
+}
+
+.yaml-diff-panel {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.yaml-diff-panel-header {
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  color: #495057;
+  text-align: center;
+}
+
+.yaml-diff-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.yaml-diff-panel-content .yaml-diff-line {
+  display: flex;
+  padding: 0.25rem 0.5rem;
+  margin: 0;
+}
+
+.yaml-diff-panel-content .yaml-diff-line-number {
+  min-width: 50px;
+  padding-right: 0.5rem;
+  color: #6c757d;
+  text-align: right;
+  border-right: 1px solid #f0f0f0;
+  margin-right: 0.5rem;
+}
+
+.yaml-diff-panel-content .yaml-diff-line-content {
+  flex: 1;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.yaml-diff-panel-content .yaml-diff-line.yaml-diff-line-delete {
+  background: rgba(220, 53, 69, 0.15);
+}
+
+.yaml-diff-panel-content .yaml-diff-line.yaml-diff-line-insert {
+  background: rgba(40, 167, 69, 0.15);
+}
+
+.yaml-diff-panel-content .yaml-diff-line.yaml-diff-line-modify {
+  background: rgba(255, 193, 7, 0.15);
+}
+
+/* Scrollbar styling */
+.yaml-diff-view-content::-webkit-scrollbar,
+.yaml-diff-panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.yaml-diff-view-content::-webkit-scrollbar-track,
+.yaml-diff-panel-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.yaml-diff-view-content::-webkit-scrollbar-thumb,
+.yaml-diff-panel-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.yaml-diff-view-content::-webkit-scrollbar-thumb:hover,
+.yaml-diff-panel-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .yaml-diff-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .yaml-diff-stat-item {
+    padding: 0.5rem;
+  }
+
+  .yaml-diff-stat-number {
+    font-size: 1.25rem;
+  }
+
+  .yaml-diff-view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+
+  .yaml-diff-legend {
+    gap: 0.5rem;
+  }
+
+  .yaml-diff-legend-item {
+    font-size: 0.75rem;
+  }
+
+  .yaml-diff-panels {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .yaml-diff-line {
+    font-size: 0.75rem;
+  }
+
+  .yaml-diff-line-numbers {
+    min-width: 80px;
+    font-size: 0.7rem;
+  }
+
+  .yaml-diff-left-line-num,
+  .yaml-diff-right-line-num {
+    width: 35px;
+  }
+
+  .yaml-diff-panel-content .yaml-diff-line-number {
+    min-width: 40px;
+    font-size: 0.75rem;
+  }
+}

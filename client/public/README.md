@@ -1,203 +1,308 @@
-# 🧩 YAML Data Visualizer
+# 🎯 YAML Data Visualizer
 
-A powerful, production-ready full-stack application that converts YAML hierarchies into beautiful interactive tree diagrams. Features comprehensive user authentication, file sharing, AI-powered assistance, and a professional editing experience with high-quality export capabilities.
+**Transform YAML hierarchies into stunning interactive tree diagrams with professional-grade tools and intelligent analysis.**
+
+A comprehensive full-stack application that seamlessly converts complex YAML structures into beautiful, interactive visualizations. Built with React, Node.js, and D3.js, featuring advanced editing capabilities, AI-powered assistance, and enterprise-ready collaboration tools.
 
 ![React](https://img.shields.io/badge/React-19.1.1-blue) ![Node.js](https://img.shields.io/badge/Node.js-18+-green) ![MongoDB](https://img.shields.io/badge/MongoDB-8.0+-brightgreen) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Express](https://img.shields.io/badge/Express-4.18+-red) ![OpenAI](https://img.shields.io/badge/OpenAI-6.7.0-purple) ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF)
 
 ---
 
-## 🌟 **Key Features**
+## ✨ **Core Capabilities**
 
-### ✅ **Enhanced Version History Modal**
-- **Optimized Modal Layout**: Version history modal uses 95% of screen space for better content viewing
-- **Scroll Position Preservation**: Clicking to view version content preserves scroll position
-- **Individual Loading States**: Loading indicators per version instead of full modal reload
-- **Improved User Experience**: Smooth interactions with preserved navigation state
-- **Full-Width Content**: Modal header and content properly utilize available space
-- **Responsive Design**: Consistent behavior across all device sizes
-
-### ✅ **GitHub Repository Import**
-- **One-Click Repository Import**: Import any public GitHub repository structure as YAML
-- **Smart Tree Building**: Automatically converts repository directories and files into hierarchical YAML
-- **Rate Limit Handling**: Intelligent API management to avoid GitHub rate limits
-- **Progressive Loading**: Loads repository structure with optimized depth to balance detail and performance
-- **Node Limit Protection**: Auto-limited to 500 nodes to ensure smooth performance and prevent memory issues
-- **Proper YAML Formatting**: Generates clean YAML with hyphens, proper extensions, and directory structure
-- **Error Handling**: Comprehensive error messages for private repos, rate limits, and invalid URLs
-- **Seamless Integration**: Import button available in Header, Editor, and Combined Editor pages
-
-### ✅ **User Profile Management System**
-### ✅ **Advanced Export System**
-- **High-Quality PNG Export**: Professional diagram exports with intelligent sizing
-- **White Node Backgrounds**: Clean, readable node styling with dark text
-- **Dotted Background Pattern**: Professional appearance with subtle texture
-- **Smart Tree-Based Sizing**: Automatically calculates optimal dimensions using tree structure
-- **Keyboard Shortcuts**: Quick export with Ctrl+E (Cmd+E on Mac)
-- **Clean Output**: Removes grid patterns and UI elements for professional results
-- **Tree Data Integration**: Uses level analysis for perfect fit-to-screen sizing
-
-### ✅ **Enhanced YAML Validation & User Experience**
-- **Real-Time Validation**: Live YAML syntax checking with immediate feedback
-- **Toast Notifications**: Instant error alerts when attempting to visualize invalid YAML
-- **Smart Error Handling**: Context-aware error messages with line-specific guidance
-- **Graceful Degradation**: Editor remains functional even with invalid content
-
-### ✅ **Complete User Profile Management System**
-- **Comprehensive Profile Page**: Three-tab interface (Profile, Dashboard, Security)
-- **Profile Editing**: Update username and email with real-time header updates
-- **Password Management**: Secure password change functionality
-- **Account Deletion**: Full account deletion with confirmation
-- **Dashboard Analytics**: Personal statistics and recent activity
-- **Clickable Username**: Navigate to profile by clicking username in header
-
-### ✅ **Enhanced Authentication & UI**
-- **Professional Auth Modals**: Clean, responsive login/signup forms with modern styling
-- **Smart Error Handling**: Context-aware error messages and session management
-- **Graceful Logout Flow**: Proper success messaging and home page redirect
-- **Real-time Updates**: Profile changes instantly reflect across the app
-- **Session Management**: Automatic cleanup and token refresh
-- **CORS Optimization**: Multi-device development support (localhost + network IP)
-
-### ✅ **User Authentication & File Management**
-- **JWT-based Authentication**: Secure user registration and login
-- **Personal File Library**: Save, organize, and manage YAML diagrams
-- **Share Functionality**: Generate shareable links for public viewing
-- **Cross-Device Access**: Mobile-optimized with network IP support
-
-### ✅ **Enhanced Sharing System**
-- **One-Click Share**: Copy shareable links directly from saved graphs
-- **Read-Only Viewer**: Clean, distraction-free view for shared content
-- **Public Gallery**: Browse community-shared diagrams *(planned)*
-- **Mobile Compatible**: Full functionality across all devices
-
-### ✅ **Improved Architecture**
-- **MVC Backend**: Separated controllers from routes for better organization
-- **Network Accessibility**: Server configured for mobile device access
-- **CORS Optimization**: Seamless cross-device development and sharing
-- **Error Handling**: Comprehensive error boundaries and user feedback
-
-### ✅ **Enhanced AI & Analysis Features**
-- **AI Visual Intelligence**: AI-powered tree structure analysis and insights
-- **Multi-Service Analysis**: YAML, visual, and performance analysis services
-- **Smart Recommendations**: AI suggestions for optimization and improvements
-- **Interactive Analysis Panel**: Real-time YAML structure evaluation with scoring
-- **Context-Aware Responses**: AI maintains conversation context for better assistance
-
----
-
-## ✨ Core Features
+### 🔍 **YAML Diff Comparison**
+Compare two YAML files with precision and clarity using our advanced diff engine:
+- **Side-by-Side Comparison**: Visual diff with synchronized scrolling and line-by-line highlighting
+- **Unified Diff View**: Traditional diff format with clear addition, deletion, and modification markers
+- **Smart Analysis**: Comprehensive statistics showing changes, additions, deletions, and unchanged content
+- **One-Click Paste**: Instant clipboard integration for rapid file comparison
+- **Export Results**: Copy unified diff output for documentation and sharing
+- **Professional Styling**: Clean, readable interface with color-coded change indicators
 
 ### 📝 **Professional YAML Editor**
-- **Syntax Highlighting**: Color-coded YAML with real-time validation
-- **Smart Indentation**: Auto-indent with proper YAML formatting
-- **Search & Replace**: Full-featured find/replace functionality
-- **Line Numbers**: Professional code editor experience
-- **White Background Theme**: Clean, readable interface
+Experience the ultimate YAML editing environment:
+- **Smart Auto-Indentation**: Maintains proper YAML indentation with automatic nesting
+- **Search & Replace**: Full-featured find/replace with case sensitivity and match navigation  
+- **Line Numbers & Guides**: Professional editor with line numbers and indentation guides
+- **Clean Interface**: Optimized light theme with professional syntax highlighting
 
-### 🔀 **Split-Panel Interface**
-- **Combined Editor**: Edit YAML and view diagram simultaneously
-- **Adjustable Divider**: Drag to customize panel widths (20%-80%)
-- **Real-time Updates**: Diagram updates as you type
-- **Responsive Design**: Works on desktop, tablet, and mobile
+### 🌳 **Interactive Tree Visualization**
+Bring your YAML structures to life:
+- **D3.js Powered Graphics**: Smooth, high-performance tree rendering with fluid animations
+- **Click to Expand/Collapse**: Individual node controls with intuitive +/- buttons
+- **Path Tracing**: Visual breadcrumb highlighting from root to selected nodes
+- **Smart Zoom Controls**: Precise zoom with fit-to-screen and focus capabilities
+- **Full-Screen Mode**: Immersive viewing experience for complex structures
 
-### 🎨 **Interactive Diagram Viewer**
-- **D3.js Powered**: Smooth, performant tree visualization
-- **Smart Node Display**: Auto-sizing with properties and copy functionality
-- **Horizontal Layout**: Logical left-to-right hierarchy
-- **Path Highlighting**: Click nodes to trace from root
-- **Expand/Collapse**: Per-node and global tree controls
+### 🔄 **Split-Panel Workspace**
+Maximize productivity with our adaptive interface:
+- **Real-Time Synchronization**: Instant diagram updates as you type
+- **Adjustable Layout**: Drag-to-resize panels (20%-80% flexibility)
+- **Responsive Design**: Seamless experience across desktop, tablet, and mobile
+- **Context Switching**: Effortless transitions between editor-only and combined views
 
-### 🔍 **Advanced Search & Navigation**
-- **Real-time Search**: Find nodes by name or property
-- **Smart Highlighting**: Visual feedback with match counters
-- **Zoom Controls**: Precise zoom in/out/reset functionality
-- **Fullscreen Mode**: Immersive viewing for large diagrams
-- **Minimap**: Overview navigation for large diagrams
+### 📊 **GitHub Repository Integration**
+Import entire repository structures with a single click:
+- **Universal Compatibility**: Works with any public GitHub repository
+- **Smart Tree Building**: Intelligent conversion of directory structures to YAML
+- **Performance Optimization**: Auto-limited to 500 nodes for optimal rendering
+- **Rate Limit Management**: Intelligent API handling to prevent service interruption
+- **Error Resilience**: Comprehensive handling of private repositories and edge cases
 
-### 💾 **Data Management**
-- **User Accounts**: Secure registration and login
-- **Save & Organize**: Personal library of YAML diagrams
-- **Share Links**: Generate public URLs for sharing
+### 🤖 **AI-Powered Intelligence**
+Leverage artificial intelligence for enhanced productivity:
+- **Natural Language Generation**: Create YAML from plain English descriptions
+- **Structure Analysis**: AI-driven optimization suggestions and best practices
+- **Context Awareness**: Maintains conversation history for intelligent assistance
+- **Performance Insights**: Automated analysis of complexity and optimization opportunities
+- **Fallback Support**: Helpful guidance even without API access
+
+### 🔐 **Enterprise Authentication**
+Secure, scalable user management:
+- **JWT-Based Security**: Industry-standard authentication with refresh tokens
+- **Profile Management**: Comprehensive user profiles with customizable settings
+- **Session Control**: Automatic cleanup and secure logout procedures
+- **Cross-Device Sync**: Seamless experience across multiple devices
+- **Data Ownership**: Complete control over your personal files and account
+
+### 💾 **Advanced File Management**
+Organize and share your work efficiently:
+- **Personal Library**: Save, categorize, and manage unlimited YAML diagrams
+- **Version History**: Complete audit trail with rollback capabilities
+- **Share Links**: Generate secure, read-only public URLs for collaboration
 - **Export Options**: High-quality PNG export with professional styling
-- **Real-time Validation**: Live YAML syntax checking with error notifications
-- **GitHub Import**: One-click import of any public GitHub repository structure as YAML
+- **Individual File Management**: Update, delete, and organize files with comprehensive controls
 
-### 🤖 **AI-Powered Assistant**
-- **OpenAI Integration**: Generate YAML from natural language
-- **Smart Analysis**: Structure analysis and optimization tips
-- **Context Awareness**: Maintains conversation context
-- **Fallback Mode**: Helpful guidance without API key
-
-### 📊 **Analysis & Insights**
-- **Tree Statistics**: Node counts, depth, complexity metrics
-- **Performance Insights**: Optimization recommendations
-- **Validation**: Real-time YAML syntax checking
-- **Best Practices**: Structure improvement suggestions
+### 📈 **Analytics & Insights**
+Understand your data structures deeply:
+- **Complexity Metrics**: Node counts, depth analysis, and structural complexity scoring
+- **Performance Monitoring**: Real-time validation and optimization recommendations
+- **Usage Statistics**: Personal dashboard with activity tracking and trends
+- **Quality Scoring**: Automated assessment of YAML structure and best practices
 
 ---
 
-## 🚀 Quick Start
+## 🚀 **Getting Started**
 
 ### Prerequisites
-- **Node.js** 18+ and npm
-- **MongoDB** (local or Atlas)
+- **Node.js 18+** with npm package manager
+- **MongoDB 8.0+** (local installation or MongoDB Atlas)
 - **OpenAI API Key** (optional, for AI features)
 
-### Installation
+### Quick Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/srbmaury-team/Data-Visualizer.git
 cd Data-Visualizer
 
-# Install backend dependencies
-cd server
-npm install
+# Install server dependencies
+cd server && npm install
 
-# Install frontend dependencies
-cd ../client
-npm install
+# Install client dependencies  
+cd ../client && npm install
 ```
 
-### Configuration
+### Environment Configuration
 
-1. **Backend Setup**:
+1. **Server Configuration**:
    ```bash
    cd server
    cp .env.example .env
-   # Edit .env with your MongoDB URI and JWT secret
+   # Configure your MongoDB URI and JWT secret
    ```
 
-2. **Start MongoDB** (if running locally)
+2. **Database Setup**:
+   - Start MongoDB locally or configure Atlas connection
+   - Database collections are created automatically
 
-3. **Run the Application**:
+3. **Launch Application**:
    ```bash
-   # Terminal 1: Start backend server
+   # Terminal 1: Backend server
    cd server && npm start
 
-   # Terminal 2: Start frontend development server
+   # Terminal 2: Frontend development server
    cd client && npm run dev -- --host
    ```
 
-4. **Access the Application**:
-   - Frontend: `http://localhost:5173` (or network IP for mobile)
-   - Backend API: `http://localhost:5000`
+4. **Access Points**:
+   - **Web Interface**: `http://localhost:5173`
+   - **API Endpoint**: `http://localhost:5000`
+   - **Network Access**: Available on your local IP for mobile testing
 
-### 🤖 AI Assistant Setup (Optional)
+### AI Assistant Setup
 
-1. Get an OpenAI API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. In the app, click "🤖 AI Assistant" → "🔑" to enter your key
-3. Key is stored locally for enhanced features
+Unlock the full potential with OpenAI integration:
+
+1. Obtain an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Navigate to "🤖 AI Assistant" in the application
+3. Click the "🔑" icon and enter your API key
+4. Key is stored securely in local storage for immediate access
 
 ---
 
-## 📖 Usage Guide
+## 📱 **User Experience**
 
-### Basic Workflow
+### Intuitive Workflow
 
-1. **Register/Login** to save your work and access profile features
-2. **Write YAML** in the left editor panel OR **Import from GitHub** using any public repository URL
-3. **View Diagram** updates in real-time on the right
+**Create**: Start with the professional YAML editor or import existing files
+**Visualize**: Watch your structure come to life in real-time interactive diagrams  
+**Analyze**: Leverage AI insights and built-in analytics for optimization
+**Share**: Export high-quality images or generate shareable links
+**Collaborate**: Use diff comparison tools for team workflows
+
+### Cross-Platform Excellence
+
+- **Desktop First**: Optimized for professional development environments
+- **Mobile Ready**: Full functionality on tablets and smartphones
+- **Network Accessible**: Server supports local network connections for multi-device workflows
+- **Local Storage**: YAML content persistence in browser for session continuity
+
+---
+
+## 🏗️ **Architecture**
+
+### Frontend Stack
+- **React 19.1.1**: Modern functional components with hooks
+- **React Router 7.9**: Client-side routing and navigation
+- **D3.js 7.9**: Advanced data visualization and animations
+- **Vite 7.1**: Lightning-fast development and optimized builds
+
+### Backend Infrastructure
+- **Node.js 18+**: High-performance JavaScript runtime
+- **Express 4.18**: Robust web application framework
+- **MongoDB 8.0**: Flexible document database with indexing
+- **JWT Authentication**: Secure token-based user sessions
+
+### Development Tools
+- **ESLint**: Code quality and consistency enforcement
+- **Vite DevServer**: Hot module replacement and instant updates
+- **GitHub Pages**: Automated deployment and hosting
+
+---
+
+## 🔧 **API Integration**
+
+### OpenAI Assistant
+```javascript
+// AI-powered YAML generation
+const response = await aiService.generateYAML(prompt);
+```
+
+### GitHub Repository Import
+```javascript
+// One-click repository structure import
+const yamlStructure = await githubService.importRepository(repoUrl);
+```
+
+### File Management
+```javascript
+// Save and retrieve user diagrams
+const savedFile = await yamlService.saveGraph(yamlContent, metadata);
+```
+
+---
+
+## 📚 **Documentation**
+
+### File Structure
+```
+Data-Visualizer/
+├── client/                    # React frontend application
+│   ├── src/
+│   │   ├── components/        # Reusable UI components
+│   │   ├── pages/            # Main application views
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── services/         # API and business logic
+│   │   ├── utils/            # Helper functions and utilities
+│   │   └── contexts/         # React context providers
+│   └── public/               # Static assets and index.html
+├── server/                   # Node.js backend application
+│   ├── src/
+│   │   ├── controllers/      # Request handling logic
+│   │   ├── models/           # Database schemas and models
+│   │   ├── routes/           # API endpoint definitions
+│   │   ├── middleware/       # Authentication and error handling
+│   │   └── services/         # Business logic and external APIs
+│   └── package.json          # Server dependencies
+└── README.md                 # Project documentation
+```
+
+### Key Components
+
+**YAML Editor**: Advanced code editor with syntax highlighting and validation
+**Diagram Viewer**: Interactive D3.js tree visualization with zoom and pan
+**Diff Comparator**: Side-by-side and unified diff views for YAML comparison
+**AI Assistant**: OpenAI-powered natural language processing for YAML generation
+**File Manager**: Complete CRUD operations for user diagrams and versions
+
+---
+
+## 🚀 **Deployment**
+
+### Production Build
+```bash
+# Build optimized production bundle
+cd client && npm run build
+
+# Serve static files
+cd server && npm start
+```
+
+### GitHub Pages Deployment
+```bash
+# Deploy to GitHub Pages
+cd client && npm run deploy
+```
+
+### Environment Variables
+```env
+# Server Configuration
+MONGODB_URI=mongodb://localhost:27017/yaml-visualizer
+JWT_SECRET=your-secure-jwt-secret
+PORT=5000
+
+# Optional Features
+OPENAI_API_KEY=your-openai-api-key
+```
+
+---
+
+## 🤝 **Contributing**
+
+We welcome contributions that enhance the YAML visualization experience:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow React functional component patterns
+- Maintain comprehensive test coverage
+- Ensure mobile responsiveness
+- Document new features thoroughly
+
+---
+
+## � **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎯 **Roadmap**
+
+**Performance Optimization**: Enhanced rendering for massive YAML structures
+**Collaborative Editing**: Real-time multi-user editing capabilities  
+**Advanced Exports**: PDF, SVG, and interactive HTML export options
+**Plugin System**: Extensible architecture for custom visualizations
+**Enterprise Features**: SSO integration and advanced security controls
+
+---
+
+**Built with ❤️ by the Data Visualization Team**
 4. **Save & Share** your diagrams with custom names
 5. **Manage Profile** by clicking your username in the header
 6. **Use AI Assistant** for generation and analysis
@@ -271,75 +376,7 @@ children:
 
 ## 🏗️ Architecture
 
-### Frontend (`/client`)
-```
-React 19 + Vite 7
-├── components/          # Reusable UI components
-│   ├── YamlEditor.jsx      # Professional code editor
-│   ├── DiagramViewer.jsx   # D3.js tree visualization
-│   ├── VersionHistoryModal.jsx # Optimized version history with scroll preservation
-│   ├── RepositoryImporter.jsx # GitHub repository import
-│   ├── AiAssistant.jsx     # AI-powered helper
-│   ├── AuthModal.jsx       # Login/register forms
-│   ├── SavedGraphsModal.jsx # File management
-│   ├── SaveGraphModal.jsx  # Save dialog
-│   ├── Minimap.jsx         # Diagram overview navigation
-│   ├── AnalysisPanel.jsx   # YAML analysis panel
-│   ├── SearchPanel.jsx     # Search functionality
-│   ├── TreeInfoPanel.jsx   # Tree statistics
-│   ├── NodeFilterPanel.jsx # Node filtering
-│   ├── ReadmeViewer.jsx    # Documentation viewer
-│   ├── Header.jsx          # Application header
-│   └── Toast.jsx           # Notification system
-├── pages/               # Route components
-│   ├── EditorPage.jsx      # Basic editor interface
-│   ├── CombinedEditorPage.jsx # Split-panel editor (main)
-│   ├── DiagramPage.jsx     # Diagram-only view
-│   ├── ProfilePage.jsx     # User profile management
-│   ├── SharedViewerPage.jsx   # Public sharing view
-│   ├── SharedViewerWrapper.jsx # Shared content wrapper
-│   └── DocsPage.jsx        # Documentation page
-├── contexts/            # React contexts
-│   ├── AuthContext.jsx     # Authentication context
-│   └── ToastContext.jsx    # Toast notification context
-├── hooks/               # Custom React hooks
-│   ├── useAuth.js          # Authentication hook
-│   ├── useToast.js         # Toast notification hook
-│   └── useYamlFiles.js     # YAML file management hook
-├── services/            # API communication
-│   ├── apiService.js       # Backend API calls
-│   ├── openaiService.js    # AI integration
-│   ├── githubService.js    # GitHub API integration
-│   ├── yamlAnalysisService.js # Analysis logic
-│   └── visualAnalysisService.js # Tree analysis
-├── utils/               # Helper functions
-│   ├── treeBuilder.js      # YAML → Tree conversion
-│   ├── yamlValidator.js    # Validation logic
-│   └── pngExport.js        # PNG export functionality
-└── assets/              # Static assets
-    └── default.yaml        # Default YAML content
-```
-
-### Backend (`/server`)
-```
-Node.js + Express 4.18 + MongoDB 8.0
-├── src/
-│   ├── controllers/     # Business logic (MVC pattern)
-│   │   ├── authController.js   # Authentication
-│   │   ├── userController.js   # User management
-│   │   └── yamlController.js   # File operations
-│   ├── routes/          # API route definitions
-│   │   ├── auth.js         # /api/auth/*
-│   │   ├── user.js         # /api/user/*
-│   │   └── yaml.js         # /api/yaml/*
-│   ├── models/          # Database schemas
-│   │   ├── User.js         # User accounts
-│   │   └── YamlFile.js     # YAML documents
-│   └── middleware/      # Custom middleware
-│       ├── auth.js         # JWT verification
-│       └── errorHandler.js # Error handling
-└── server.js            # Main server entry point
-```
+[Visualize the whole project structure here](https://yaml-visualizer.netlify.app/shared/ZjrtD8_Jv_)
 
 ---
 
