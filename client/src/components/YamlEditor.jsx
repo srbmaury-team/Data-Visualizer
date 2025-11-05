@@ -14,6 +14,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
   const [matchCase, setMatchCase] = useState(false);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [matches, setMatches] = useState([]);
+  const scrollTimeoutRef = useRef(null);
 
   // Function to close search and clear terms
   const closeSearchReplace = () => {
@@ -51,6 +52,15 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
     // Update the ref for next comparison
     previousValueRef.current = safeValue;
   }, [value, searchTerm]);
+
+  // Cleanup effect for scroll timeout
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        cancelAnimationFrame(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Update syntax highlighting when value changes
   useEffect(() => {
@@ -165,16 +175,30 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
   }, [searchTerm, value, matchCase]);
 
   const handleScroll = (e) => {
-    if (lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = e.target.scrollTop;
+    // Cancel any pending scroll sync to prevent accumulation
+    if (scrollTimeoutRef.current) {
+      cancelAnimationFrame(scrollTimeoutRef.current);
     }
-    if (highlighterRef.current) {
-      highlighterRef.current.scrollTop = e.target.scrollTop;
-      highlighterRef.current.scrollLeft = e.target.scrollLeft;
-    }
-    if (guidesRef.current) {
-      guidesRef.current.style.transform = `translate(-${e.target.scrollLeft}px, -${e.target.scrollTop}px)`;
-    }
+    
+    // Use requestAnimationFrame for smooth synchronization
+    scrollTimeoutRef.current = requestAnimationFrame(() => {
+      const scrollTop = e.target.scrollTop;
+      const scrollLeft = e.target.scrollLeft;
+      
+      if (lineNumbersRef.current) {
+        lineNumbersRef.current.scrollTop = scrollTop;
+      }
+      if (highlighterRef.current) {
+        // Use scrollTop/scrollLeft to respect overflow boundaries
+        highlighterRef.current.scrollTop = scrollTop;
+        highlighterRef.current.scrollLeft = scrollLeft;
+      }
+      if (guidesRef.current) {
+        guidesRef.current.style.transform = `translate(-${scrollLeft}px, -${scrollTop}px)`;
+      }
+      
+      scrollTimeoutRef.current = null;
+    });
   };
 
   const handleKeyDown = (e) => {

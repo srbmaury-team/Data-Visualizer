@@ -176,4 +176,14 @@
     flex-direction: column;
     gap: 0.25rem;
   }
+  
+  /* Mobile scrolling optimizations */
+  .yaml-diff-editor-textarea {
+    -webkit-overflow-scrolling: touch;
+    will-change: auto;
+  }
+  
+  .yaml-diff-editor-highlighted-content {
+    -webkit-font-smoothing: antialiased;
+  }
 }
