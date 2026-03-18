@@ -6,8 +6,11 @@ import {
   updateUserProfile,
   changePassword,
   deleteAccount,
-  getDashboard
+  getDashboard,
+  listAllUsers,
+  searchUsers
 } from '../controllers/userController.js';
+// List all users (for sharing/collaboration UI)
 
 const router = express.Router();
 
@@ -46,5 +49,9 @@ router.delete('/account', auth, [
 
 // Get user's dashboard data
 router.get('/dashboard', auth, getDashboard);
+
+// Scalable user search for sharing modal
+router.get('/search', auth, searchUsers);
+router.get('/all', auth, listAllUsers);
 
 export default router;

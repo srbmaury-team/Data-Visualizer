@@ -82,6 +82,39 @@
   max-height: calc(80vh - 100px);
 }
 
+.graphs-tabs {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  background: #f1f5f9;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.graphs-tab {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #475569;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.graphs-tab:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.graphs-tab.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
 .no-graphs {
   text-align: center;
   padding: 40px 20px;

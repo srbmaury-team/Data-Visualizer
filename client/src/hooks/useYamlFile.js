@@ -31,22 +31,24 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
       // Refresh token before making API call
       apiService.refreshToken();
       const response = await apiService.getYamlFile(fileId);
-      
+
       if (response.yamlFile) {
         const { yamlFile } = response;
         setFileData(yamlFile);
-        
-        // Update the YAML text with the loaded content
-        if (setYamlText && yamlFile.content) {
+        // Only set YAML text if user has access
+        const userId = apiService.getToken() ? (JSON.parse(atob(apiService.getToken().split('.')[1]))?.id) : null;
+        const isOwner = userId && yamlFile.owner && (yamlFile.owner.toString() === userId.toString());
+        const perm = yamlFile.permissions?.[userId] || yamlFile.permissions?.get?.(userId) || null;
+        if (setYamlText && yamlFile.content && (isOwner || perm === 'edit' || perm === 'view')) {
           setYamlText(yamlFile.content);
         }
       }
     } catch (err) {
       console.error('Error loading YAML file:', err);
-      
+
       // Handle specific error types
       let errorMessage = 'Failed to load file';
-      
+
       if (err.message?.includes('Invalid ID format') || err.message?.includes('Invalid file ID')) {
         errorMessage = 'Invalid file ID format';
       } else if (err.message?.includes('not found')) {
@@ -56,7 +58,7 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
       } else if (err.message?.includes('Unauthorized')) {
         errorMessage = 'Authentication required. Please log in.';
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -73,7 +75,7 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
         setLoading(false);
         return;
       }
-      
+
       if (!isAuthenticated) {
         setFileData(null);
         setError(null);
@@ -95,11 +97,11 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
         // Refresh token before making API call
         apiService.refreshToken();
         const response = await apiService.getYamlFile(id);
-        
+
         if (response.yamlFile) {
           const { yamlFile } = response;
           setFileData(yamlFile);
-          
+
           // Update the YAML text with the loaded content
           if (setYamlText && yamlFile.content) {
             setYamlText(yamlFile.content);
@@ -107,10 +109,10 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
         }
       } catch (err) {
         console.error('Error loading YAML file:', err);
-        
+
         // Handle specific error types
         let errorMessage = 'Failed to load file';
-        
+
         if (err.message?.includes('Invalid ID format') || err.message?.includes('Invalid file ID')) {
           errorMessage = 'Invalid file ID format';
         } else if (err.message?.includes('not found')) {
@@ -120,7 +122,7 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
         } else if (err.message?.includes('Unauthorized')) {
           errorMessage = 'Authentication required. Please log in.';
         }
-        
+
         setError(errorMessage);
       } finally {
         setLoading(false);

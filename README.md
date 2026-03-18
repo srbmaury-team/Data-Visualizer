@@ -2,7 +2,7 @@
 
 **Transform YAML hierarchies into stunning interactive tree diagrams with professional-grade tools and intelligent analysis.**
 
-A comprehensive full-stack application that seamlessly converts complex YAML structures into beautiful, interactive visualizations. Built with React, Node.js, and D3.js, featuring advanced editing capabilities, AI-powered assistance, and enterprise-ready collaboration tools.
+A comprehensive full-stack application that seamlessly converts complex YAML structures into beautiful, interactive visualizations. Built with React, Node.js, and D3.js, featuring advanced editing capabilities, AI-powered assistance, and enterprise-ready sharing/versioning workflows.
 
 ![React](https://img.shields.io/badge/React-19.1.1-blue) ![Node.js](https://img.shields.io/badge/Node.js-18+-green) ![MongoDB](https://img.shields.io/badge/MongoDB-8.0+-brightgreen) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Express](https://img.shields.io/badge/Express-4.18+-red) ![OpenAI](https://img.shields.io/badge/OpenAI-6.7.0-purple) ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF)
 
@@ -12,9 +12,11 @@ A comprehensive full-stack application that seamlessly converts complex YAML str
 
 ### 🔍 **YAML Diff Comparison**
 Compare two YAML files with precision and clarity using our advanced diff engine:
-- **Side-by-Side Comparison**: Visual diff with synchronized scrolling and line-by-line highlighting
-- **Unified Diff View**: Traditional diff format with clear addition, deletion, and modification markers
+- **Side-by-Side Workspace**: Paired editors with synchronized scrolling and a dedicated comparator panel below
+- **Side-by-Side Indicators**: Explicit `+`, `-`, `~`, and `∅` markers for added/removed/modified/missing lines
+- **Unified Diff View**: Full-context diff with clear source tags (`Original`, `Modified`, `Both`)
 - **Smart Analysis**: Comprehensive statistics showing changes, additions, deletions, and unchanged content
+- **Multi-Source Loading**: Compare manual input, saved graphs, specific versions, or current editor content
 - **One-Click Paste**: Instant clipboard integration for rapid file comparison
 - **Export Results**: Copy unified diff output for documentation and sharing
 - **Professional Styling**: Clean, readable interface with color-coded change indicators
@@ -68,9 +70,12 @@ Secure, scalable user management:
 ### 💾 **Advanced File Management**
 Organize and share your work efficiently:
 - **Personal Library**: Save, categorize, and manage unlimited YAML diagrams
-- **Version History**: Complete audit trail with rollback capabilities
-- **Share Links**: Generate secure, read-only public URLs for collaboration
-- **Export Options**: High-quality PNG export with professional styling
+- **Owned + Shared Views**: Browse files in separate `Owned by me` and `Shared with me` tabs
+- **Save-Time Branching**: Non-owners can replace (if allowed) or save a copy as a new owner
+- **Permission-Aware Save UX**: View-only users are read-only and cannot trigger save/replace flows
+- **Version History**: Shared users with permission can view history and author attribution
+- **Share Links**: Generate secure public URLs while managing per-user view/edit access
+- **Export Options**: High-quality PNG and SVG export with professional styling and scalability. Effortlessly download your diagrams as crisp images for presentations, documentation, or sharing.
 - **Individual File Management**: Update, delete, and organize files with comprehensive controls
 
 ### 📈 **Analytics & Insights**
@@ -149,7 +154,7 @@ Unlock the full potential with OpenAI integration:
 **Visualize**: Watch your structure come to life in real-time interactive diagrams  
 **Analyze**: Leverage AI insights and built-in analytics for optimization
 **Share**: Export high-quality images or generate shareable links
-**Collaborate**: Use diff comparison tools for team workflows
+**Review**: Use saved/version-aware diff comparison tools for team workflows
 
 ### Cross-Platform Excellence
 
@@ -284,30 +289,6 @@ We welcome contributions that enhance the YAML visualization experience:
 - Ensure mobile responsiveness
 - Document new features thoroughly
 
----
-
-## � **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🎯 **Roadmap**
-
-**Performance Optimization**: Enhanced rendering for massive YAML structures
-**Collaborative Editing**: Real-time multi-user editing capabilities  
-**Advanced Exports**: PDF, SVG, and interactive HTML export options
-**Plugin System**: Extensible architecture for custom visualizations
-**Enterprise Features**: SSO integration and advanced security controls
-
----
-
-**Built with ❤️ by the Data Visualization Team**
-4. **Save & Share** your diagrams with custom names
-5. **Manage Profile** by clicking your username in the header
-6. **Use AI Assistant** for generation and analysis
-7. **Access Dashboard** for personal analytics and file management
-
 ### YAML Format
 
 ```yaml
@@ -391,11 +372,18 @@ children:
 ### YAML Files
 - `POST /api/yaml` - Save new YAML file
 - `GET /api/yaml/my` - Get user's files (paginated)
+- `GET /api/yaml/shared-with-me` - Get files shared with current user
 - `GET /api/yaml/:id` - Get specific file
 - `GET /api/yaml/shared/:shareId` - Get shared file (public)
 - `PUT /api/yaml/:id` - Update file
 - `DELETE /api/yaml/:id` - Delete file
 - `GET /api/yaml/public/browse` - Browse public files
+
+### Versioning
+- `POST /api/files/:id/versions` - Create a new file version
+- `GET /api/files/:id/versions` - Get version history
+- `GET /api/files/:id/versions/:version` - Get specific version content
+- `POST /api/files/:id/versions/:version/revert` - Revert file to a version
 
 ### User Management & Profile
 - `GET /api/user/profile` - Get detailed user profile with statistics
@@ -430,9 +418,9 @@ children:
 ### 🎛️ Interface Buttons
 | Button | Function |
 |--------|----------|
-| `💾 Save Graph` | Save with custom name (auth required) |
-| `📚 My Graphs` | Manage saved files (auth required) |
-| `📜 Version History` | View, load, and revert file versions with optimized scroll preservation |
+| `💾 Save Graph` | Permission-aware save (replace or copy workflow based on ownership/access) |
+| `📚 My Graphs` | Manage owned and shared files in separate tabs |
+| `📜 Version History` | View, load, and revert file versions (shared-access aware with author attribution) |
 | `🤖 AI Assistant` | Open AI helper |
 | `🔍 Analysis` | Toggle analysis panel |
 | `📖 Docs` | View documentation |
@@ -440,7 +428,7 @@ children:
 | `🔍 Search` | Find nodes in diagram |
 | `⛶ Fullscreen` | Toggle fullscreen mode |
 | `⟲ Reset View` | Center and reset zoom |
-| `📷 Export PNG` | Download high-quality diagram as PNG image |
+| `📷 Export PNG/SVG` | Download high-quality diagram as PNG or SVG image |
 | `🔄 Combined View` | Switch to split-panel editor |
 | `👤 Profile` | Access user profile and settings |
 
@@ -463,28 +451,7 @@ children:
 
 ## 🚧 Roadmap
 
-> **Current Status**: The application is stable and production-ready with all core features implemented. The application includes enhanced version history modal with optimized layout and scroll preservation, along with GitHub repository import with large repository protection and safety mechanisms. The roadmap below outlines planned enhancements and capabilities.
-
-### 🎯 **Next Phase Features**
-- [ ] **SVG Export**: Vector format export for scalability and editing
-- [ ] **PDF Export**: Professional documentation-ready exports
-- [ ] **Node Customization**: User-customizable colors, shapes, and sizes
-- [ ] **Template Library**: Pre-built YAML templates for common use cases
-- [ ] **Real-time Collaborative Editing**: WebSocket-based multi-user editing
-- [ ] **Mobile Responsiveness**: Enhanced touch controls and mobile layout
-
-### 🔮 **Future Vision**
-- [ ] **Performance Optimizations**: Advanced rendering for 500+ node diagrams
-- [ ] **Interactive Diagram Builder**: Drag-and-drop visual editor
-- [ ] **Version Control**: Git-like history with visual diffs
-- [ ] **Advanced Exports**: PowerPoint, Figma, Draw.io integration
-- [ ] **Enhanced AI Features**: Advanced natural language to YAML conversion
-- [ ] **Smart Data Import**: HR systems, Jira, database schema sync
-- [ ] **Advanced Visualization**: 3D diagrams, animations, custom themes
-- [ ] **Diagram Themes**: Multiple color themes (dark mode, minimal, corporate)
-- [ ] **Team Workspaces**: Role-based permissions and workflows
-- [ ] **Plugin System**: Extensible architecture for custom features
-- [ ] **Mobile Apps**: Native iOS/Android applications
+> **Current Status**: The application is stable and production-ready with core features implemented. Recent updates include save-time branching (replace-or-copy), permission-aware shared file UX, shared-access version history, and a rewritten diff checker with synchronized side-by-side editing and clearer indicators.
 
 ---
 
@@ -596,11 +563,11 @@ cd server && npm test
 - **OpenAI API**: Requires active internet connection and valid API key for AI features
 - **Browser storage**: localStorage size limits vary by browser (~5-10MB typical limit)
 - **Mobile interactions**: Some advanced features work better on desktop/tablet devices
-- **GitHub imports**: Auto-limited to 500 nodes to ensure smooth performance and prevent memory issues
+- **GitHub imports**: Auto-limited to representative structures (default ~500 nodes; reduced for larger repositories)
 
 > 💡 **Tip**: For large hierarchies, consider using the collapse/expand features to improve performance and navigation.
 
-> 🛠️ **Updates**: Enhanced version history modal with optimized layout and scroll preservation, plus GitHub repository import with large repository protection and 500-node safety limits.
+> 🛠️ **Updates**: Save-time branching for non-owners, shared-file permissions hardening (including view-only save blocking), shared-access version history with edit attribution, and improved diff checker UX.
 
 ---
 

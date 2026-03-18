@@ -1,12 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import './styles/YamlDiffEditor.css';
 
-const YamlDiffEditor = ({ 
-  value, 
-  onChange, 
-  diffData, 
-  side, 
-  showLineNumbers = true 
+const YamlDiffEditor = ({
+  value,
+  onChange,
+  diffData,
+  side,
+  showLineNumbers = true
 }) => {
   const textareaRef = useRef(null);
 
@@ -64,8 +64,8 @@ const YamlDiffEditor = ({
     return (
       <div className="yaml-diff-editor-line-numbers">
         {lines.map((_, index) => (
-          <div 
-            key={index + 1} 
+          <div
+            key={index + 1}
             className={`yaml-diff-editor-line-number ${getLineClassName(index + 1)}`}
           >
             {index + 1}
@@ -82,8 +82,8 @@ const YamlDiffEditor = ({
     return (
       <div className="yaml-diff-editor-highlighted-content">
         {lines.map((line, index) => (
-          <div 
-            key={index + 1} 
+          <div
+            key={index + 1}
             className={`yaml-diff-editor-highlighted-line ${getLineClassName(index + 1)}`}
           >
             {line || '\u00A0'} {/* Non-breaking space for empty lines */}
@@ -97,7 +97,7 @@ const YamlDiffEditor = ({
     <div className="yaml-diff-editor-container">
       <div className="yaml-diff-editor-wrapper">
         {showLineNumbers && renderLineNumbers()}
-        
+
         <div className="yaml-diff-editor-content">
           <textarea
             ref={textareaRef}
@@ -107,11 +107,11 @@ const YamlDiffEditor = ({
             placeholder={`Paste your ${side === 'left' ? 'original' : 'modified'} YAML here...`}
             spellCheck={false}
           />
-          
+
           {diffData && renderHighlightedContent()}
         </div>
       </div>
-      
+
       {value && (
         <div className="yaml-diff-editor-stats">
           <span>{value.split('\n').length} lines</span>

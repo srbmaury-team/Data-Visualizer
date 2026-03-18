@@ -69,7 +69,7 @@ body {
     max-width: 1100px;
     justify-content: center;
   }
-  
+
   .save-graph-btn,
   .my-graphs-btn,
   .version-history-btn,
@@ -181,6 +181,39 @@ body {
   border: 2px solid;
   white-space: nowrap;
   min-width: fit-content;
+}
+
+.save-graph-btn:disabled,
+.my-graphs-btn:disabled,
+.version-history-btn:disabled,
+.docs-btn:disabled,
+.ai-btn:disabled,
+.visualize-btn:disabled,
+.analysis-btn:disabled,
+.combined-editor-btn:disabled,
+.repo-import-btn:disabled,
+.diff-compare-btn:disabled,
+.new-file-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.25);
+}
+
+.save-graph-btn:disabled:hover,
+.my-graphs-btn:disabled:hover,
+.version-history-btn:disabled:hover,
+.docs-btn:disabled:hover,
+.ai-btn:disabled:hover,
+.visualize-btn:disabled:hover,
+.analysis-btn:disabled:hover,
+.combined-editor-btn:disabled:hover,
+.repo-import-btn:disabled:hover,
+.diff-compare-btn:disabled:hover,
+.new-file-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .save-graph-btn {
@@ -349,11 +382,11 @@ body {
     flex-direction: column;
     height: auto;
   }
-  
+
   .editor-main {
     order: 2;
   }
-  
+
   .analysis-sidebar {
     width: 100%;
     order: 1;
@@ -410,8 +443,13 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -430,6 +468,7 @@ body {
     transform: translateY(50px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1073,7 +1112,7 @@ body {
   .header {
     padding: 60px 20px 30px 20px;
   }
-  
+
   .auth-section {
     position: static !important;
     top: auto !important;
@@ -1082,11 +1121,11 @@ body {
     order: -1;
     justify-content: center;
   }
-  
+
   .header-main {
     order: 1;
   }
-  
+
   .header-actions {
     order: 2;
     gap: 8px;
@@ -1096,19 +1135,19 @@ body {
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .modal-header {
     padding: 15px;
   }
-  
+
   .modal-body {
     padding: 15px;
   }
-  
+
   .graph-actions {
     flex-direction: column;
   }
-  
+
   .graph-actions button {
     width: 100%;
   }
@@ -1142,8 +1181,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner p {
@@ -1203,4 +1247,3 @@ body {
   background: #0056b3;
   transform: translateY(-1px);
 }
-

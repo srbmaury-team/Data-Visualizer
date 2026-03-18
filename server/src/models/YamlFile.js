@@ -32,6 +32,16 @@ const yamlFileSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Per-user permissions: { userId: 'view' | 'edit' | 'no-access' }
+  permissions: {
+    type: Map,
+    of: {
+      type: String,
+      enum: ['no-access', 'view', 'edit'],
+      default: 'no-access'
+    },
+    default: {}
+  },
   views: {
     type: Number,
     default: 0
@@ -79,13 +89,13 @@ yamlFileSchema.index({ isPublic: 1, createdAt: -1 });
 // shareId already has unique: true which creates index
 
 // Pre-save middleware to update metadata
-yamlFileSchema.pre('save', function(next) {
+yamlFileSchema.pre('save', function (next) {
   if (this.isModified('content')) {
     try {
       // Calculate basic metadata
       this.metadata.fileSize = Buffer.byteLength(this.content, 'utf8');
       this.metadata.lastValidated = new Date();
-      
+
       // You can add YAML parsing logic here to calculate nodeCount and maxDepth
       // For now, we'll let the frontend handle this and send it via API
     } catch (error) {
@@ -96,24 +106,24 @@ yamlFileSchema.pre('save', function(next) {
 });
 
 // Method to increment view count
-yamlFileSchema.methods.incrementViews = function() {
+yamlFileSchema.methods.incrementViews = function () {
   this.views += 1;
   return this.save();
 };
 
 // Method to add version
-yamlFileSchema.methods.addVersion = function(content, description = '') {
+yamlFileSchema.methods.addVersion = function (content, description = '') {
   this.versions.push({
     content: this.content, // Save current content as version
     description,
     createdAt: new Date()
   });
-  
+
   // Keep only last 10 versions
   if (this.versions.length > 10) {
     this.versions = this.versions.slice(-10);
   }
-  
+
   this.content = content; // Update current content
   return this.save();
 };

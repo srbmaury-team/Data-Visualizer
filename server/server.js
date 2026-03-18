@@ -5,6 +5,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import http from 'http';
 
 // Load environment variables
 dotenv.config();
@@ -18,8 +19,10 @@ import versionRoutes from './src/routes/versions.js';
 // Import middleware
 import { errorHandler } from './src/middleware/errorHandler.js';
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
 
 // Security middleware
 app.use(helmet());
@@ -89,8 +92,8 @@ app.use('*', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
+// Start server (HTTP)
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 Server accessible from any device on network: http://0.0.0.0:${PORT}`);
   console.log(`📱 Local access: http://localhost:${PORT}`);

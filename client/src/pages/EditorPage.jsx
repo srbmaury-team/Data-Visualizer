@@ -37,6 +37,20 @@ export default function EditorPage({
 
   // Use the custom hook to load YAML file by ID if present in URL
   const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated);
+  const candidateUserIds = [`${user?.id || ''}`, `${user?._id || ''}`].filter(Boolean);
+  const editorReadOnly = (() => {
+    if (!currentFileId || !fileData) return false;
+    const ownerId = `${fileData.owner?._id || fileData.owner || ''}`;
+    const isOwner = candidateUserIds.includes(ownerId);
+    if (isOwner) return false;
+
+    const permission = candidateUserIds
+      .map((id) => fileData.permissions?.[id] || fileData.permissions?.get?.(id))
+      .find(Boolean) || 'no-access';
+
+    return permission !== 'edit';
+  })();
+  const canSaveGraph = !editorReadOnly;
 
   // Redirect to home if invalid ID error
   useEffect(() => {
@@ -53,6 +67,7 @@ export default function EditorPage({
     }
     previousAuthState.current = isAuthenticated;
   }, [isAuthenticated, currentFileId, navigate]);  // Memoized analysis that updates when debounced YAML changes
+
   const analysis = useMemo(() => {
     if (!debouncedYamlText || debouncedYamlText.trim() === '') {
       return null;
@@ -67,17 +82,17 @@ export default function EditorPage({
         complexity: { score: 0, level: 'Invalid', details: [] },
         performance: { score: 0, recommendations: [] },
         bestPractices: { score: 0, suggestions: [] },
-        issues: { 
-          critical: [{ 
-            type: 'YAML Syntax Error', 
-            message: `Parse error: ${error.message}`, 
-            severity: 'critical' 
-          }], 
-          warnings: [], 
-          info: [] 
+        issues: {
+          critical: [{
+            type: 'YAML Syntax Error',
+            message: `Parse error: ${error.message}`,
+            severity: 'critical'
+          }],
+          warnings: [],
+          info: []
         },
-        summary: { 
-          overall: 'error', 
+        summary: {
+          overall: 'error',
           message: 'Invalid YAML syntax prevents analysis',
           overallScore: 0,
           recommendations: []
@@ -101,8 +116,8 @@ export default function EditorPage({
         <div className="auth-section">
           {isAuthenticated ? (
             <>
-              <span 
-                className="user-name clickable-username" 
+              <span
+                className="user-name clickable-username"
                 onClick={() => navigate('/profile')}
                 title="Go to profile"
               >
@@ -140,15 +155,20 @@ export default function EditorPage({
             </div>
           )}
           <div className="header-actions">
-            <button 
-              className="diff-compare-btn" 
-              onClick={() => navigate('/diff')}
+            <button
+              className="diff-compare-btn"
+              onClick={() => navigate('/diff', {
+                state: {
+                  yamlContent: yamlText,
+                  fileName: fileData?.title || 'Current Editor',
+                },
+              })}
               title="Compare YAML Files"
             >
               🔍 Diff Compare
             </button>
-            <button 
-              className="repo-import-btn" 
+            <button
+              className="repo-import-btn"
               onClick={onShowRepositoryImporter}
               title="Import GitHub Repository"
             >
@@ -170,7 +190,12 @@ export default function EditorPage({
             )}
             {isAuthenticated && (
               <>
-                <button className="save-graph-btn" onClick={handleSaveGraph} title="Save current graph">
+                <button
+                  className="save-graph-btn"
+                  onClick={handleSaveGraph}
+                  title={canSaveGraph ? "Save current graph" : "View-only access: save disabled"}
+                  disabled={!canSaveGraph}
+                >
                   💾 Save Graph
                 </button>
                 <button className="version-history-btn" onClick={onShowVersionHistory} title="View version history">
@@ -190,9 +215,9 @@ export default function EditorPage({
             <button className="visualize-btn" onClick={() => handleVisualize(currentFileId)} title="Create Interactive Diagram">
               🎨 Visualize
             </button>
-            <button 
-              className={`analysis-btn ${showAnalysis ? 'active' : ''}`} 
-              onClick={() => setShowAnalysis(!showAnalysis)} 
+            <button
+              className={`analysis-btn ${showAnalysis ? 'active' : ''}`}
+              onClick={() => setShowAnalysis(!showAnalysis)}
               title="Toggle Analysis Panel"
             >
               🔍 Analysis
@@ -200,10 +225,10 @@ export default function EditorPage({
           </div>
         </div>
       </div>
-      
+
       <div className="editor-layout">
         <div className="editor-main">
-          <YamlEditor value={yamlText} onChange={setYamlText} />
+          <YamlEditor value={yamlText} onChange={setYamlText} readOnly={editorReadOnly} />
           <div className="controls">
             {error && <div className="error">{error}</div>}
             {validation && (
@@ -255,17 +280,17 @@ export default function EditorPage({
             )}
           </div>
         </div>
-        
+
         {showAnalysis && (
           <div className="analysis-sidebar">
-            <AnalysisPanel 
-              analysis={analysis} 
+            <AnalysisPanel
+              analysis={analysis}
               isLoading={analysisLoading}
             />
           </div>
         )}
       </div>
-      
+
       <AiAssistant
         isOpen={showAiAssistant}
         onClose={() => setShowAiAssistant(false)}

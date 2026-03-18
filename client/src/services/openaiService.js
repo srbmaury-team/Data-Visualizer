@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 class OpenAIYamlService {
   constructor(apiKey) {
-    this.openai = apiKey ? new OpenAI({ 
+    this.openai = apiKey ? new OpenAI({
       apiKey,
       dangerouslyAllowBrowser: true // Note: In production, use a backend proxy
     }) : null;
@@ -73,24 +73,24 @@ Generate appropriate YAML based on the request. If modifying existing YAML, pres
       });
 
       const response = completion.choices[0]?.message?.content || '';
-      
+
       // Extract YAML from response
       let yaml = '';
       let explanation = '';
-      
+
       // Try to find YAML code block first
       const yamlMatch = response.match(/```(?:yaml|yml)?\n([\s\S]*?)\n```/);
-      
+
       if (yamlMatch) {
         yaml = yamlMatch[1];
         explanation = response.replace(yamlMatch[0], '').trim();
       } else {
         // If no code block, try to extract YAML by looking for indented content
         const lines = response.split('\n');
-        const yamlStartIndex = lines.findIndex(line => 
+        const yamlStartIndex = lines.findIndex(line =>
           line.match(/^[a-zA-Z0-9_-]+:\s*/) || line.startsWith('name:') || line.startsWith('version:')
         );
-        
+
         if (yamlStartIndex !== -1) {
           yaml = lines.slice(yamlStartIndex).join('\n');
           explanation = lines.slice(0, yamlStartIndex).join('\n').trim();
@@ -109,9 +109,9 @@ Generate appropriate YAML based on the request. If modifying existing YAML, pres
   }
 
   // Fallback to mock responses when OpenAI is not available
-  getMockResponse(userInput, currentYaml) {
+  getMockResponse(userInput) {
     const input = userInput.toLowerCase();
-    
+
     // Provide helpful guidance instead of pre-made YAML structures
     if (input.includes('e-commerce') || input.includes('ecommerce')) {
       return {

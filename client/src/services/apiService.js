@@ -1,7 +1,3 @@
-/**
- * Centralized API service for communicating with the backend
- */
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 class ApiService {
@@ -17,11 +13,11 @@ class ApiService {
     const headers = {
       'Content-Type': 'application/json',
     };
-    
+
     if (this.token) {
       headers.Authorization = `Bearer ${this.token}`;
     }
-    
+
     return headers;
   }
 
@@ -61,7 +57,7 @@ class ApiService {
       if (!response.ok) {
         // Handle different error response formats from backend
         let errorMessage = `HTTP error! status: ${response.status}`;
-        
+
         if (data.error) {
           errorMessage = data.error;
         } else if (data.errors && Array.isArray(data.errors)) {
@@ -70,20 +66,20 @@ class ApiService {
         } else if (data.message) {
           errorMessage = data.message;
         }
-        
+
         throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
       console.error('API request failed:', error);
-      
+
       // Handle authentication errors - just clear token, let AuthContext handle the UI
       if (error.message.includes('401') || error.message.includes('Unauthorized')) {
         this.setToken(null);
         // Don't redirect here, let the AuthContext handle authentication state
       }
-      
+
       throw error;
     }
   }
@@ -104,16 +100,16 @@ class ApiService {
       login: credentials.email, // Send email as login field
       password: credentials.password
     };
-    
+
     const response = await this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(loginData),
     });
-    
+
     if (response.token) {
       this.setToken(response.token);
     }
-    
+
     return response;
   }
 
@@ -139,6 +135,12 @@ class ApiService {
   async getMyYamlFiles(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = queryString ? `/yaml/my?${queryString}` : '/yaml/my';
+    return this.request(endpoint);
+  }
+
+  async getSharedWithMeYamlFiles(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/yaml/shared-with-me?${queryString}` : '/yaml/shared-with-me';
     return this.request(endpoint);
   }
 
@@ -248,6 +250,18 @@ class ApiService {
    */
   getToken() {
     return this.token;
+  }
+
+  /**
+   * Set per-user permissions for a YAML file
+   * @param {string} id - YAML file ID
+   * @param {object} permissions - { userId: 'view'|'edit'|'no-access', ... }
+   */
+  async setYamlFilePermissions(id, permissions) {
+    return this.request(`/yaml/${id}/permissions`, {
+      method: 'POST',
+      body: JSON.stringify({ permissions }),
+    });
   }
 }
 

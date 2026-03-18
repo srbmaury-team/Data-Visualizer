@@ -20,10 +20,10 @@ class VisualAnalysisService {
     }
 
     const metrics = this.calculateTreeMetrics(treeData);
-    const insights = this.generateVisualInsights(metrics, treeData);
-    const issues = this.identifyStructuralIssues(metrics, treeData);
-    const recommendations = this.generateRestructuringRecommendations(metrics, issues, treeData);
-    const highlights = this.identifyHighlightNodes(treeData, metrics, issues);
+    const insights = this.generateVisualInsights(metrics);
+    const issues = this.identifyStructuralIssues(metrics);
+    const recommendations = this.generateRestructuringRecommendations(metrics);
+    const highlights = this.identifyHighlightNodes(treeData, metrics);
 
     return {
       metrics,
@@ -58,18 +58,18 @@ class VisualAnalysisService {
 
     // Calculate basic metrics
     this.traverseForMetrics(treeData, 0, metrics);
-    
+
     // Calculate derived metrics
-    metrics.averageDepth = metrics.totalNodes > 0 ? 
+    metrics.averageDepth = metrics.totalNodes > 0 ?
       Array.from(metrics.depthDistribution.entries())
         .reduce((sum, [depth, count]) => sum + (depth * count), 0) / metrics.totalNodes : 0;
-    
-    metrics.branchingFactor = metrics.intermediateNodes > 0 ? 
+
+    metrics.branchingFactor = metrics.intermediateNodes > 0 ?
       (metrics.totalNodes - 1) / metrics.intermediateNodes : 0;
-    
+
     // Calculate balance and asymmetry
     this.calculateBalanceMetrics(treeData, metrics);
-    
+
     return metrics;
   }
 
@@ -81,7 +81,7 @@ class VisualAnalysisService {
 
     metrics.totalNodes++;
     metrics.maxDepth = Math.max(metrics.maxDepth, depth);
-    
+
     // Track depth distribution
     if (!metrics.depthDistribution.has(depth)) {
       metrics.depthDistribution.set(depth, 0);
@@ -131,20 +131,20 @@ class VisualAnalysisService {
     const subtreeSizes = children.map(child => this.getSubtreeSize(child));
     const maxSubtree = Math.max(...subtreeSizes);
     const minSubtree = Math.min(...subtreeSizes);
-    
+
     metrics.balanceRatio = minSubtree / maxSubtree;
-    
+
     // Calculate left vs right heaviness
     const leftSize = subtreeSizes.slice(0, Math.ceil(subtreeSizes.length / 2))
       .reduce((sum, size) => sum + size, 0);
     const rightSize = subtreeSizes.slice(Math.ceil(subtreeSizes.length / 2))
       .reduce((sum, size) => sum + size, 0);
-    
+
     const totalSize = leftSize + rightSize;
     if (totalSize > 0) {
       const leftRatio = leftSize / totalSize;
       const rightRatio = rightSize / totalSize;
-      
+
       metrics.leftHeavy = leftRatio > 0.7;
       metrics.rightHeavy = rightRatio > 0.7;
       metrics.asymmetryScore = Math.abs(leftRatio - rightRatio);
@@ -156,7 +156,7 @@ class VisualAnalysisService {
    */
   static getSubtreeSize(node) {
     if (!node) return 0;
-    
+
     const children = this.getNodeChildren(node);
     return 1 + children.reduce((sum, child) => sum + this.getSubtreeSize(child), 0);
   }
@@ -166,28 +166,28 @@ class VisualAnalysisService {
    */
   static getNodeChildren(node) {
     if (!node || typeof node !== 'object') return [];
-    
+
     // Handle different ways children might be stored
     if (Array.isArray(node.children)) return node.children;
     if (Array.isArray(node.nodes)) return node.nodes;
     if (Array.isArray(node.childNodes)) return node.childNodes;
-    
+
     // If no array children, look for nested objects
     const children = [];
     Object.entries(node).forEach(([key, value]) => {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value) && 
-          !['name', 'id', 'properties', 'type', 'value'].includes(key)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value) &&
+        !['name', 'id', 'properties', 'type', 'value'].includes(key)) {
         children.push(value);
       }
     });
-    
+
     return children;
   }
 
   /**
    * Generate visual insights from metrics
    */
-  static generateVisualInsights(metrics, treeData) {
+  static generateVisualInsights(metrics) {
     const insights = [];
 
     // Tree size insights
@@ -260,7 +260,7 @@ class VisualAnalysisService {
   /**
    * Identify structural issues in the tree
    */
-  static identifyStructuralIssues(metrics, treeData) {
+  static identifyStructuralIssues(metrics) {
     const issues = [];
 
     // Critical depth issues
@@ -309,7 +309,7 @@ class VisualAnalysisService {
   /**
    * Generate restructuring recommendations
    */
-  static generateRestructuringRecommendations(metrics, issues, treeData) {
+  static generateRestructuringRecommendations(metrics) {
     const recommendations = [];
 
     // Depth-based recommendations
@@ -365,7 +365,7 @@ class VisualAnalysisService {
   static generateVisualSummary(metrics, insights, issues) {
     const criticalIssues = issues.filter(i => i.type === 'critical').length;
     const warnings = issues.filter(i => i.type === 'warning').length;
-    
+
     let healthScore = 100;
     healthScore -= criticalIssues * 30;
     healthScore -= warnings * 15;
@@ -416,7 +416,7 @@ class VisualAnalysisService {
    * @param {Array} issues - Identified issues
    * @returns {Object} Highlighting data for specific nodes
    */
-  static identifyHighlightNodes(treeData, metrics, issues) {
+  static identifyHighlightNodes(treeData, metrics) {
     const highlights = {
       critical: [], // Red highlights - critical issues
       warning: [],  // Yellow highlights - warnings/improvements
@@ -429,7 +429,7 @@ class VisualAnalysisService {
       const nodeName = node.name || node.data?.name || `Node-${depth}`;
       const currentPath = [...path, nodeName];
       const nodeId = currentPath.join('.');
-      
+
       // Analyze current node
       const children = this.getNodeChildren(node);
       const childCount = children.length;
@@ -437,7 +437,7 @@ class VisualAnalysisService {
       const isWide = childCount > 4;
       const isDeep = depth > 4;
       const hasGoodStructure = childCount >= 2 && childCount <= 4 && depth <= 3;
-      
+
       // Critical issues (Red highlights)
       if (isDeep && depth > 5) {
         highlights.critical.push({
@@ -448,7 +448,7 @@ class VisualAnalysisService {
           suggestion: 'Move some children to intermediate levels'
         });
       }
-      
+
       if (isWide && childCount > 6) {
         highlights.critical.push({
           nodeId,
@@ -458,7 +458,7 @@ class VisualAnalysisService {
           suggestion: 'Create intermediate categories'
         });
       }
-      
+
       // Warnings (Yellow highlights)
       if (isWide && childCount > 4 && childCount <= 6) {
         highlights.warning.push({
@@ -469,7 +469,7 @@ class VisualAnalysisService {
           suggestion: 'Group related items together'
         });
       }
-      
+
       if (isDeep && depth > 3 && depth <= 5) {
         highlights.warning.push({
           nodeId,
@@ -479,7 +479,7 @@ class VisualAnalysisService {
           suggestion: 'Consider flattening some levels'
         });
       }
-      
+
       // Positive highlights (Green highlights)
       if (hasGoodStructure) {
         highlights.positive.push({
@@ -490,7 +490,7 @@ class VisualAnalysisService {
           suggestion: 'Good balance of children and depth'
         });
       }
-      
+
       // Info highlights (Blue highlights)
       if (isLeaf && depth <= 2) {
         highlights.info.push({
@@ -501,7 +501,7 @@ class VisualAnalysisService {
           suggestion: 'Could add more detailed properties'
         });
       }
-      
+
       // Recursively analyze children
       if (children.length > 0) {
         children.forEach(child => {
@@ -521,8 +521,6 @@ class VisualAnalysisService {
       const rootChildren = treeData.children || [];
       if (rootChildren.length >= 2) {
         const leftSide = rootChildren.slice(0, Math.ceil(rootChildren.length / 2));
-        const rightSide = rootChildren.slice(Math.ceil(rootChildren.length / 2));
-        
         if (metrics.leftHeavy) {
           leftSide.forEach(child => {
             const childName = child.name || child.data?.name || 'Unknown';

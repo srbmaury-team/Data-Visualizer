@@ -1,10 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
 import './styles/Minimap.css';
 
 export default function Minimap({ data, mainTransform, onViewportChange, width = 200, height = 150 }) {
   const minimapRef = useRef(null);
-  const [viewportRect, setViewportRect] = useState({ x: 0, y: 0, width: 100, height: 75 });
+  const updateViewportIndicator = useCallback(() => {
+    if (!minimapRef.current || !mainTransform) return;
+
+    const svg = d3.select(minimapRef.current);
+
+    svg.select('.viewport-indicator').remove();
+
+    const scale = mainTransform.k;
+    const viewportWidth = width / scale;
+    const viewportHeight = height / scale;
+    const viewportX = -mainTransform.x / scale;
+    const viewportY = -mainTransform.y / scale;
+
+    svg.append('rect')
+      .attr('class', 'viewport-indicator')
+      .attr('x', Math.max(0, viewportX * 0.1))
+      .attr('y', Math.max(0, viewportY * 0.1))
+      .attr('width', Math.min(width, viewportWidth * 0.1))
+      .attr('height', Math.min(height, viewportHeight * 0.1))
+      .attr('fill', 'rgba(255, 0, 0, 0.2)')
+      .attr('stroke', '#ff0000')
+      .attr('stroke-width', 1)
+      .style('cursor', 'move');
+  }, [mainTransform, width, height]);
 
   useEffect(() => {
     if (!data || !minimapRef.current) return;
@@ -54,56 +77,21 @@ export default function Minimap({ data, mainTransform, onViewportChange, width =
 
     // Update viewport indicator
     updateViewportIndicator();
-  }, [data, width, height]);
+  }, [data, width, height, updateViewportIndicator]);
 
   useEffect(() => {
     updateViewportIndicator();
-  }, [mainTransform]);
-
-  const updateViewportIndicator = () => {
-    if (!minimapRef.current || !mainTransform) return;
-
-    const svg = d3.select(minimapRef.current);
-    
-    // Remove existing viewport indicator
-    svg.select('.viewport-indicator').remove();
-
-    // Calculate viewport position and size
-    const scale = mainTransform.k;
-    const viewportWidth = width / scale;
-    const viewportHeight = height / scale;
-    const viewportX = -mainTransform.x / scale;
-    const viewportY = -mainTransform.y / scale;
-
-    // Add viewport indicator
-    svg.append('rect')
-      .attr('class', 'viewport-indicator')
-      .attr('x', Math.max(0, viewportX * 0.1))
-      .attr('y', Math.max(0, viewportY * 0.1))
-      .attr('width', Math.min(width, viewportWidth * 0.1))
-      .attr('height', Math.min(height, viewportHeight * 0.1))
-      .attr('fill', 'rgba(255, 0, 0, 0.2)')
-      .attr('stroke', '#ff0000')
-      .attr('stroke-width', 1)
-      .style('cursor', 'move');
-
-    setViewportRect({
-      x: Math.max(0, viewportX * 0.1),
-      y: Math.max(0, viewportY * 0.1),
-      width: Math.min(width, viewportWidth * 0.1),
-      height: Math.min(height, viewportHeight * 0.1)
-    });
-  };
+  }, [updateViewportIndicator]);
 
   const handleMinimapClick = (event) => {
     const rect = minimapRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Convert minimap coordinates to main diagram coordinates
     const mainX = -(x / 0.1) + (width / 2);
     const mainY = -(y / 0.1) + (height / 2);
-    
+
     if (onViewportChange) {
       onViewportChange({ x: mainX, y: mainY, k: mainTransform?.k || 1 });
     }

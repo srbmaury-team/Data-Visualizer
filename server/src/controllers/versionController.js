@@ -1,13 +1,27 @@
 import VersionHistory from '../models/VersionHistory.js';
 import YamlFile from '../models/YamlFile.js';
-import { 
-  calculateDelta, 
-  applyDelta, 
-  reconstructFromDeltas, 
-  calculateChangeStats, 
+import {
+  calculateDelta,
+  applyDelta,
+  reconstructFromDeltas,
+  calculateChangeStats,
   generateChangeSummary,
-  shouldCreateSnapshot 
+  shouldCreateSnapshot
 } from '../services/deltaService.js';
+
+const hasReadAccess = (yamlFile, userId) => {
+  const userKey = userId.toString();
+  if (yamlFile.owner.toString() === userKey) return true;
+  const permission = yamlFile.permissions?.get?.(userKey) || yamlFile.permissions?.[userKey];
+  return permission === 'view' || permission === 'edit';
+};
+
+const hasEditAccess = (yamlFile, userId) => {
+  const userKey = userId.toString();
+  if (yamlFile.owner.toString() === userKey) return true;
+  const permission = yamlFile.permissions?.get?.(userKey) || yamlFile.permissions?.[userKey];
+  return permission === 'edit';
+};
 
 /**
  * Create a new version of a YAML file
@@ -18,9 +32,8 @@ export const createVersion = async (req, res) => {
     const { content, message, saveType = 'manual' } = req.body;
     const userId = req.user._id;
 
-    // Verify file ownership
-    const yamlFile = await YamlFile.findOne({ _id: fileId, owner: userId });
-    if (!yamlFile) {
+    const yamlFile = await YamlFile.findById(fileId);
+    if (!yamlFile || !hasEditAccess(yamlFile, userId)) {
       return res.status(404).json({ error: 'File not found or access denied' });
     }
 
@@ -41,7 +54,7 @@ export const createVersion = async (req, res) => {
 
     // Check if we should create a snapshot
     const shouldSnapshot = shouldCreateSnapshot(newVersionNumber, delta.length);
-    
+
     // Create version record
     const versionData = {
       fileId,
@@ -96,14 +109,13 @@ export const getVersionHistory = async (req, res) => {
     const { limit = 20, offset = 0, includeDeltas = false } = req.query;
     const userId = req.user._id;
 
-    // Verify file ownership
-    const yamlFile = await YamlFile.findOne({ _id: fileId, owner: userId });
-    if (!yamlFile) {
+    const yamlFile = await YamlFile.findById(fileId);
+    if (!yamlFile || !hasReadAccess(yamlFile, userId)) {
       return res.status(404).json({ error: 'File not found or access denied' });
     }
 
     // Build query
-    const selectFields = includeDeltas === 'true' 
+    const selectFields = includeDeltas === 'true'
       ? '' // Include all fields
       : '-delta -snapshotContent'; // Exclude large fields for list view
 
@@ -143,13 +155,13 @@ export const getVersionHistory = async (req, res) => {
 export const repairVersionHistory = async (req, res) => {
   try {
     const { fileId } = req.params;
-    
+
     // Verify file ownership
     const yamlFile = await YamlFile.findOne({ _id: fileId, owner: req.user._id });
     if (!yamlFile) {
       return res.status(404).json({ error: 'File not found or access denied' });
     }
-    
+
     // Check if version 1 exists and is corrupted
     const version1 = await VersionHistory.findOne({ fileId, version: 1 });
     if (!version1 || !version1.isSnapshot) {
@@ -157,7 +169,7 @@ export const repairVersionHistory = async (req, res) => {
       if (version1) {
         await VersionHistory.deleteOne({ _id: version1._id });
       }
-      
+
       // Create proper snapshot version 1
       await VersionHistory.create({
         fileId: yamlFile._id,
@@ -179,12 +191,12 @@ export const repairVersionHistory = async (req, res) => {
         },
         deltaSize: 0
       });
-      
+
       res.json({ message: 'Version history repaired successfully' });
     } else {
       res.json({ message: 'Version history is already correct' });
     }
-    
+
   } catch (error) {
     console.error('Repair version history error:', error);
     res.status(500).json({ error: 'Failed to repair version history' });
@@ -197,11 +209,11 @@ export const repairVersionHistory = async (req, res) => {
 export const debugVersionHistory = async (req, res) => {
   try {
     const { fileId } = req.params;
-    
+
     const versions = await VersionHistory.find({ fileId })
       .populate('author', 'username')
       .sort({ version: 1 });
-    
+
     const debugData = versions.map(v => ({
       version: v.version,
       isSnapshot: v.isSnapshot,
@@ -213,7 +225,7 @@ export const debugVersionHistory = async (req, res) => {
       message: v.message,
       saveType: v.changeMetadata?.saveType
     }));
-    
+
     res.json({ debugData });
   } catch (error) {
     console.error('Debug version history error:', error);
@@ -235,15 +247,14 @@ export const getVersion = async (req, res) => {
       return res.status(400).json({ error: 'Invalid version number' });
     }
 
-    // Verify file ownership
-    const yamlFile = await YamlFile.findOne({ _id: fileId, owner: userId });
-    if (!yamlFile) {
+    const yamlFile = await YamlFile.findById(fileId);
+    if (!yamlFile || !hasReadAccess(yamlFile, userId)) {
       return res.status(404).json({ error: 'File not found or access denied' });
     }
 
     // Get the specific version
-    const version = await VersionHistory.findOne({ 
-      fileId, 
+    const version = await VersionHistory.findOne({
+      fileId,
       version: parsedVersionNumber
     }).populate('author', 'username email');
 
@@ -252,7 +263,7 @@ export const getVersion = async (req, res) => {
     }
 
     let content = '';
-    
+
     // If this is a snapshot, use the snapshot content directly
     if (version.isSnapshot && version.snapshotContent) {
       content = version.snapshotContent;
@@ -287,38 +298,37 @@ export const revertToVersion = async (req, res) => {
       return res.status(400).json({ error: 'Missing fileId or versionNumber' });
     }
 
-    // Verify file ownership
-    const yamlFile = await YamlFile.findOne({ _id: fileId, owner: userId });
-    if (!yamlFile) {
+    const yamlFile = await YamlFile.findById(fileId);
+    if (!yamlFile || !hasEditAccess(yamlFile, userId)) {
       return res.status(404).json({ error: 'File not found or access denied' });
     }
 
     // Check if the target version exists
-    const targetVersion = await VersionHistory.findOne({ 
-      fileId, 
-      version: parseInt(versionNumber) 
+    const targetVersion = await VersionHistory.findOne({
+      fileId,
+      version: parseInt(versionNumber)
     });
-    
+
     if (!targetVersion) {
       return res.status(404).json({ error: `Version ${versionNumber} not found` });
     }
 
     // Get content at the target version
     const targetContent = await reconstructContentAtVersion(fileId, parseInt(versionNumber));
-    
+
     if (targetContent === null || targetContent === undefined) {
       return res.status(500).json({ error: 'Failed to reconstruct content for target version' });
     }
-    
+
     // Create a new version with the reverted content
     const revertMessage = message || `Reverted to version ${versionNumber}`;
-    
+
     // Create new version
     const result = await createVersionInternal(
-      fileId, 
-      targetContent, 
-      userId, 
-      revertMessage, 
+      fileId,
+      targetContent,
+      userId,
+      revertMessage,
       'manual'
     );
 
@@ -337,7 +347,7 @@ export const revertToVersion = async (req, res) => {
 
   } catch (error) {
     console.error('Revert version error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to revert to version'
     });
   }
@@ -355,18 +365,17 @@ export const compareVersions = async (req, res) => {
     // Validate version numbers
     const parsedFromVersion = parseInt(fromVersion);
     const parsedToVersion = parseInt(toVersion);
-    
+
     if (isNaN(parsedFromVersion) || parsedFromVersion < 1) {
       return res.status(400).json({ error: 'Invalid fromVersion number' });
     }
-    
+
     if (isNaN(parsedToVersion) || parsedToVersion < 1) {
       return res.status(400).json({ error: 'Invalid toVersion number' });
     }
 
-    // Verify file ownership
-    const yamlFile = await YamlFile.findOne({ _id: fileId, owner: userId });
-    if (!yamlFile) {
+    const yamlFile = await YamlFile.findById(fileId);
+    if (!yamlFile || !hasReadAccess(yamlFile, userId)) {
       return res.status(404).json({ error: 'File not found or access denied' });
     }
 
@@ -380,14 +389,14 @@ export const compareVersions = async (req, res) => {
     const summary = generateChangeSummary(delta, fromContent, toContent);
 
     // Get version metadata
-    const fromVersionData = await VersionHistory.findOne({ 
-      fileId, 
-      version: parsedFromVersion 
+    const fromVersionData = await VersionHistory.findOne({
+      fileId,
+      version: parsedFromVersion
     }).populate('author', 'username email');
 
-    const toVersionData = await VersionHistory.findOne({ 
-      fileId, 
-      version: parsedToVersion 
+    const toVersionData = await VersionHistory.findOne({
+      fileId,
+      version: parsedToVersion
     }).populate('author', 'username email');
 
     // Check if both versions exist
@@ -474,14 +483,14 @@ async function reconstructContentAtVersion(fileId, targetVersion) {
 
     // CRITICAL FIX: If version 1 is not a snapshot, we have a data integrity issue
     const allVersions = await VersionHistory.find({ fileId }).select('version isSnapshot snapshotContent delta').sort({ version: 1 });
-    
+
     if (allVersions.length > 0 && !allVersions[0].isSnapshot) {
       // Try to get the current content from the main file as emergency fallback
       const yamlFile = await YamlFile.findById(fileId);
       if (yamlFile && yamlFile.content && targetVersion === 1) {
         return yamlFile.content;
       }
-      
+
       return '';
     }
 
@@ -533,7 +542,7 @@ async function createVersionInternal(fileId, content, userId, message, saveType)
     const summary = generateChangeSummary(delta, previousContent, content);
 
     const shouldSnapshot = shouldCreateSnapshot(newVersionNumber, delta.length);
-    
+
     const versionData = {
       fileId,
       version: newVersionNumber,
@@ -557,7 +566,7 @@ async function createVersionInternal(fileId, content, userId, message, saveType)
 
     const version = await VersionHistory.create(versionData);
     await version.populate('author', 'username email');
-    
+
     return { version, changeStats, isSnapshot: shouldSnapshot };
   } catch (error) {
     console.error('createVersionInternal error:', error);

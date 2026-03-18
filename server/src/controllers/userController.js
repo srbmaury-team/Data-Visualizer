@@ -1,3 +1,34 @@
+// Scalable user search for sharing modal
+export const searchUsers = async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q || q.length < 2) {
+      return res.json([]);
+    }
+    // Case-insensitive search on username or email, limit to 20 results
+    const users = await User.find({
+      $or: [
+        { username: { $regex: q, $options: 'i' } },
+        { email: { $regex: q, $options: 'i' } }
+      ]
+    }, 'username email _id').limit(20).sort({ username: 1 });
+    res.json(users);
+  } catch (error) {
+    console.error('User search error:', error);
+    res.status(500).json({ error: 'Server error while searching users' });
+  }
+};
+// List all users (for sharing/collaboration UI)
+export const listAllUsers = async (req, res) => {
+  try {
+    // Only allow authenticated users (optionally: restrict to owners/admins)
+    const users = await User.find({}, 'username email _id').sort({ username: 1 });
+    res.json(users);
+  } catch (error) {
+    console.error('List all users error:', error);
+    res.status(500).json({ error: 'Server error while listing users' });
+  }
+};
 import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 import YamlFile from '../models/YamlFile.js';
@@ -57,11 +88,11 @@ export const updateUserProfile = async (req, res) => {
         username,
         _id: { $ne: req.user._id }
       });
-      
+
       if (existingUser) {
         return res.status(400).json({ error: 'Username already taken' });
       }
-      
+
       updateData.username = username;
     }
 
@@ -71,11 +102,11 @@ export const updateUserProfile = async (req, res) => {
         email,
         _id: { $ne: req.user._id }
       });
-      
+
       if (existingUser) {
         return res.status(400).json({ error: 'Email already registered' });
       }
-      
+
       updateData.email = email;
     }
 
@@ -105,7 +136,7 @@ export const changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     const user = await User.findById(req.user._id);
-    
+
     // Verify current password
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
@@ -133,7 +164,7 @@ export const deleteAccount = async (req, res) => {
     const { password } = req.body;
 
     const user = await User.findById(req.user._id);
-    
+
     // Verify password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {

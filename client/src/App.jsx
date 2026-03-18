@@ -19,6 +19,7 @@ import SaveGraphModal from "./components/SaveGraphModal";
 import AuthModal from "./components/AuthModal";
 import RepositoryImporter from "./components/RepositoryImporter";
 import VersionHistoryModal from "./components/VersionHistoryModal";
+import apiService from "./services/apiService";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "./utils/treeBuilder";
 import { validateYAML } from "./utils/yamlValidator";
@@ -33,21 +34,23 @@ function AppContent() {
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuth();
   const { showSuccess, showError } = useToast();
-  const { 
-    savedGraphs, 
-    loadSavedGraphs, 
-    saveGraph, 
-    updateGraph, 
+  const {
+    savedGraphs,
+    sharedGraphs,
+    loadSavedGraphs,
+    loadSharedWithMeGraphs,
+    saveGraph,
+    updateGraph,
     deleteGraph,
     clearSavedGraphs
   } = useYamlFiles();
-  
+
   const [yamlText, setYamlText] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const data = JSON.parse(saved);
-        
+
         // Check if this came from a shared link on mobile
         if (data.fromSharedLink) {
           // Clean up the localStorage to prevent re-loading on subsequent visits
@@ -56,13 +59,13 @@ function AppContent() {
             timestamp: new Date().toISOString()
           };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanData));
-          
+
           // Show a toast message about the shared content being loaded
           setTimeout(() => {
             const event = new CustomEvent('showToast', {
               detail: {
-                message: data.sharedTitle ? 
-                  `Loaded shared graph: "${data.sharedTitle}"` : 
+                message: data.sharedTitle ?
+                  `Loaded shared graph: "${data.sharedTitle}"` :
                   'Shared graph content loaded successfully',
                 type: 'success'
               }
@@ -70,7 +73,7 @@ function AppContent() {
             window.dispatchEvent(event);
           }, 1000);
         }
-        
+
         return data.yamlText || DEFAULT_YAML;
       }
     } catch (e) {
@@ -98,11 +101,12 @@ function AppContent() {
   useEffect(() => {
     if (isAuthenticated) {
       loadSavedGraphs();
+      loadSharedWithMeGraphs();
     } else {
       // Clear saved graphs when user logs out
       clearSavedGraphs();
     }
-  }, [isAuthenticated, loadSavedGraphs, clearSavedGraphs]);
+  }, [isAuthenticated, loadSavedGraphs, loadSharedWithMeGraphs, clearSavedGraphs]);
 
   // Listen for toast events from shared link redirects
   useEffect(() => {
@@ -123,15 +127,15 @@ function AppContent() {
   useEffect(() => {
     if (location.state?.loadFile && location.state?.yamlContent) {
       setYamlText(location.state.yamlContent);
-      
+
       // Set the file ID if provided
       if (location.state.fileId) {
         setCurrentFileId(location.state.fileId);
       }
-      
+
       // Clear the navigation state to prevent re-loading on refresh
       navigate(location.pathname, { replace: true, state: {} });
-      
+
       if (location.state.fileName) {
         showSuccess(`Loaded "${location.state.fileName}" into editor`);
       }
@@ -159,7 +163,7 @@ function AppContent() {
       try {
         const validationResult = validateYAML(debouncedYamlText);
         setValidation(validationResult);
-        
+
         // Clear error if YAML becomes valid
         if (validationResult.valid) {
           setError(null);
@@ -216,7 +220,7 @@ function AppContent() {
       setTreeInfo(info);
       setTreeData(tree); // Store the raw tree data for export sizing
       setError("");
-      
+
       // Navigate to diagram route with file ID if available
       if (fileId) {
         navigate(`/diagram/${fileId}`);
@@ -261,11 +265,96 @@ function AppContent() {
       return;
     }
 
+    const routeFileIdMatch = location.pathname.match(/^\/(editor|combined)\/([0-9a-fA-F]{24})$/);
+    const activeFileId = currentFileId || routeFileIdMatch?.[2] || null;
+
+    if (activeFileId) {
+      try {
+        const fileResponse = await apiService.getYamlFile(activeFileId);
+        const activeFile = fileResponse?.yamlFile;
+        if (activeFile) {
+          const candidateUserIds = Array.from(new Set([`${user?.id || ''}`, `${user?._id || ''}`].filter(Boolean)));
+          const ownerId = `${activeFile.owner?._id || activeFile.owner || ''}`;
+          const isOwner = candidateUserIds.includes(ownerId);
+          const permission = candidateUserIds
+            .map((id) => activeFile.permissions?.[id] || activeFile.permissions?.get?.(id))
+            .find(Boolean) || 'no-access';
+
+          if (!isOwner && permission !== 'edit') {
+            showError('This file is view-only for you. Save is available only for owner/editor access.');
+            return;
+          }
+        }
+      } catch {
+        showError('Unable to verify file permissions for saving.');
+        return;
+      }
+    }
+
     setShowSaveGraphModal(true);
   };
 
   const handleSaveGraphFromModal = async (graphData) => {
     try {
+      const routeFileIdMatch = location.pathname.match(/^\/(editor|combined)\/([0-9a-fA-F]{24})$/);
+      const activeFileId = currentFileId || routeFileIdMatch?.[2] || null;
+      const candidateUserIds = Array.from(new Set([`${user?.id || ''}`, `${user?._id || ''}`].filter(Boolean)));
+
+      if (activeFileId) {
+        const fileResponse = await apiService.getYamlFile(activeFileId);
+        const activeFile = fileResponse?.yamlFile;
+
+        if (activeFile) {
+          const ownerId = `${activeFile.owner?._id || activeFile.owner || ''}`;
+          const isOwner = candidateUserIds.includes(ownerId);
+
+          if (!isOwner) {
+            const permission = candidateUserIds
+              .map((id) => activeFile.permissions?.[id] || activeFile.permissions?.get?.(id))
+              .find(Boolean) || 'no-access';
+
+            if (permission === 'edit') {
+              const replaceOriginal = window.confirm(
+                'This file is owned by another user.\n\nPress OK to replace the original file, or Cancel to save a copy under your account.'
+              );
+
+              if (replaceOriginal) {
+                const result = await updateGraph(activeFileId, {
+                  title: graphData.title,
+                  yamlContent: yamlText,
+                  description: graphData.description,
+                  isPublic: graphData.isPublic
+                });
+
+                if (result && result.id) {
+                  setCurrentFileId(result.id);
+                }
+
+                showSuccess(`Original graph "${graphData.title}" replaced successfully!`);
+                return;
+              }
+            } else {
+              showError('This file is view-only for you. You cannot save changes.');
+              return;
+            }
+
+            const copyResult = await saveGraph({
+              title: graphData.title,
+              yamlContent: yamlText,
+              description: graphData.description,
+              isPublic: graphData.isPublic
+            });
+
+            if (copyResult && copyResult.id) {
+              setCurrentFileId(copyResult.id);
+            }
+
+            showSuccess(`Copy of "${graphData.title}" saved to your account successfully!`);
+            return;
+          }
+        }
+      }
+
       if (graphData.isUpdate) {
         // Update existing graph
         const result = await updateGraph(graphData.existingId, {
@@ -274,12 +363,12 @@ function AppContent() {
           description: graphData.description,
           isPublic: graphData.isPublic
         });
-        
+
         // Set the current file ID for version history
         if (result && result.id) {
           setCurrentFileId(result.id);
         }
-        
+
         showSuccess(`Graph "${graphData.title}" updated successfully!`);
       } else {
         // Create new graph
@@ -289,12 +378,12 @@ function AppContent() {
           description: graphData.description,
           isPublic: graphData.isPublic
         });
-        
+
         // Set the current file ID for version history
         if (result && result.id) {
           setCurrentFileId(result.id);
         }
-        
+
         showSuccess(`Graph "${graphData.title}" saved successfully!`);
       }
     } catch (err) {
@@ -307,7 +396,10 @@ function AppContent() {
       showError('Please login to view version history');
       return;
     }
-    if (!currentFileId) {
+    const routeFileIdMatch = location.pathname.match(/^\/(editor|combined|diagram)\/([0-9a-fA-F]{24})$/);
+    const effectiveFileId = currentFileId || routeFileIdMatch?.[2] || null;
+
+    if (!effectiveFileId) {
       // For new unsaved files, prompt user to save first
       if (window.confirm('This file needs to be saved before viewing version history. Would you like to save it now?')) {
         handleSaveGraph();
@@ -316,6 +408,11 @@ function AppContent() {
         return;
       }
     }
+
+    if (!currentFileId && effectiveFileId) {
+      setCurrentFileId(effectiveFileId);
+    }
+
     setShowVersionHistory(true);
   };
 
@@ -325,12 +422,12 @@ function AppContent() {
       showError("No file ID found for this graph");
       return;
     }
-    
+
     // Check if user is trying to load the same file on the same page
     const currentPath = location.pathname;
     const targetPath = `/${viewType}/${fileId}`;
     const isCurrentFile = currentPath === targetPath;
-    
+
     if (isCurrentFile) {
       // Show confirmation dialog for reloading same file
       const confirmReload = window.confirm(
@@ -338,26 +435,26 @@ function AppContent() {
         `"${graph.title || 'Untitled Graph'}"\n\n` +
         `Do you want to reload the content from the server? This will replace any unsaved changes in the editor.`
       );
-      
+
       if (!confirmReload) {
         setShowSavedGraphs(false);
         return;
       }
-      
+
       // Dispatch a custom event to trigger reload in the current page
       const reloadEvent = new CustomEvent('forceReloadYamlFile', {
         detail: { fileId, graph }
       });
       window.dispatchEvent(reloadEvent);
-      
+
       setShowSavedGraphs(false);
       showSuccess(`Reloading "${graph.title || 'Untitled Graph'}" from server...`);
       return;
     }
-    
+
     setShowSavedGraphs(false);
     setCurrentFileId(fileId);
-    
+
     // Navigate to the new ID-based routes
     switch (viewType) {
       case 'editor':
@@ -376,7 +473,7 @@ function AppContent() {
 
   const handleDeleteGraph = async (graphId) => {
     if (!window.confirm("Delete this saved graph? This cannot be undone.")) return;
-    
+
     try {
       await deleteGraph(graphId);
       showSuccess("Graph deleted successfully!");
@@ -387,7 +484,7 @@ function AppContent() {
 
   const handleUpdateGraph = async (graph) => {
     if (!window.confirm(`Update "${graph.title}" with the current YAML content?`)) return;
-    
+
     try {
       await updateGraph(graph.id, {
         title: graph.title,
@@ -395,7 +492,7 @@ function AppContent() {
         description: graph.description,
         isPublic: graph.isPublic
       });
-      
+
       showSuccess(`Graph "${graph.title}" updated successfully!`);
       setShowSavedGraphs(false);
     } catch (err) {
@@ -409,12 +506,12 @@ function AppContent() {
         return;
       }
     }
-    
+
     setYamlText(importData.yamlText);
-    
+
     // Enhanced success message with processing stats
     let successMessage = `Repository imported successfully! Analysis: ${importData.analysis.totalFiles} files, ${importData.analysis.totalDirectories} directories`;
-    
+
     if (importData.processingStats) {
       const stats = importData.processingStats;
       if (stats.truncated) {
@@ -423,9 +520,9 @@ function AppContent() {
         successMessage += ` (${stats.totalNodes} nodes processed)`;
       }
     }
-    
+
     showSuccess(successMessage);
-    
+
     // Process the YAML for visualization
     try {
       const validationResult = validateYAML(importData.yamlText);
@@ -451,7 +548,7 @@ function AppContent() {
         setTreeInfo(info);
         setTreeData(tree);
         setError("");
-        
+
         // Context-aware navigation after successful import
         const currentPath = location.pathname;
         if (currentPath.includes('/combined')) {
@@ -479,8 +576,8 @@ function AppContent() {
   return (
     <div className="app">
       <Routes>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <EditorPage
               yamlText={yamlText}
@@ -500,10 +597,10 @@ function AppContent() {
               onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
             />
-          } 
+          }
         />
-        <Route 
-          path="/editor/:id" 
+        <Route
+          path="/editor/:id"
           element={
             <EditorPage
               yamlText={yamlText}
@@ -523,32 +620,32 @@ function AppContent() {
               onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
             />
-          } 
+          }
         />
-        <Route 
-          path="/diagram" 
+        <Route
+          path="/diagram"
           element={
-            <DiagramPage 
-              parsedData={parsedData} 
+            <DiagramPage
+              parsedData={parsedData}
               treeInfo={treeInfo}
               treeData={treeData}
               isAuthenticated={isAuthenticated}
             />
-          } 
+          }
         />
-        <Route 
-          path="/diagram/:id" 
+        <Route
+          path="/diagram/:id"
           element={
-            <DiagramPage 
-              parsedData={parsedData} 
+            <DiagramPage
+              parsedData={parsedData}
               treeInfo={treeInfo}
               treeData={treeData}
               isAuthenticated={isAuthenticated}
             />
-          } 
+          }
         />
-        <Route 
-          path="/combined" 
+        <Route
+          path="/combined"
           element={
             <CombinedEditorPage
               yamlText={yamlText}
@@ -568,10 +665,10 @@ function AppContent() {
               onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
             />
-          } 
+          }
         />
-        <Route 
-          path="/combined/:id" 
+        <Route
+          path="/combined/:id"
           element={
             <CombinedEditorPage
               yamlText={yamlText}
@@ -591,37 +688,38 @@ function AppContent() {
               onShowVersionHistory={handleShowVersionHistory}
               onLogout={logout}
             />
-          } 
+          }
         />
-        <Route 
-          path="/diff" 
+        <Route
+          path="/diff"
           element={
-            <DiffComparePage 
+            <DiffComparePage
               isAuthenticated={isAuthenticated}
             />
-          } 
+          }
         />
         <Route path="/shared/:shareId" element={<SharedViewerWrapper />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
-      
+
       <SavedGraphsModal
         showSavedGraphs={showSavedGraphs}
         setShowSavedGraphs={setShowSavedGraphs}
         savedGraphs={savedGraphs}
+        sharedGraphs={sharedGraphs}
         handleLoadGraph={handleLoadGraph}
         handleDeleteGraph={handleDeleteGraph}
         handleUpdateGraph={handleUpdateGraph}
         isAuthenticated={isAuthenticated}
         onAuthRequired={() => setShowAuthModal(true)}
       />
-      
+
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
-      
+
       <SaveGraphModal
         isOpen={showSaveGraphModal}
         onClose={() => setShowSaveGraphModal(false)}

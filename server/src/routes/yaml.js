@@ -1,14 +1,18 @@
 import express from 'express';
 import { body, param } from 'express-validator';
 import { auth, optionalAuth } from '../middleware/auth.js';
+
 import {
   createYamlFile,
   getUserYamlFiles,
+  getSharedWithMeYamlFiles,
   getYamlFileById,
   getSharedYamlFile,
   updateYamlFile,
   deleteYamlFile,
-  getPublicYamlFiles
+  getPublicYamlFiles,
+  toggleYamlFileSharing,
+  setYamlFilePermissions
 } from '../controllers/yamlController.js';
 
 const router = express.Router();
@@ -30,6 +34,9 @@ router.post('/', auth, [
 
 // Get user's YAML files
 router.get('/my', auth, getUserYamlFiles);
+
+// Get files shared with user (non-owned)
+router.get('/shared-with-me', auth, getSharedWithMeYamlFiles);
 
 // Get YAML file by ID (owner only)
 router.get('/:id', auth, [
@@ -55,6 +62,12 @@ router.put('/:id', auth, [
     .withMessage('YAML content must be less than 1MB'),
 ], updateYamlFile);
 
+// Toggle sharing/public status
+router.post('/:id/share', auth, [
+  param('id').isMongoId().withMessage('Invalid file ID'),
+  body('isPublic').isBoolean().withMessage('isPublic must be a boolean'),
+], toggleYamlFileSharing);
+
 // Delete YAML file
 router.delete('/:id', auth, [
   param('id').isMongoId().withMessage('Invalid file ID')
@@ -62,5 +75,11 @@ router.delete('/:id', auth, [
 
 // Get public YAML files (browse/discover)
 router.get('/public/browse', getPublicYamlFiles);
+
+// Set per-user permissions for a YAML file (owner only)
+router.post('/:id/permissions', auth, [
+  param('id').isMongoId().withMessage('Invalid file ID'),
+  body('permissions').isObject().withMessage('Permissions must be an object'),
+], setYamlFilePermissions);
 
 export default router;

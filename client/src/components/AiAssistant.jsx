@@ -18,7 +18,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         'Generate a modern e-commerce platform architecture',
         'Create a microservices ecosystem with API gateway',
         'Analyze my tree visualization structure',
-        'Check tree balance and organization', 
+        'Check tree balance and organization',
         'Suggest visual improvements for my tree',
         'Optimize this YAML for better visualization',
         'Generate a DevOps CI/CD pipeline structure',
@@ -28,7 +28,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState(() => {
+  const [apiKey] = useState(() => {
     // Use environment variable or empty string (remove localStorage dependency)
     return import.meta.env.VITE_OPENAI_API_KEY || '';
   });
@@ -64,14 +64,14 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
       // Parse YAML and run analysis
       const parsedYaml = yaml.load(yamlText);
       const analysis = YamlAnalysisService.analyzeYaml(parsedYaml, yamlText);
-      
+
       // Generate intelligent response based on analysis
       let message = "## 📊 YAML Analysis Results\n\n";
-      
+
       // Overall summary
       message += `**Overall Assessment:** ${analysis.summary.message}\n`;
       message += `**Score:** ${analysis.summary.overallScore}/100\n\n`;
-      
+
       // Key metrics
       message += "### 🔧 Complexity Analysis\n";
       message += `- **Complexity Level:** ${analysis.complexity.level}\n`;
@@ -80,7 +80,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         message += `- **Details:** ${analysis.complexity.details.slice(0, 3).join(', ')}\n`;
       }
       message += "\n";
-      
+
       // Performance insights
       if (analysis.performance.recommendations.length > 0) {
         message += "### ⚡ Performance Insights\n";
@@ -89,7 +89,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         });
         message += "\n";
       }
-      
+
       // Top issues
       if (analysis.issues.critical.length > 0 || analysis.issues.warnings.length > 0) {
         message += "### 🚨 Key Issues\n";
@@ -101,7 +101,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         });
         message += "\n";
       }
-      
+
       // Recommendations
       if (analysis.summary.recommendations.length > 0) {
         message += "### 💡 Top Recommendations\n";
@@ -110,7 +110,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         });
         message += "\n";
       }
-      
+
       // Best practices
       if (analysis.bestPractices.suggestions.length > 0) {
         message += "### ✨ Best Practice Suggestions\n";
@@ -118,13 +118,13 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           message += `- **${suggestion.category}:** ${suggestion.message}\n`;
         });
       }
-      
+
       return {
         message: message.trim(),
         analysisData: analysis,
         yaml: null // No YAML output for analysis
       };
-      
+
     } catch (error) {
       return {
         message: `I encountered an error analyzing your YAML: ${error.message}. Please ensure your YAML is valid and try again.`,
@@ -137,7 +137,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
     try {
       // Generate tree data from current YAML
       let treeData = null;
-      
+
       if (currentYaml && currentYaml.trim()) {
         try {
           // Validate and parse the YAML
@@ -151,7 +151,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           // Could not generate tree data for visual analysis
         }
       }
-      
+
       if (!treeData) {
         return {
           message: "## 🌳 Visual Analysis\n\nI don't see any valid tree data to analyze. Please load some valid YAML data first, then I can provide insights about your tree structure, balance, and organization.\n\n💡 **Tip:** Make sure your YAML is properly formatted and contains hierarchical data with nodes and children.",
@@ -161,14 +161,14 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
 
       // Run basic analysis for metrics
       const analysis = VisualAnalysisService.analyzeTreeVisualization(treeData);
-      
+
       // Determine query type and provide specific responses
       const openaiService = openaiServiceRef.current;
-      
+
       if (/analyze.*tree.*structure|tree.*visualization.*structure|structure.*analysis/i.test(userInput)) {
         // Deep structural analysis
         const structurePrompt = `Analyze this tree structure with ${analysis.metrics.totalNodes} nodes, ${analysis.metrics.maxDepth} levels deep, balance ratio ${analysis.metrics.balanceRatio.toFixed(2)}. Provide insights about the hierarchical organization, node distribution patterns, and structural efficiency. Focus on the architecture and how well the tree represents logical relationships.`;
-        
+
         if (openaiService.isConfigured()) {
           const aiResponse = await openaiService.generateYamlResponse(structurePrompt, currentYaml);
           return {
@@ -177,12 +177,12 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           };
         } else {
           return {
-            message: `## 🏗️ Tree Structure Analysis\n\n**Architectural Assessment:** Your tree has a solid ${analysis.metrics.maxDepth}-level architecture with ${analysis.metrics.totalNodes} nodes.\n\n**Structural Efficiency:** ${analysis.metrics.balanceRatio >= 0.8 ? 'Well-organized hierarchy' : 'Consider restructuring for better flow'}\n\n**Node Distribution:** ${Math.round(analysis.metrics.leafNodes/analysis.metrics.totalNodes*100)}% leaf nodes indicates ${analysis.metrics.leafNodes/analysis.metrics.totalNodes > 0.7 ? 'good detail granularity' : 'potential for more detailed breakdown'}\n\n**Logical Flow:** The current structure ${analysis.metrics.balanceRatio >= 0.7 ? 'follows logical patterns' : 'could benefit from reorganization'} for better comprehension.`,
+            message: `## 🏗️ Tree Structure Analysis\n\n**Architectural Assessment:** Your tree has a solid ${analysis.metrics.maxDepth}-level architecture with ${analysis.metrics.totalNodes} nodes.\n\n**Structural Efficiency:** ${analysis.metrics.balanceRatio >= 0.8 ? 'Well-organized hierarchy' : 'Consider restructuring for better flow'}\n\n**Node Distribution:** ${Math.round(analysis.metrics.leafNodes / analysis.metrics.totalNodes * 100)}% leaf nodes indicates ${analysis.metrics.leafNodes / analysis.metrics.totalNodes > 0.7 ? 'good detail granularity' : 'potential for more detailed breakdown'}\n\n**Logical Flow:** The current structure ${analysis.metrics.balanceRatio >= 0.7 ? 'follows logical patterns' : 'could benefit from reorganization'} for better comprehension.`,
             visualAnalysis: analysis
           };
         }
       }
-      
+
       else if (/balance.*organization|organization.*balance|tree.*balance|balance.*tree/i.test(userInput)) {
         // Balance and organization focused
         return {
@@ -190,11 +190,11 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           visualAnalysis: analysis
         };
       }
-      
+
       else if (/suggest.*visual|visual.*improvement|improve.*visual|visual.*enhance/i.test(userInput)) {
         // Visual improvement suggestions
         const improvementPrompt = `Suggest visual improvements for a tree with ${analysis.metrics.totalNodes} nodes, balance ratio ${analysis.metrics.balanceRatio.toFixed(2)}, and ${analysis.metrics.maxDepth} levels. Focus on layout, visual hierarchy, color coding, grouping strategies, and user experience enhancements.`;
-        
+
         if (openaiService.isConfigured()) {
           const aiResponse = await openaiService.generateYamlResponse(improvementPrompt, currentYaml);
           return {
@@ -208,11 +208,11 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           };
         }
       }
-      
+
       else if (/optimize.*yaml|yaml.*optimization|optimize.*visualization/i.test(userInput)) {
         // YAML optimization for visualization
         const optimizationPrompt = `Optimize this YAML structure for better visualization. Current metrics: ${analysis.metrics.totalNodes} nodes, ${analysis.metrics.maxDepth} depth, ${analysis.metrics.balanceRatio.toFixed(2)} balance ratio. Suggest YAML restructuring for clearer visual representation.`;
-        
+
         if (openaiService.isConfigured()) {
           const aiResponse = await openaiService.generateYamlResponse(optimizationPrompt, currentYaml);
           return {
@@ -221,34 +221,34 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
           };
         } else {
           return {
-            message: `## ⚡ YAML Visualization Optimization\n\n**Structure Recommendations:**\n- ${analysis.metrics.maxDepth > 4 ? 'Reduce nesting depth by creating intermediate groupings' : 'Current depth is optimal for visualization'}\n- ${analysis.metrics.wideNodes > 4 ? 'Break down large sections into smaller, manageable chunks' : 'Node distribution is well-sized'}\n\n**Naming Optimization:**\n- Use consistent naming conventions across all levels\n- Keep node names concise but descriptive\n- Consider abbreviations for long technical terms\n\n**Grouping Strategy:**\n- ${analysis.metrics.leafNodes/analysis.metrics.totalNodes > 0.8 ? 'Consider adding more intermediate categories' : 'Good balance of categories and items'}\n- Group related functionality together\n- Separate core features from auxiliary ones\n\n**YAML Best Practices:**\n- Add meaningful comments for complex sections\n- Use consistent indentation (2 spaces recommended)\n- Order items logically (alphabetical or by importance)\n- Consider splitting very large files into modules`,
+            message: `## ⚡ YAML Visualization Optimization\n\n**Structure Recommendations:**\n- ${analysis.metrics.maxDepth > 4 ? 'Reduce nesting depth by creating intermediate groupings' : 'Current depth is optimal for visualization'}\n- ${analysis.metrics.wideNodes > 4 ? 'Break down large sections into smaller, manageable chunks' : 'Node distribution is well-sized'}\n\n**Naming Optimization:**\n- Use consistent naming conventions across all levels\n- Keep node names concise but descriptive\n- Consider abbreviations for long technical terms\n\n**Grouping Strategy:**\n- ${analysis.metrics.leafNodes / analysis.metrics.totalNodes > 0.8 ? 'Consider adding more intermediate categories' : 'Good balance of categories and items'}\n- Group related functionality together\n- Separate core features from auxiliary ones\n\n**YAML Best Practices:**\n- Add meaningful comments for complex sections\n- Use consistent indentation (2 spaces recommended)\n- Order items logically (alphabetical or by importance)\n- Consider splitting very large files into modules`,
             visualAnalysis: analysis
           };
         }
       }
-      
+
       else if (/identify.*issue|structural.*issue|issue.*tree|problem.*tree/i.test(userInput)) {
         // Issue identification
         return {
-          message: `## 🔍 Structural Issue Analysis\n\n**Issues Detected:** ${analysis.issues.length} potential concerns\n\n${analysis.issues.length > 0 ? 
-            analysis.issues.map((issue, idx) => 
+          message: `## 🔍 Structural Issue Analysis\n\n**Issues Detected:** ${analysis.issues.length} potential concerns\n\n${analysis.issues.length > 0 ?
+            analysis.issues.map((issue, idx) =>
               `**${idx + 1}. ${issue.category}** (${issue.type})\n${issue.message}\n`
-            ).join('\n') : 
+            ).join('\n') :
             '✅ No critical structural issues detected!'
-          }\n\n**Health Indicators:**\n- **Depth:** ${analysis.metrics.maxDepth > 5 ? '❌ Too deep (consider flattening)' : '✅ Appropriate depth'}\n- **Balance:** ${analysis.metrics.balanceRatio < 0.5 ? '❌ Severely unbalanced' : analysis.metrics.balanceRatio < 0.7 ? '⚠️ Moderately unbalanced' : '✅ Well balanced'}\n- **Complexity:** ${analysis.metrics.totalNodes > 50 ? '⚠️ High complexity' : '✅ Manageable complexity'}\n\n**Immediate Actions:**\n${analysis.issues.length > 0 ? 
-            analysis.issues.slice(0, 3).map(issue => `- Fix: ${issue.message}`).join('\n') : 
-            '- Continue with current structure\n- Consider minor optimizations for performance'
-          }`,
+            }\n\n**Health Indicators:**\n- **Depth:** ${analysis.metrics.maxDepth > 5 ? '❌ Too deep (consider flattening)' : '✅ Appropriate depth'}\n- **Balance:** ${analysis.metrics.balanceRatio < 0.5 ? '❌ Severely unbalanced' : analysis.metrics.balanceRatio < 0.7 ? '⚠️ Moderately unbalanced' : '✅ Well balanced'}\n- **Complexity:** ${analysis.metrics.totalNodes > 50 ? '⚠️ High complexity' : '✅ Manageable complexity'}\n\n**Immediate Actions:**\n${analysis.issues.length > 0 ?
+              analysis.issues.slice(0, 3).map(issue => `- Fix: ${issue.message}`).join('\n') :
+              '- Continue with current structure\n- Consider minor optimizations for performance'
+            }`,
           visualAnalysis: analysis
         };
       }
-      
+
       // Fallback - shouldn't reach here due to pattern matching
       return {
         message: `## 🌳 Tree Analysis\n\nYour tree has ${analysis.metrics.totalNodes} nodes with a balance ratio of ${analysis.metrics.balanceRatio.toFixed(2)}. For more specific insights, try asking about structure, balance, improvements, optimization, or issues.`,
         visualAnalysis: analysis
       };
-      
+
     } catch (error) {
       return {
         message: `I encountered an error analyzing your tree visualization: ${error.message}. Please try again.`,
@@ -282,10 +282,10 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
       const isVisualImprovement = /suggest.*visual|visual.*improvement|improve.*visual|visual.*enhance|improvement.*tree/i.test(inputMessage);
       const isYamlOptimization = /optimize.*yaml|yaml.*optimization|optimize.*visualization|yaml.*better/i.test(inputMessage);
       const isIssueIdentification = /identify.*issue|structural.*issue|issue.*tree|problem.*tree|find.*problem/i.test(inputMessage);
-      
+
       const isVisualAnalysisRequest = isStructureAnalysis || isBalanceAnalysis || isVisualImprovement || isYamlOptimization || isIssueIdentification;
       const isAnalysisRequest = !isVisualAnalysisRequest && /analyze|analysis|check|review|inspect|evaluate|performance|best.practices/i.test(inputMessage);
-      
+
       if (isVisualAnalysisRequest) {
         // Provide visual analysis-based response
         response = await handleVisualAnalysisRequest(inputMessage);
@@ -299,7 +299,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
         // Fall back to mock responses
         response = openaiService.getMockResponse(inputMessage, currentYaml);
       }
-      
+
       const assistantMessage = {
         id: Date.now() + 1,
         type: 'assistant',
@@ -365,7 +365,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
             <div className="api-status">
               {apiKey ? (
                 <span className="api-connected">
-                  ✅ OpenAI Connected 
+                  ✅ OpenAI Connected
                   {import.meta.env.VITE_OPENAI_API_KEY ? ' (Environment)' : ' (Local)'}
                 </span>
               ) : (
@@ -374,8 +374,8 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
             </div>
           </div>
           <div className="clear-or-exit">
-            <button 
-              className="clear-chat-btn" 
+            <button
+              className="clear-chat-btn"
               onClick={() => {
                 if (window.confirm('Clear all chat messages? This cannot be undone.')) {
                   setMessages([
@@ -410,7 +410,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
             <div key={message.id} className={`message ${message.type}`}>
               <div className="message-content">
                 <div className="message-text">{message.content}</div>
-                
+
                 {message.suggestions && (
                   <div className="suggestions-grid">
                     {message.suggestions.map((suggestion, index) => (
@@ -429,7 +429,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
                   <div className="yaml-output">
                     <div className="yaml-header">
                       <span>📄 Generated YAML</span>
-                      <button 
+                      <button
                         className="use-yaml-btn"
                         onClick={() => handleUseYaml(message.yamlOutput)}
                       >
@@ -490,7 +490,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
               </div>
             </div>
           ))}
-          
+
           {isLoading && (
             <div className="message assistant">
               <div className="message-content">
@@ -502,7 +502,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -517,7 +517,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
               rows="2"
               disabled={isLoading}
             />
-            <button 
+            <button
               className="send-btn"
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}

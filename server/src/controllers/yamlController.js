@@ -1,4 +1,5 @@
 import { validationResult } from 'express-validator';
+import { nanoid } from 'nanoid';
 import YamlFile from '../models/YamlFile.js';
 import VersionHistory from '../models/VersionHistory.js';
 import User from '../models/User.js';
@@ -57,7 +58,7 @@ export const createYamlFile = async (req, res) => {
     res.status(201).json({
       message: 'YAML file saved successfully',
       yamlFile: {
-        id: yamlFile._id,
+        _id: yamlFile._id.toString(),
         title: yamlFile.title,
         shareId: yamlFile.shareId,
         isPublic: yamlFile.isPublic,
@@ -71,13 +72,66 @@ export const createYamlFile = async (req, res) => {
   }
 };
 
+export const getSharedWithMeYamlFiles = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+    const userId = req.user._id.toString();
+    const permissionKey = `permissions.${userId}`;
+
+    const query = {
+      owner: { $ne: req.user._id },
+      [permissionKey]: { $in: ['view', 'edit'] }
+    };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
+
+    const yamlFiles = await YamlFile.find(query)
+      .populate('owner', 'username email')
+      .select('-versions')
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const filesWithPreview = yamlFiles.map((file) => {
+      const fileObj = file.toObject();
+      fileObj.accessLevel = file.permissions?.get(userId) || file.permissions?.[userId] || 'view';
+      if (fileObj.content) {
+        fileObj.contentPreview = fileObj.content.substring(0, 200);
+      }
+      return fileObj;
+    });
+
+    const total = await YamlFile.countDocuments(query);
+
+    res.json({
+      yamlFiles: filesWithPreview,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get shared-with-me YAML files error:', error);
+    res.status(500).json({ error: 'Server error while fetching shared YAML files' });
+  }
+};
+
 export const getUserYamlFiles = async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (page - 1) * limit;
 
     let query = { owner: req.user._id };
-    
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -124,7 +178,7 @@ export const getYamlFileById = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid request parameters',
         details: errors.array()
       });
@@ -133,34 +187,36 @@ export const getYamlFileById = async (req, res) => {
     // Additional check for valid ObjectId format
     const { id } = req.params;
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid file ID format. Must be a valid MongoDB ObjectId.'
       });
     }
 
-    const yamlFile = await YamlFile.findOne({
-      _id: id,
-      owner: req.user._id
-    });
-
+    const yamlFile = await YamlFile.findById(id);
     if (!yamlFile) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'YAML file not found or you do not have permission to access it.'
       });
     }
-
+    // Only owner or users with view/edit permission can access
+    if (
+      yamlFile.owner.toString() !== req.user._id.toString() &&
+      (!yamlFile.permissions?.get(req.user._id.toString()) || yamlFile.permissions.get(req.user._id.toString()) === 'no-access')
+    ) {
+      return res.status(403).json({ error: 'Access denied. You do not have permission to view this file.' });
+    }
     res.json({ yamlFile });
   } catch (error) {
     console.error('Get YAML file error:', error);
-    
+
     // Handle specific MongoDB errors
     if (error.name === 'CastError' && error.kind === 'ObjectId') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid file ID format. Must be a valid MongoDB ObjectId.'
       });
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       error: 'Server error while fetching YAML file',
       message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
@@ -171,17 +227,17 @@ export const getSharedYamlFile = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid request parameters',
         details: errors.array()
       });
     }
 
     const { shareId } = req.params;
-    
+
     // Validate shareId format (should be 10 characters)
     if (!shareId || shareId.length !== 10) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid share ID format. Must be a 10-character string.'
       });
     }
@@ -191,25 +247,24 @@ export const getSharedYamlFile = async (req, res) => {
       .select('-versions'); // Exclude versions for public access
 
     if (!yamlFile) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'Shared file not found or has been removed.'
       });
     }
 
-    // Check if file is public or user is owner
-    if (!yamlFile.isPublic && (!req.user || yamlFile.owner._id.toString() !== req.user._id.toString())) {
-      return res.status(403).json({ 
+    // Check if file is public, owner, or user with view/edit permission
+    const userId = req.user?._id?.toString();
+    const hasPermission = userId && yamlFile.permissions?.get(userId) && yamlFile.permissions.get(userId) !== 'no-access';
+    if (!yamlFile.isPublic && (!userId || (yamlFile.owner._id.toString() !== userId && !hasPermission))) {
+      return res.status(403).json({
         error: 'Access denied. This file is private and you do not have permission to access it.'
       });
     }
-
-    // Increment view count (don't await to not slow down response)
     yamlFile.incrementViews().catch(console.error);
-
     res.json({ yamlFile });
   } catch (error) {
     console.error('Get shared YAML file error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Server error while fetching shared file',
       message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
@@ -225,33 +280,26 @@ export const updateYamlFile = async (req, res) => {
 
     const { title, content, description, isPublic, tags, metadata, versionDescription } = req.body;
 
-    const yamlFile = await YamlFile.findOne({
-      _id: req.params.id,
-      owner: req.user._id
-    });
-
+    const yamlFile = await YamlFile.findById(req.params.id);
     if (!yamlFile) {
       return res.status(404).json({ error: 'YAML file not found' });
     }
-
+    // Only owner or users with edit permission can update
+    if (
+      yamlFile.owner.toString() !== req.user._id.toString() &&
+      (!yamlFile.permissions?.get(req.user._id.toString()) || yamlFile.permissions.get(req.user._id.toString()) !== 'edit')
+    ) {
+      return res.status(403).json({ error: 'Access denied. You do not have permission to edit this file.' });
+    }
     // If content is being updated, create a new version using the new version history system
     if (content && content !== yamlFile.content) {
-      // Get the latest version number
       const latestVersion = await VersionHistory.getLatestVersion(yamlFile._id);
       const newVersionNumber = latestVersion + 1;
-
-      // Get the previous content for delta calculation
       let previousContent = yamlFile.content || '';
-
-      // Calculate delta
       const delta = calculateDelta(previousContent, content);
       const changeStats = calculateChangeStats(delta);
       const summary = generateChangeSummary(delta, previousContent, content);
-
-      // Check if we should create a snapshot
       const shouldSnapshot = shouldCreateSnapshot(newVersionNumber, delta.length);
-      
-      // Create version record
       const versionData = {
         fileId: yamlFile._id,
         version: newVersionNumber,
@@ -272,24 +320,17 @@ export const updateYamlFile = async (req, res) => {
         },
         deltaSize: delta.length
       };
-
       await VersionHistory.create(versionData);
-
-      // Update the main file's content and version
       yamlFile.content = content;
       yamlFile.currentVersion = newVersionNumber;
       yamlFile.updatedAt = new Date();
     }
-
-    // Update other fields
     if (title) yamlFile.title = title;
     if (description !== undefined) yamlFile.description = description;
     if (isPublic !== undefined) yamlFile.isPublic = isPublic;
     if (tags) yamlFile.tags = tags.slice(0, 10);
     if (metadata) yamlFile.metadata = { ...yamlFile.metadata, ...metadata };
-    
     await yamlFile.save();
-
     res.json({
       message: 'YAML file updated successfully',
       yamlFile: {
@@ -343,7 +384,7 @@ export const getPublicYamlFiles = async (req, res) => {
     const skip = (page - 1) * limit;
 
     let query = { isPublic: true };
-    
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -379,5 +420,75 @@ export const getPublicYamlFiles = async (req, res) => {
   } catch (error) {
     console.error('Browse public YAML files error:', error);
     res.status(500).json({ error: 'Server error while browsing public files' });
+  }
+};
+
+// Set per-user permissions for a YAML file (owner only)
+export const setYamlFilePermissions = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { id } = req.params;
+    const { permissions } = req.body;
+    const yamlFile = await YamlFile.findOne({ _id: id, owner: req.user._id });
+    if (!yamlFile) {
+      return res.status(404).json({ error: 'YAML file not found or you do not have permission.' });
+    }
+    // Validate permissions object
+    for (const [userId, perm] of Object.entries(permissions)) {
+      if (!['no-access', 'view', 'edit'].includes(perm)) {
+        return res.status(400).json({ error: `Invalid permission for user ${userId}` });
+      }
+    }
+    yamlFile.permissions = permissions;
+    await yamlFile.save();
+    res.json({ message: 'Permissions updated', permissions: yamlFile.permissions });
+  } catch (error) {
+    console.error('Set permissions error:', error);
+    res.status(500).json({ error: 'Server error while setting permissions' });
+  }
+};
+
+export const toggleYamlFileSharing = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+    const { isPublic } = req.body;
+
+    const yamlFile = await YamlFile.findOne({ _id: id, owner: req.user._id });
+    if (!yamlFile) {
+      return res.status(404).json({ error: 'YAML file not found or you do not have permission.' });
+    }
+
+    yamlFile.isPublic = isPublic;
+    if (isPublic) {
+      // Ensure shareId exists
+      if (!yamlFile.shareId || yamlFile.shareId.length !== 10) {
+        yamlFile.shareId = nanoid(10);
+      }
+    }
+    await yamlFile.save();
+
+    res.json({
+      message: `YAML file is now ${isPublic ? 'publicly shareable' : 'private'}`,
+      yamlFile: {
+        id: yamlFile._id,
+        title: yamlFile.title,
+        shareId: yamlFile.shareId,
+        isPublic: yamlFile.isPublic,
+        createdAt: yamlFile.createdAt,
+        updatedAt: yamlFile.updatedAt,
+        currentVersion: yamlFile.currentVersion
+      }
+    });
+  } catch (error) {
+    console.error('Toggle sharing error:', error);
+    res.status(500).json({ error: 'Server error while toggling sharing status' });
   }
 };

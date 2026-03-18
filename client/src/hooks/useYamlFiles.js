@@ -4,6 +4,7 @@ import { useAuth } from './useAuth';
 
 export const useYamlFiles = () => {
   const [savedGraphs, setSavedGraphs] = useState([]);
+  const [sharedGraphs, setSharedGraphs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { isAuthenticated } = useAuth();
@@ -27,6 +28,8 @@ export const useYamlFiles = () => {
         content: file.content,
         shareId: file.shareId,
         isPublic: file.isPublic,
+        owner: file.owner,
+        accessLevel: 'owner',
         createdAt: file.createdAt,
         updatedAt: file.updatedAt,
         tags: file.tags || []
@@ -34,6 +37,40 @@ export const useYamlFiles = () => {
       setSavedGraphs(graphs);
     } catch (err) {
       console.error('Failed to load saved graphs:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  // Load graphs shared with current user from backend
+  const loadSharedWithMeGraphs = useCallback(async () => {
+    if (!isAuthenticated) {
+      setSharedGraphs([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiService.getSharedWithMeYamlFiles();
+      const graphs = response.yamlFiles.map(file => ({
+        id: file._id,
+        title: file.title,
+        description: file.description,
+        content: file.content,
+        shareId: file.shareId,
+        isPublic: file.isPublic,
+        owner: file.owner,
+        accessLevel: file.accessLevel || 'view',
+        createdAt: file.createdAt,
+        updatedAt: file.updatedAt,
+        tags: file.tags || []
+      }));
+      setSharedGraphs(graphs);
+    } catch (err) {
+      console.error('Failed to load shared graphs:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -61,8 +98,11 @@ export const useYamlFiles = () => {
         tags: graphData.tags || []
       });
 
+      // After saving, reload all graphs from backend to ensure IDs are correct
+      await loadSavedGraphs();
+
       const newGraph = {
-        id: response.yamlFile.id,
+        id: response.yamlFile._id,
         title: response.yamlFile.title,
         description: graphData.description || '',
         content: graphData.yamlContent, // Use the content we sent
@@ -73,7 +113,6 @@ export const useYamlFiles = () => {
         tags: graphData.tags || []
       };
 
-      setSavedGraphs(prev => [newGraph, ...prev]);
       return newGraph;
     } catch (err) {
       console.error('Failed to save graph:', err);
@@ -82,7 +121,7 @@ export const useYamlFiles = () => {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadSavedGraphs]);
 
   // Update an existing graph
   const updateGraph = useCallback(async (id, graphData) => {
@@ -105,27 +144,20 @@ export const useYamlFiles = () => {
         tags: graphData.tags || []
       });
 
+      // After updating, reload all graphs from backend to ensure IDs are correct
+      await loadSavedGraphs();
+
       const updatedGraph = {
-        id: response.yamlFile.id || id, // Use id from response or fallback to the one we sent
+        id: response.yamlFile._id || id, // Use _id from response or fallback to the one we sent
         title: response.yamlFile.title,
         description: graphData.description || '',
         content: graphData.yamlContent, // Use the content we sent, not from response
         shareId: response.yamlFile.shareId,
         isPublic: response.yamlFile.isPublic || graphData.isPublic,
-        createdAt: response.yamlFile.createdAt || (prev => prev.find(g => g.id === id)?.createdAt) || new Date().toISOString(),
+        createdAt: response.yamlFile.createdAt || new Date().toISOString(),
         updatedAt: response.yamlFile.updatedAt,
         tags: graphData.tags || []
       };
-
-      setSavedGraphs(prev => {
-        const existingGraph = prev.find(g => g.id === id);
-        const finalGraph = {
-          ...updatedGraph,
-          // Ensure we preserve original createdAt if backend doesn't send it
-          createdAt: response.yamlFile.createdAt || existingGraph?.createdAt || updatedGraph.createdAt
-        };
-        return prev.map(graph => graph.id === id ? finalGraph : graph);
-      });
 
       return updatedGraph;
     } catch (err) {
@@ -135,7 +167,7 @@ export const useYamlFiles = () => {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadSavedGraphs]);
 
   // Delete a graph
   const deleteGraph = useCallback(async (id) => {
@@ -192,14 +224,17 @@ export const useYamlFiles = () => {
   // Clear saved graphs (for logout)
   const clearSavedGraphs = useCallback(() => {
     setSavedGraphs([]);
+    setSharedGraphs([]);
     setError(null);
   }, []);
 
   return {
     savedGraphs,
+    sharedGraphs,
     loading,
     error,
     loadSavedGraphs,
+    loadSharedWithMeGraphs,
     saveGraph,
     updateGraph,
     deleteGraph,
