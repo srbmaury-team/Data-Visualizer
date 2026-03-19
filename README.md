@@ -457,6 +457,13 @@ children:
 
 > **Current Status**: The application is stable and production-ready with core features implemented. Recent updates include auto-displayed collaborators on the Share modal, combined graph counts (owned + shared) in the My Graphs button, mobile-responsive header and modal layouts, save-time branching (replace-or-copy), permission-aware shared file UX, shared-access version history, and a rewritten diff checker with synchronized side-by-side editing and clearer indicators.
 
+### Upcoming Features
+
+- **📥 YAML File Import**: Direct import of `.yaml` / `.yml` files from local disk into the editor
+- **📥 JSON File Import with Auto-Conversion**: Import `.json` files and automatically convert them to YAML for visualization
+- **📤 Export YAML as JSON**: Convert the current YAML content to JSON and download it as a `.json` file
+- **⌨️ Keyboard Shortcuts**: Extended shortcut support for common actions (save, open, import, export, toggle panels, etc.)
+
 ---
 
 ## 🛠️ Development

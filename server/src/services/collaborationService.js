@@ -91,6 +91,32 @@ function transformOp(opB, opA) {
     return opB;
 }
 
+/**
+ * Count how many sockets a given userId has in a room.
+ */
+function countUserSockets(room, userId) {
+    if (!userId) return 0;
+    let count = 0;
+    for (const u of room.users.values()) {
+        if (u.userId === userId) count++;
+    }
+    return count;
+}
+
+/**
+ * Deduplicate a list of users by userId, keeping only the first entry per user.
+ * Anonymous users (no userId) are kept as-is.
+ */
+function deduplicateUsers(users) {
+    const seen = new Set();
+    return users.filter((u) => {
+        if (!u.userId) return true; // keep anonymous users
+        if (seen.has(u.userId)) return false;
+        seen.add(u.userId);
+        return true;
+    });
+}
+
 export function initializeSocketServer(httpServer, corsOptions) {
     const io = new Server(httpServer, {
         cors: {
@@ -199,26 +225,31 @@ export function initializeSocketServer(httpServer, corsOptions) {
                     ...u,
                 }));
 
-                console.log(`📂 User ${socket.userData.username} (${socket.id}) joined room ${fileId} — ${room.users.size} user(s) in room: [${allUsers.map(u => u.username).join(', ')}]`);
+                // Deduplicate users by userId so each real user appears only once
+                const deduplicatedUsers = deduplicateUsers(allUsers);
+
+                console.log(`📂 User ${socket.userData.username} (${socket.id}) joined room ${fileId} — ${room.users.size} socket(s), ${deduplicatedUsers.length} unique user(s) in room: [${deduplicatedUsers.map(u => u.username).join(', ')}]`);
 
                 // Send the current state to the joining user
                 socket.emit('file-state', {
                     content: room.content,
                     version: room.version,
-                    users: allUsers,
+                    users: deduplicatedUsers,
                     canEdit,
                 });
 
-                // Notify others that a new user joined
-                const otherCount = room.users.size - 1;
-                console.log(`📢 Broadcasting user-joined for ${socket.userData.username} to ${otherCount} other user(s) in room ${fileId}`);
-                socket.to(roomId).emit('user-joined', {
-                    socketId: socket.id,
-                    userId: socket.userData.userId,
-                    username: socket.userData.username,
-                    color,
-                    canEdit,
-                });
+                // Only notify others if this is the first socket/tab for this user
+                const isFirstSocket = countUserSockets(room, socket.userData.userId) === 1;
+                if (isFirstSocket) {
+                    console.log(`📢 Broadcasting user-joined for ${socket.userData.username} to others in room ${fileId}`);
+                    socket.to(roomId).emit('user-joined', {
+                        socketId: socket.id,
+                        userId: socket.userData.userId,
+                        username: socket.userData.username,
+                        color,
+                        canEdit,
+                    });
+                }
 
             } catch (err) {
                 console.error('Error joining file room:', err);
@@ -341,9 +372,16 @@ export function initializeSocketServer(httpServer, corsOptions) {
             // Also check the in-memory rooms map
             for (const [fileId, room] of rooms.entries()) {
                 if (room.users.has(socket.id)) {
+                    const userId = room.users.get(socket.id)?.userId;
                     room.users.delete(socket.id);
                     const roomId = `file:${fileId}`;
-                    io.to(roomId).emit('user-left', { socketId: socket.id });
+
+                    // Only broadcast user-left if no more sockets remain for this user
+                    const remainingSockets = userId ? countUserSockets(room, userId) : 0;
+                    if (remainingSockets === 0) {
+                        io.to(roomId).emit('user-left', { socketId: socket.id });
+                    }
+
                     // Clean up empty rooms
                     if (room.users.size === 0) {
                         rooms.delete(fileId);
@@ -357,9 +395,16 @@ export function initializeSocketServer(httpServer, corsOptions) {
         const fileId = roomId.replace('file:', '');
         const room = rooms.get(fileId);
         if (room) {
+            const userId = room.users.get(socket.id)?.userId;
             room.users.delete(socket.id);
             socket.leave(roomId);
-            io.to(roomId).emit('user-left', { socketId: socket.id });
+
+            // Only broadcast user-left if this was the last socket/tab for this user
+            const remainingSockets = userId ? countUserSockets(room, userId) : 0;
+            if (remainingSockets === 0) {
+                io.to(roomId).emit('user-left', { socketId: socket.id });
+            }
+
             // Clean up empty rooms
             if (room.users.size === 0) {
                 rooms.delete(fileId);

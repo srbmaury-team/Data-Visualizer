@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import "./styles/YamlEditor.css";
 
-export default function YamlEditor({ value, onChange, readOnly = false, remoteCursors = {}, onCursorChange }) {
+export default function YamlEditor({ value, onChange, readOnly = false, remoteCursors = {}, onCursorChange, onCopy, copyLabel }) {
   const textareaRef = useRef(null);
   const highlighterRef = useRef(null);
   const lineNumbersRef = useRef(null);
@@ -417,6 +417,16 @@ export default function YamlEditor({ value, onChange, readOnly = false, remoteCu
           {readOnly ? <span>Read-only</span> : <span className="toolbar-hint">Auto saved to Local Storage</span>}
         </div>
         <div className="toolbar-right">
+          {onCopy && (
+            <button
+              className="search-toggle-btn"
+              onClick={onCopy}
+              title="Copy editor content to clipboard"
+              disabled={!value}
+            >
+              {copyLabel || '📋 Copy'}
+            </button>
+          )}
           <button
             className="search-toggle-btn"
             onClick={() => {

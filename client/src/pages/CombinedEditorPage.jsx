@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import YamlEditor from "../components/YamlEditor";
 import UserPermissionManager from "../components/UserPermissionManager";
 import PresenceBar from "../components/PresenceBar";
@@ -180,6 +181,31 @@ export default function CombinedEditorPage({
   const navigate = useNavigate();
   const { id: currentFileId } = useParams();
   const previousAuthState = useRef(isAuthenticated);
+  const yamlFileInputRef = useRef(null);
+  const [openMenu, setOpenMenu] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleImportYamlFile = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result;
+      if (typeof content === 'string') {
+        setYamlText(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, [setYamlText]);
+
+  const [copyLabel, setCopyLabel] = useState('📋 Copy');
+  const handleCopyText = useCallback(() => {
+    navigator.clipboard.writeText(yamlText).then(() => {
+      setCopyLabel('✅ Copied!');
+      setTimeout(() => setCopyLabel('📋 Copy'), 2000);
+    });
+  }, [yamlText]);
 
   const [parsedData, setParsedData] = useState(null);
   const [treeInfo, setTreeInfo] = useState(null);
@@ -202,6 +228,16 @@ export default function CombinedEditorPage({
   const debouncedYamlText = useDebounce(yamlText, 300);
   const debouncedUserSearch = useDebounce(userSearch, 350);
   const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated, authLoading);
+
+  const handleExportYaml = useCallback(() => {
+    const blob = new Blob([yamlText], { type: 'application/x-yaml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (fileData?.title || 'export') + '.yaml';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [yamlText, fileData]);
 
   // Real-time collaboration — only active when viewing a saved file and authenticated
   const collabFileId = currentFileId && isAuthenticated ? currentFileId : null;
@@ -397,57 +433,59 @@ export default function CombinedEditorPage({
 
   return (
     <div className="simple-combined-editor">
-      <div className="simple-header">
-        <div className="combined-auth-section">
-          {isAuthenticated ? (
-            <>
-              <button className="user-name-btn clickable-username" onClick={() => navigate("/profile")} title="View Profile">
-                Welcome, {user?.username || "User"}!
-              </button>
-              <button className="auth-btn logout-btn" onClick={onLogout}>🚪 Logout</button>
-            </>
-          ) : (
-            <>
-              <span className="guest-name">Welcome, Guest!</span>
-              <button className="auth-btn login-btn" onClick={onShowAuth}>🔐 Login / Sign Up</button>
-            </>
-          )}
-        </div>
-        <div className="combined-header-main">
-          <div className="combined-header-top">
-            <button className="back-btn" onClick={() => navigate(currentFileId ? `/editor/${currentFileId}` : "/")}>
-              ← Back
-            </button>
-            <h1>YAML Editor & Visualizer</h1>
+      <div className="simple-header compact-header">
+        <div className="header-top-bar">
+          <div className="header-left">
+            <button className="compact-icon-btn" onClick={() => navigate('/')} title="Home">🏠</button>
+            <button className="compact-icon-btn" onClick={() => navigate(currentFileId ? `/editor/${currentFileId}` : "/")} title="Back to Editor">←</button>
+            <span className="header-title">Editor & Visualizer</span>
+            {fileData && !fileError && <span className="header-file-tag hide-mobile">📁 {fileData.title}</span>}
+            {treeInfo && <span className="header-file-tag hide-mobile">{treeInfo.totalNodes} nodes • {treeInfo.maxDepth + 1} levels</span>}
+            <button className="compact-icon-btn hamburger-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} title="Menu">☰</button>
           </div>
-          {fileLoading && (
-            <div className="combined-file-status">📄 Loading file...</div>
-          )}
-          {fileError && (
-            <div className="combined-file-status combined-file-error">
-              ❌ Error: {fileError}
+
+          <div className={`header-center${mobileMenuOpen ? ' mobile-open' : ''}`}>
+            <div className="menu-group">
+              <div className="dropdown-wrapper">
+                <button className="menu-btn" onClick={() => setOpenMenu(openMenu === 'file' ? null : 'file')}>
+                  File ▾
+                </button>
+                {openMenu === 'file' && (
+                  <div className="dropdown-menu" onMouseLeave={() => setOpenMenu(null)}>
+                    {currentFileId && (
+                      <button onClick={() => { handleNewFile("/combined"); setOpenMenu(null); }}>📄 New File</button>
+                    )}
+                    <button onClick={() => { yamlFileInputRef.current?.click(); setOpenMenu(null); }}>📥 Import YAML</button>
+                    <button onClick={() => { onShowRepositoryImporter(); setOpenMenu(null); }}>📂 Import Repo</button>
+                    <button onClick={() => { handleExportYaml(); setOpenMenu(null); }} disabled={!yamlText}>📤 Export YAML</button>
+                    <div className="dropdown-divider" />
+                    <button onClick={() => { handleSaveGraph(); setOpenMenu(null); }} disabled={!parsedData || !canSaveGraph}>💾 Save</button>
+                    <button onClick={() => { setShowSavedGraphs(true); setOpenMenu(null); }}>📚 Saved ({savedGraphs.length + (sharedGraphs?.length || 0)})</button>
+                    <button onClick={() => { onShowVersionHistory(); setOpenMenu(null); }} disabled={!isAuthenticated}>📜 History</button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-          {fileData && !fileError && (
-            <div className="combined-file-status combined-file-info">
-              📁 {fileData.title}
-            </div>
-          )}
-          {treeInfo && <span className="tree-info">{treeInfo.totalNodes} nodes • {treeInfo.maxDepth + 1} levels</span>}
-          <div className="combined-header-actions">
-            <button className="repo-import-btn" onClick={onShowRepositoryImporter} title="Import GitHub Repository">
-              📂 Import Repo
-            </button>
-            {currentFileId && (
-              <button className="new-file-btn" onClick={() => handleNewFile("/combined")} title="Start new file (clear current)">
-                📄 New File
-              </button>
+          </div>
+
+          <div className={`header-right${mobileMenuOpen ? ' mobile-open' : ''}`}>
+            {isAuthenticated ? (
+              <>
+                <span className="user-name clickable-username" onClick={() => navigate("/profile")} title="View Profile">
+                  {user?.username || "User"}
+                </span>
+                <button className="compact-icon-btn logout-icon" onClick={onLogout} title="Logout">🚪</button>
+              </>
+            ) : (
+              <button className="menu-btn login-menu-btn" onClick={onShowAuth}>🔐 Login</button>
             )}
-            <button className="save-graph-btn" onClick={handleSaveGraph} disabled={!parsedData || !canSaveGraph} title={canSaveGraph ? "Save current graph" : "View-only access: save disabled"}>💾 Save</button>
-            <button className="version-history-btn" onClick={onShowVersionHistory} title="View Version History" disabled={!isAuthenticated}>📜 History</button>
-            <button className="my-graphs-btn" onClick={() => setShowSavedGraphs(true)}>📚 Saved ({savedGraphs.length + (sharedGraphs?.length || 0)})</button>
           </div>
         </div>
+
+        <input ref={yamlFileInputRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={handleImportYamlFile} />
+
+        {fileLoading && <div className="header-status">📄 Loading file...</div>}
+        {fileError && <div className="header-status header-status-error">❌ {fileError}</div>}
       </div>
 
       {(error || localError) && !hasNoAccess && <div className="error-banner">⚠️ {error || localError}</div>}
@@ -521,6 +559,8 @@ export default function CombinedEditorPage({
                 validation={validation}
                 remoteCursors={collabFileId ? remoteCursors : {}}
                 onCursorChange={collabFileId ? handleCursorChange : undefined}
+                onCopy={handleCopyText}
+                copyLabel={copyLabel}
               />
             </div>
 
