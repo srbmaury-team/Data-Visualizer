@@ -1272,7 +1272,7 @@ body {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.loading-spinner {
+.shared-loading-content {
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1280,7 +1280,7 @@ body {
   gap: 1rem;
 }
 
-.spinner {
+.shared-loading-spinner {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
@@ -1299,10 +1299,16 @@ body {
   }
 }
 
-.loading-spinner p {
+.shared-loading-content p {
   font-size: 1.1rem;
   color: #666;
   margin: 0;
+}
+
+.shared-loading-note {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 0.5rem;
 }
 
 .error-container {

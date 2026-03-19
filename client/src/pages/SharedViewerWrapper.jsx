@@ -49,10 +49,10 @@ export default function SharedViewerWrapper() {
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
+        <div className="shared-loading-content">
+          <div className="shared-loading-spinner"></div>
           <p>Loading shared content...</p>
-          <p style={{ fontSize: '0.9em', color: '#666', marginTop: '0.5rem' }}>
+          <p className="shared-loading-note">
             On mobile, you'll be redirected to the editor
           </p>
         </div>
