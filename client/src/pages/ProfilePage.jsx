@@ -176,6 +176,69 @@ export default function ProfilePage() {
     });
   };
 
+  const formatCompactNumber = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value || 0);
+  };
+
+  const getInitials = (value) => {
+    if (!value) return 'DV';
+
+    const parts = value.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+  };
+
+  const getMonthLabel = (year, month) => {
+    return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
+      month: 'short',
+    });
+  };
+
+  const memberDays = profileData?.user?.createdAt
+    ? Math.max(1, Math.floor((Date.now() - new Date(profileData.user.createdAt).getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
+  const publicShareRate = profileData?.stats?.totalFiles
+    ? Math.round((profileData.stats.publicFiles / profileData.stats.totalFiles) * 100)
+    : 0;
+  const latestFile = dashboardData?.recentFiles?.[0] || profileData?.user?.yamlFiles?.[0] || null;
+  const topFile = dashboardData?.popularFiles?.[0] || null;
+  const recentViews = dashboardData?.recentFiles?.reduce((total, file) => total + (file.views || 0), 0) || 0;
+  const peakMonthCount = Math.max(...((dashboardData?.filesByMonth || []).map((item) => item.count)), 1);
+  const recentActivity = (dashboardData?.filesByMonth || []).length
+    ? dashboardData.filesByMonth.map((item) => ({
+        label: getMonthLabel(item._id.year, item._id.month),
+        count: item.count,
+        height: `${Math.max(20, Math.round((item.count / peakMonthCount) * 100))}%`,
+      }))
+    : [];
+  const insightItems = [
+    {
+      label: 'Membership',
+      value: memberDays > 0 ? `${memberDays} days active` : 'New member',
+      tone: 'neutral',
+    },
+    {
+      label: 'Visibility mix',
+      value: `${publicShareRate}% public`,
+      tone: 'accent',
+    },
+    {
+      label: 'Recent momentum',
+      value: `${formatCompactNumber(recentViews)} views across recent files`,
+      tone: 'neutral',
+    },
+  ];
+
   if (loading) {
     return (
       <div className="profile-container">
@@ -186,7 +249,7 @@ export default function ProfilePage() {
           <h2>Loading Profile...</h2>
         </div>
         <div className="loading-state">
-          <div className="spinner">⟳</div>
+          <div className="profile-spinner">⟳</div>
           <p>Loading your profile data...</p>
         </div>
       </div>
@@ -239,6 +302,59 @@ export default function ProfilePage() {
       </div>
 
       <div className="profile-content">
+        <section className="profile-hero-card">
+          <div className="profile-hero-main">
+            <div className="profile-avatar-badge">{getInitials(profileData.user.username)}</div>
+            <div className="profile-hero-copy">
+              <span className="profile-eyebrow">Workspace profile</span>
+              <h1>{profileData.user.username}</h1>
+              <p>
+                Managing {profileData.stats.totalFiles} diagram{profileData.stats.totalFiles === 1 ? '' : 's'} with{' '}
+                {formatCompactNumber(profileData.stats.totalViews)} total view{profileData.stats.totalViews === 1 ? '' : 's'}.
+              </p>
+              <div className="profile-hero-meta">
+                <span>{profileData.user.email}</span>
+                <span>Joined {formatDate(profileData.user.createdAt)}</span>
+                <span>{profileData.user.isVerified ? 'Verified account' : 'Account active'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="profile-hero-side">
+            <div className="hero-highlight-card">
+              <span className="hero-highlight-label">Top file</span>
+              <strong>{topFile?.title || 'No file activity yet'}</strong>
+              <p>
+                {topFile
+                  ? `${formatCompactNumber(topFile.views)} views on your most visited diagram.`
+                  : 'Create and share a diagram to start tracking engagement.'}
+              </p>
+            </div>
+            <div className="hero-quick-actions">
+              <button className="hero-action-btn" onClick={() => navigate('/')}>Open Editor</button>
+              <button className="hero-action-btn secondary" onClick={() => setActiveTab('dashboard')}>View Activity</button>
+            </div>
+          </div>
+        </section>
+
+        <section className="profile-overview-strip">
+          <div className="overview-stat-card">
+            <span className="overview-stat-label">Files owned</span>
+            <strong>{formatCompactNumber(profileData.stats.totalFiles)}</strong>
+            <p>{profileData.stats.privateFiles} private, {profileData.stats.publicFiles} public</p>
+          </div>
+          <div className="overview-stat-card">
+            <span className="overview-stat-label">Audience reach</span>
+            <strong>{formatCompactNumber(profileData.stats.totalViews)}</strong>
+            <p>Total views across all published work</p>
+          </div>
+          <div className="overview-stat-card">
+            <span className="overview-stat-label">Latest update</span>
+            <strong>{latestFile ? formatDate(latestFile.updatedAt || latestFile.createdAt) : 'No files yet'}</strong>
+            <p>{latestFile ? latestFile.title : 'Your recent activity will appear here'}</p>
+          </div>
+        </section>
+
         <div className="profile-tabs">
           <button 
             className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
@@ -263,6 +379,48 @@ export default function ProfilePage() {
         <div className="tab-content">
           {activeTab === 'profile' && (
             <div className="profile-tab">
+              <div className="profile-overview-grid">
+                <div className="profile-summary-card">
+                  <div className="card-header">
+                    <h3>Profile Snapshot</h3>
+                  </div>
+                  <div className="profile-summary-list">
+                    {insightItems.map((item) => (
+                      <div key={item.label} className={`summary-pill ${item.tone}`}>
+                        <span>{item.label}</span>
+                        <strong>{item.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="profile-summary-note">
+                    {latestFile
+                      ? `Last active on ${latestFile.title}.`
+                      : 'Your first saved YAML diagram will unlock richer activity insights here.'}
+                  </div>
+                </div>
+
+                <div className="profile-summary-card emphasis-card">
+                  <div className="card-header">
+                    <h3>Publishing Posture</h3>
+                  </div>
+                  <div className="sharing-meter">
+                    <div className="sharing-meter-track">
+                      <div className="sharing-meter-fill" style={{ width: `${publicShareRate}%` }}></div>
+                    </div>
+                    <div className="sharing-meter-labels">
+                      <span>Private</span>
+                      <strong>{publicShareRate}% public</strong>
+                      <span>Public</span>
+                    </div>
+                  </div>
+                  <p className="profile-summary-note">
+                    {profileData.stats.totalFiles
+                      ? `You currently expose ${profileData.stats.publicFiles} of ${profileData.stats.totalFiles} files for sharing.`
+                      : 'You have not created any diagrams yet.'}
+                  </p>
+                </div>
+              </div>
+
               <div className="profile-info-card">
                 <div className="card-header">
                   <h3>Profile Information</h3>
@@ -341,11 +499,93 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
+
+              <div className="recent-files-card">
+                <div className="card-header">
+                  <h3>Recent Creations</h3>
+                </div>
+                {profileData.user.yamlFiles?.length > 0 ? (
+                  <div className="files-list compact-files-list">
+                    {profileData.user.yamlFiles.map((file) => (
+                      <div
+                        key={file._id}
+                        className="file-item clickable"
+                        onClick={() => handleLoadFile(file)}
+                        title="Click to open in editor"
+                      >
+                        <div className="file-info">
+                          <div className="file-title">{file.title}</div>
+                          <div className="file-meta">
+                            <span className="file-date">Created {formatDate(file.createdAt)}</span>
+                            <span className={`file-visibility ${file.isPublic ? 'public' : 'private'}`}>
+                              {file.isPublic ? 'Public' : 'Private'}
+                            </span>
+                            <span className="file-views">{formatCompactNumber(file.views)} views</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>No saved diagrams yet. Use the editor to create your first one.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {activeTab === 'dashboard' && dashboardData && (
             <div className="dashboard-tab">
+              <div className="analytics-overview-grid">
+                <div className="analytics-card wide-card">
+                  <div className="card-header">
+                    <h3>Creation Activity</h3>
+                  </div>
+                  {recentActivity.length > 0 ? (
+                    <div className="activity-chart">
+                      {recentActivity.map((item) => (
+                        <div key={item.label} className="activity-bar-group">
+                          <div className="activity-bar-track">
+                            <div className="activity-bar" style={{ height: item.height }}></div>
+                          </div>
+                          <strong>{item.count}</strong>
+                          <span>{item.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state left-align">
+                      <p>No monthly creation activity yet. Save a few diagrams to see your momentum.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="analytics-card">
+                  <div className="card-header">
+                    <h3>Dashboard Highlights</h3>
+                  </div>
+                  <div className="highlight-stack">
+                    <div className="highlight-row">
+                      <span>Most viewed file</span>
+                      <strong>{topFile?.title || 'No data yet'}</strong>
+                    </div>
+                    <div className="highlight-row">
+                      <span>Recent file count</span>
+                      <strong>{dashboardData.recentFiles.length}</strong>
+                    </div>
+                    <div className="highlight-row">
+                      <span>Popular file count</span>
+                      <strong>{dashboardData.popularFiles.length}</strong>
+                    </div>
+                    <div className="highlight-row">
+                      <span>Recent view total</span>
+                      <strong>{formatCompactNumber(recentViews)}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="recent-files-card">
                 <div className="card-header">
                   <h3>Recent Files</h3>
@@ -418,6 +658,26 @@ export default function ProfilePage() {
 
           {activeTab === 'security' && (
             <div className="security-tab">
+              <div className="security-status-card">
+                <div className="card-header">
+                  <h3>Security Overview</h3>
+                </div>
+                <div className="security-status-grid">
+                  <div className="security-status-item">
+                    <span>Account state</span>
+                    <strong>{profileData.user.isVerified ? 'Verified' : 'Protected by password'}</strong>
+                  </div>
+                  <div className="security-status-item">
+                    <span>Profile updated</span>
+                    <strong>{formatDate(profileData.user.updatedAt || profileData.user.createdAt)}</strong>
+                  </div>
+                  <div className="security-status-item">
+                    <span>Password policy</span>
+                    <strong>Minimum 6 characters</strong>
+                  </div>
+                </div>
+              </div>
+
               <div className="password-card">
                 <div className="card-header">
                   <h3>Change Password</h3>
