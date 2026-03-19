@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
 import AiAssistant from "../components/AiAssistant";
 import AnalysisPanel from "../components/AnalysisPanel";
+import PresenceBar from "../components/PresenceBar";
 import YamlAnalysisService from "../services/yamlAnalysisService";
 import { useYamlFile } from "../hooks/useYamlFile";
 import { useDebounce } from "../hooks/useDebounce";
+import { useCollaboration } from "../hooks/useCollaboration";
 import yaml from "js-yaml";
 
 export default function EditorPage({
@@ -16,9 +18,11 @@ export default function EditorPage({
   validation,
   handleSaveGraph,
   savedGraphs,
+  sharedGraphs,
   setShowSavedGraphs,
   handleNewFile,
   isAuthenticated,
+  authLoading,
   user,
   onShowAuth,
   onShowRepositoryImporter,
@@ -36,7 +40,27 @@ export default function EditorPage({
   const debouncedYamlText = useDebounce(yamlText, 500); // 500ms delay for analysis
 
   // Use the custom hook to load YAML file by ID if present in URL
-  const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated);
+  const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated, authLoading);
+
+  // Real-time collaboration
+  const collabFileId = currentFileId && isAuthenticated ? currentFileId : null;
+  const {
+    remoteUsers,
+    remoteCursors,
+    isConnected: collabConnected,
+    accessDenied: collabAccessDenied,
+    typingUsers,
+    handleLocalChange,
+    handleCursorChange,
+  } = useCollaboration(collabFileId, yamlText, setYamlText, !!collabFileId);
+
+  const handleYamlChange = useCallback((newValue) => {
+    setYamlText(newValue);
+    if (collabFileId) {
+      handleLocalChange(newValue);
+    }
+  }, [setYamlText, collabFileId, handleLocalChange]);
+
   const candidateUserIds = [`${user?.id || ''}`, `${user?._id || ''}`].filter(Boolean);
   const editorReadOnly = (() => {
     if (!currentFileId || !fileData) return false;
@@ -51,6 +75,9 @@ export default function EditorPage({
     return permission !== 'edit';
   })();
   const canSaveGraph = !editorReadOnly;
+
+  // Determine if user has no access to this file
+  const hasNoAccess = !!(fileError && fileError.includes('Access denied')) || collabAccessDenied;
 
   // Redirect to home if invalid ID error
   useEffect(() => {
@@ -202,7 +229,7 @@ export default function EditorPage({
                   📜 History
                 </button>
                 <button className="my-graphs-btn" onClick={() => setShowSavedGraphs(true)} title="View saved graphs">
-                  📚 My Graphs ({savedGraphs.length})
+                  📚 My Graphs ({savedGraphs.length + (sharedGraphs?.length || 0)})
                 </button>
               </>
             )}
@@ -228,7 +255,32 @@ export default function EditorPage({
 
       <div className="editor-layout">
         <div className="editor-main">
-          <YamlEditor value={yamlText} onChange={setYamlText} readOnly={editorReadOnly} />
+          {hasNoAccess ? (
+            <div className="access-denied" style={{ padding: '40px', textAlign: 'center', color: '#d32f2f', backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '8px', margin: '20px' }}>
+              <h2 style={{ margin: '0 0 10px' }}>🚫 Access Denied</h2>
+              <p>You do not have permission to view this file.</p>
+              <button onClick={() => navigate('/')} style={{ marginTop: '15px', padding: '8px 20px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}>
+                ← Go Home
+              </button>
+            </div>
+          ) : (
+            <>
+              {collabFileId && !collabAccessDenied && (
+                <PresenceBar
+                  users={remoteUsers}
+                  typingUsers={typingUsers}
+                  isConnected={collabConnected}
+                />
+              )}
+              <YamlEditor
+                value={yamlText}
+                onChange={handleYamlChange}
+                readOnly={editorReadOnly}
+                remoteCursors={collabFileId ? remoteCursors : {}}
+                onCursorChange={collabFileId ? handleCursorChange : undefined}
+              />
+            </>
+          )}
           <div className="controls">
             {error && <div className="error">{error}</div>}
             {validation && (

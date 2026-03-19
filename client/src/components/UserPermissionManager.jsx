@@ -19,7 +19,7 @@ export default function UserPermissionManager({ users, permissions, onChangePerm
         <div className="user-permission-manager">
             <h3 className="user-permission-title">Collaborators</h3>
             {!users.length ? (
-                <p className="user-permission-empty">Search for users to add collaborators.</p>
+                <p className="user-permission-empty">No collaborators yet. Search for users to add them.</p>
             ) : (
                 <div className="user-permission-list">
                     {users.map((user) => {

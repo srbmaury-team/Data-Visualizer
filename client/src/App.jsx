@@ -32,7 +32,7 @@ const DEFAULT_YAML = defaultYamlContent;
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const { showSuccess, showError } = useToast();
   const {
     savedGraphs,
@@ -587,10 +587,12 @@ function AppContent() {
               validation={validation}
               handleSaveGraph={handleSaveGraph}
               savedGraphs={savedGraphs}
+              sharedGraphs={sharedGraphs}
               setShowSavedGraphs={setShowSavedGraphs}
               handleClearData={handleClearData}
               handleNewFile={handleNewFile}
               isAuthenticated={isAuthenticated}
+              authLoading={authLoading}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
@@ -610,10 +612,12 @@ function AppContent() {
               validation={validation}
               handleSaveGraph={handleSaveGraph}
               savedGraphs={savedGraphs}
+              sharedGraphs={sharedGraphs}
               setShowSavedGraphs={setShowSavedGraphs}
               handleClearData={handleClearData}
               handleNewFile={handleNewFile}
               isAuthenticated={isAuthenticated}
+              authLoading={authLoading}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
@@ -655,10 +659,12 @@ function AppContent() {
               validation={validation}
               handleSaveGraph={handleSaveGraph}
               savedGraphs={savedGraphs}
+              sharedGraphs={sharedGraphs}
               setShowSavedGraphs={setShowSavedGraphs}
               handleClearData={handleClearData}
               handleNewFile={handleNewFile}
               isAuthenticated={isAuthenticated}
+              authLoading={authLoading}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}
@@ -678,10 +684,12 @@ function AppContent() {
               validation={validation}
               handleSaveGraph={handleSaveGraph}
               savedGraphs={savedGraphs}
+              sharedGraphs={sharedGraphs}
               setShowSavedGraphs={setShowSavedGraphs}
               handleClearData={handleClearData}
               handleNewFile={handleNewFile}
               isAuthenticated={isAuthenticated}
+              authLoading={authLoading}
               user={user}
               onShowAuth={() => setShowAuthModal(true)}
               onShowRepositoryImporter={() => setShowRepositoryImporter(true)}

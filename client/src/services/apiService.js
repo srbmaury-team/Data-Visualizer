@@ -263,6 +263,14 @@ class ApiService {
       body: JSON.stringify({ permissions }),
     });
   }
+
+  /**
+   * Get existing collaborators for a YAML file
+   * @param {string} id - YAML file ID
+   */
+  async getFileCollaborators(id) {
+    return this.request(`/yaml/${id}/collaborators`);
+  }
 }
 
 // Create singleton instance

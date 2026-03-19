@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import "./styles/YamlEditor.css";
 
-export default function YamlEditor({ value, onChange, readOnly = false }) {
+export default function YamlEditor({ value, onChange, readOnly = false, remoteCursors = {}, onCursorChange }) {
   const textareaRef = useRef(null);
   const highlighterRef = useRef(null);
   const lineNumbersRef = useRef(null);
@@ -28,18 +28,18 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
   useEffect(() => {
     const safeValue = value || '';
     const previousValue = previousValueRef.current || '';
-    
+
     setLineCount(safeValue.split('\n').length);
-    
+
     // Clear search terms when content changes significantly (like when loading a different file)
     if (searchTerm && previousValue !== safeValue) {
       const valueLength = safeValue.length;
       const previousLength = previousValue.length;
-      
+
       // If the content length changed by more than 50% or content is completely different, clear search
       const significantChange = Math.abs(valueLength - previousLength) > Math.max(valueLength, previousLength) * 0.5;
       const completelyDifferent = valueLength > 100 && previousLength > 100 && !safeValue.includes(previousValue.substring(0, 50));
-      
+
       if (significantChange || completelyDifferent) {
         setSearchTerm("");
         setReplaceTerm("");
@@ -48,7 +48,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
         setShowSearchReplace(false);
       }
     }
-    
+
     // Update the ref for next comparison
     previousValueRef.current = safeValue;
   }, [value, searchTerm]);
@@ -88,7 +88,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
         (match, indent, key, colon, space, val) => {
           const highlightedKey = `<span class="yaml-key">${key}</span>`;
           const highlightedColon = `<span class="yaml-colon">${colon}</span>`;
-          
+
           // Highlight different value types
           let highlightedValue = val;
           if (val.trim()) {
@@ -113,7 +113,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
               highlightedValue = `<span class="yaml-value">${val}</span>`;
             }
           }
-          
+
           return `${indent}${highlightedKey}${highlightedColon}${space}${highlightedValue}`;
         }
       );
@@ -179,12 +179,12 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
     if (scrollTimeoutRef.current) {
       cancelAnimationFrame(scrollTimeoutRef.current);
     }
-    
+
     // Use requestAnimationFrame for smooth synchronization
     scrollTimeoutRef.current = requestAnimationFrame(() => {
       const scrollTop = e.target.scrollTop;
       const scrollLeft = e.target.scrollLeft;
-      
+
       if (lineNumbersRef.current) {
         lineNumbersRef.current.scrollTop = scrollTop;
       }
@@ -196,7 +196,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
       if (guidesRef.current) {
         guidesRef.current.style.transform = `translate(-${scrollLeft}px, -${scrollTop}px)`;
       }
-      
+
       scrollTimeoutRef.current = null;
     });
   };
@@ -233,15 +233,15 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
       const lines = safeValue.substring(0, selectionStart).split('\n');
       const currentLine = lines[lines.length - 1];
       const leadingSpaces = currentLine.match(/^\s*/)?.[0] || '';
-      
+
       let extraIndent = '';
       if (currentLine.trim().endsWith(':')) {
         extraIndent = '  ';
       }
-      
+
       const newValue = safeValue.substring(0, selectionStart) + '\n' + leadingSpaces + extraIndent + safeValue.substring(selectionStart);
       onChange(newValue);
-      
+
       setTimeout(() => {
         const newPos = selectionStart + 1 + leadingSpaces.length + extraIndent.length;
         textarea.selectionStart = textarea.selectionEnd = newPos;
@@ -253,7 +253,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
       e.preventDefault();
       const { selectionStart, selectionEnd } = textarea;
       const safeValue = value || '';
-      
+
       if (selectionStart === selectionEnd) {
         // Insert 2 spaces
         const newValue = safeValue.substring(0, selectionStart) + '  ' + safeValue.substring(selectionStart);
@@ -304,7 +304,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
     const guides = [];
     const charWidth = 8.4;
     const lineHeight = 21;
-    
+
     // Calculate dimensions
     const svgHeight = lines.length * lineHeight;
     const maxIndent = Math.max(0, ...lines.map(line => {
@@ -312,15 +312,15 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
       return Math.floor(spaces / 2);
     }));
     const svgWidth = maxIndent * 2 * charWidth + 500;
-    
+
     lines.forEach((line, index) => {
       const spaces = line.match(/^\s*/)?.[0].length || 0;
       const indentLevel = Math.floor(spaces / 2);
-      
+
       for (let level = 1; level <= indentLevel; level++) {
         const x = level * 2 * charWidth;
         const y = index * lineHeight;
-        
+
         guides.push(
           <line
             key={`${index}-${level}`}
@@ -335,8 +335,78 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
         );
       }
     });
-    
+
     return { guides, svgWidth, svgHeight };
+  };
+
+  // Emit cursor position on click and keyup
+  const emitCursorPosition = useCallback(() => {
+    if (!onCursorChange || !textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const text = textarea.value || '';
+    const { selectionStart, selectionEnd } = textarea;
+
+    // Convert character offset to line/ch
+    const beforeCursor = text.slice(0, selectionStart);
+    const line = beforeCursor.split('\n').length - 1;
+    const ch = selectionStart - beforeCursor.lastIndexOf('\n') - 1;
+
+    onCursorChange({ line, ch, selectionStart, selectionEnd });
+  }, [onCursorChange]);
+
+  // Render remote cursors
+  const renderRemoteCursors = () => {
+    const entries = Object.entries(remoteCursors || {});
+    if (entries.length === 0) return null;
+
+    const charWidth = 8.4;
+    const lineHeight = 21;
+    const padding = 20; // must match .yaml-textarea padding
+
+    return (
+      <div className="remote-cursors-container">
+        {entries.map(([socketId, { username, color, cursor }]) => {
+          if (!cursor) return null;
+          const { line, ch, selectionStart, selectionEnd } = cursor;
+          const top = line * lineHeight + padding;
+          const left = ch * charWidth + padding;
+
+          return (
+            <React.Fragment key={socketId}>
+              {/* Cursor line */}
+              <div
+                className="remote-cursor"
+                style={{ top, left }}
+              >
+                <div
+                  className="remote-cursor-line"
+                  style={{ backgroundColor: color }}
+                />
+                <div
+                  className="remote-cursor-label"
+                  style={{ backgroundColor: color }}
+                >
+                  {username}
+                </div>
+              </div>
+              {/* Selection highlight */}
+              {selectionStart !== selectionEnd && (
+                <div
+                  className="remote-selection"
+                  style={{
+                    backgroundColor: color,
+                    top,
+                    left,
+                    width: Math.abs(selectionEnd - selectionStart) * charWidth,
+                    height: lineHeight,
+                  }}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -347,7 +417,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
           {readOnly ? <span>Read-only</span> : <span className="toolbar-hint">Auto saved to Local Storage</span>}
         </div>
         <div className="toolbar-right">
-          <button 
+          <button
             className="search-toggle-btn"
             onClick={() => {
               if (showSearchReplace) {
@@ -412,7 +482,7 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
           {(() => {
             const { guides, svgWidth, svgHeight } = renderIndentGuides();
             return (
-              <svg 
+              <svg
                 ref={guidesRef}
                 className="indent-guides-svg"
                 width={svgWidth}
@@ -422,10 +492,11 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
               </svg>
             );
           })()}
-          <div 
+          <div
             ref={highlighterRef}
             className="syntax-highlighter"
           />
+          {renderRemoteCursors()}
           <textarea
             ref={textareaRef}
             className="yaml-textarea"
@@ -433,6 +504,9 @@ export default function YamlEditor({ value, onChange, readOnly = false }) {
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             onScroll={handleScroll}
+            onClick={emitCursorPosition}
+            onKeyUp={emitCursorPosition}
+            onSelect={emitCursorPosition}
             spellCheck={false}
             placeholder="# Enter your YAML here..."
             readOnly={readOnly}

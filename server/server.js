@@ -19,6 +19,8 @@ import versionRoutes from './src/routes/versions.js';
 // Import middleware
 import { errorHandler } from './src/middleware/errorHandler.js';
 
+// Import collaboration service
+import { initializeSocketServer } from './src/services/collaborationService.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -94,9 +96,13 @@ app.use('*', (req, res) => {
 
 // Start server (HTTP)
 server.listen(PORT, '0.0.0.0', () => {
+  // Initialize Socket.IO for real-time collaboration
+  initializeSocketServer(server, corsOptions);
+
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 Server accessible from any device on network: http://0.0.0.0:${PORT}`);
   console.log(`📱 Local access: http://localhost:${PORT}`);
   console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔓 CORS: Allowing all origins (development mode)`);
+  console.log(`🔌 Socket.IO: Real-time collaboration enabled`);
 });

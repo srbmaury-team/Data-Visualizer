@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
 import UserPermissionManager from "../components/UserPermissionManager";
+import PresenceBar from "../components/PresenceBar";
 import { fetchUsersByPrefix } from "../services/userService";
 import DiagramViewer from "../components/DiagramViewer";
 import SearchPanel from "../components/SearchPanel";
 import { useYamlFile } from "../hooks/useYamlFile";
 import { useDebounce } from "../hooks/useDebounce";
+import { useCollaboration } from "../hooks/useCollaboration";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import { validateYAML } from "../utils/yamlValidator";
@@ -29,6 +31,7 @@ function ShareModal({
   setUserSearch,
   isUserLoading,
   allUsers,
+  existingCollaborators,
   permissions,
   handleChangePermission,
 }) {
@@ -126,13 +129,27 @@ function ShareModal({
               />
               {isUserLoading && <div className="share-user-loading">Searching users...</div>}
             </div>
-            <UserPermissionManager
-              users={allUsers.filter((u) => (u.id || u._id) !== fileData.owner)}
-              permissions={permissions}
-              onChangePermission={handleChangePermission}
-              currentUserId={getUserId(user)}
-              ownerId={fileData.owner}
-            />
+            {(() => {
+              // Merge existing collaborators with search results, deduplicating
+              const existingIds = new Set(existingCollaborators.map((c) => `${c._id || c.id}`));
+              const searchUsers = allUsers.filter((u) => {
+                const uid = `${u.id || u._id}`;
+                return uid !== fileData.owner && !existingIds.has(uid);
+              });
+              const combinedUsers = [
+                ...existingCollaborators.filter((c) => `${c._id || c.id}` !== fileData.owner),
+                ...searchUsers,
+              ];
+              return (
+                <UserPermissionManager
+                  users={combinedUsers}
+                  permissions={permissions}
+                  onChangePermission={handleChangePermission}
+                  currentUserId={getUserId(user)}
+                  ownerId={fileData.owner}
+                />
+              );
+            })()}
           </div>
         )}
         {shareError && <div className="share-status share-status-error">{shareError}</div>}
@@ -149,9 +166,11 @@ export default function CombinedEditorPage({
   validation,
   handleSaveGraph,
   savedGraphs,
+  sharedGraphs,
   setShowSavedGraphs,
   handleNewFile,
   isAuthenticated,
+  authLoading,
   user,
   onShowAuth,
   onShowRepositoryImporter,
@@ -175,17 +194,58 @@ export default function CombinedEditorPage({
   const [shareError, setShareError] = useState("");
   const [shareSuccess, setShareSuccess] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [existingCollaborators, setExistingCollaborators] = useState([]);
   const [userSearch, setUserSearch] = useState("");
   const [isUserLoading, setIsUserLoading] = useState(false);
   const [permissions, setPermissions] = useState({});
 
   const debouncedYamlText = useDebounce(yamlText, 300);
   const debouncedUserSearch = useDebounce(userSearch, 350);
-  const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated);
+  const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated, authLoading);
+
+  // Real-time collaboration — only active when viewing a saved file and authenticated
+  const collabFileId = currentFileId && isAuthenticated ? currentFileId : null;
+  const {
+    remoteUsers,
+    remoteCursors,
+    isConnected: collabConnected,
+    accessDenied: collabAccessDenied,
+    typingUsers,
+    handleLocalChange,
+    handleCursorChange,
+  } = useCollaboration(collabFileId, yamlText, setYamlText, !!collabFileId);
+
+  // Wrap setYamlText to also notify the collaboration hook
+  const handleYamlChange = useCallback((newValue) => {
+    setYamlText(newValue);
+    if (collabFileId) {
+      handleLocalChange(newValue);
+    }
+  }, [setYamlText, collabFileId, handleLocalChange]);
+
+  // Load existing collaborators when the share modal opens
+  useEffect(() => {
+    if (showShareModal && fileData && getUserId(user) === `${fileData.owner}`) {
+      import("../services/apiService").then(({ default: apiService }) => {
+        apiService.getFileCollaborators(fileData._id)
+          .then((data) => {
+            const collabs = data.collaborators || [];
+            setExistingCollaborators(collabs);
+            // Build initial permissions from collaborators
+            const permMap = { ...(fileData.permissions || {}) };
+            collabs.forEach((c) => {
+              const uid = c._id || c.id;
+              if (!permMap[uid]) permMap[uid] = c.permission;
+            });
+            setPermissions(permMap);
+          })
+          .catch(() => setExistingCollaborators([]));
+      });
+    }
+  }, [showShareModal, fileData, user]);
 
   useEffect(() => {
     if (showShareModal && fileData && getUserId(user) === `${fileData.owner}`) {
-      setPermissions(fileData.permissions || {});
       if (!debouncedUserSearch) {
         setAllUsers([]);
         return;
@@ -329,39 +389,52 @@ export default function CombinedEditorPage({
       .map((id) => fileData.permissions?.[id] || fileData.permissions?.get?.(id))
       .find(Boolean) || "no-access")
     : "no-access";
-  const canEditCurrentFile = !!(fileData && (isOwner || currentPermission === "edit"));
+  const canEditCurrentFile = !!(fileData ? (isOwner || currentPermission === "edit") : !currentFileId);
   const canSaveGraph = !currentFileId || canEditCurrentFile;
+
+  // Determine if user has no access to this file
+  const hasNoAccess = !!(fileError && fileError.includes('Access denied')) || collabAccessDenied;
 
   return (
     <div className="simple-combined-editor">
       <div className="simple-header">
-        <div className="header-left">
-          <button className="back-btn" onClick={() => navigate(currentFileId ? `/editor/${currentFileId}` : "/")}>
-            ← Back
-          </button>
-          <h1>YAML Editor & Visualizer</h1>
+        <div className="combined-auth-section">
+          {isAuthenticated ? (
+            <>
+              <button className="user-name-btn clickable-username" onClick={() => navigate("/profile")} title="View Profile">
+                Welcome, {user?.username || "User"}!
+              </button>
+              <button className="auth-btn logout-btn" onClick={onLogout}>🚪 Logout</button>
+            </>
+          ) : (
+            <>
+              <span className="guest-name">Welcome, Guest!</span>
+              <button className="auth-btn login-btn" onClick={onShowAuth}>🔐 Login / Sign Up</button>
+            </>
+          )}
+        </div>
+        <div className="combined-header-main">
+          <div className="combined-header-top">
+            <button className="back-btn" onClick={() => navigate(currentFileId ? `/editor/${currentFileId}` : "/")}>
+              ← Back
+            </button>
+            <h1>YAML Editor & Visualizer</h1>
+          </div>
           {fileLoading && (
-            <span className="file-loading" style={{ color: "#666", fontSize: "14px", marginLeft: "10px" }}>
-              📄 Loading file...
-            </span>
+            <div className="combined-file-status">📄 Loading file...</div>
           )}
           {fileError && (
-            <span className="file-error" style={{ color: "#d32f2f", fontSize: "14px", marginLeft: "10px" }}>
+            <div className="combined-file-status combined-file-error">
               ❌ Error: {fileError}
-              <br />
-              <span style={{ color: "#b71c1c", fontSize: "12px" }}>[Debug] File ID: {currentFileId}</span>
-            </span>
+            </div>
           )}
           {fileData && !fileError && (
-            <span className="file-info" style={{ color: "#2e7d32", fontSize: "14px", marginLeft: "10px" }}>
+            <div className="combined-file-status combined-file-info">
               📁 {fileData.title}
-            </span>
+            </div>
           )}
           {treeInfo && <span className="tree-info">{treeInfo.totalNodes} nodes • {treeInfo.maxDepth + 1} levels</span>}
-        </div>
-
-        <div className="header-actions">
-          <div className="right-controls">
+          <div className="combined-header-actions">
             <button className="repo-import-btn" onClick={onShowRepositoryImporter} title="Import GitHub Repository">
               📂 Import Repo
             </button>
@@ -370,124 +443,119 @@ export default function CombinedEditorPage({
                 📄 New File
               </button>
             )}
-            <button className="save-btn" onClick={handleSaveGraph} disabled={!parsedData || !canSaveGraph} title={canSaveGraph ? "Save current graph" : "View-only access: save disabled"}>💾 Save</button>
+            <button className="save-graph-btn" onClick={handleSaveGraph} disabled={!parsedData || !canSaveGraph} title={canSaveGraph ? "Save current graph" : "View-only access: save disabled"}>💾 Save</button>
             <button className="version-history-btn" onClick={onShowVersionHistory} title="View Version History" disabled={!isAuthenticated}>📜 History</button>
-            <button className="saved-btn" onClick={() => setShowSavedGraphs(true)}>📚 Saved ({savedGraphs.length})</button>
-            <div className="auth-section">
-              {isAuthenticated ? (
-                <div className="auth-container">
-                  <div className="first-line">
-                    <button className="user-name-btn" onClick={() => navigate("/profile")} title="View Profile">
-                      Welcome, {user?.username || "User"}!
-                    </button>
-                    <button className="auth-btn logout-btn" onClick={onLogout}>🚪 Logout</button>
-                  </div>
-                  <div className="second-line">
-                    <button className="auth-btn save-graph-mobile" onClick={handleSaveGraph} title={canSaveGraph ? "Save current graph" : "View-only access: save disabled"} disabled={!canSaveGraph}>💾 Save</button>
-                    <button className="auth-btn saved-graphs-mobile" onClick={() => setShowSavedGraphs(true)} title="View saved graphs">📚 Saved ({savedGraphs.length})</button>
-                  </div>
-                </div>
-              ) : (
-                <div className="auth-container">
-                  <div className="first-line">
-                    <button className="auth-btn login-btn" onClick={onShowAuth}>🔐 Login / Sign Up</button>
-                  </div>
-                  <div className="second-line">
-                    <button className="auth-btn save-graph-mobile" onClick={handleSaveGraph} title="Save current graph">💾 Save</button>
-                    <button className="auth-btn saved-graphs-mobile disabled" onClick={() => setShowSavedGraphs(true)} title="Login to view saved graphs" disabled>📚 Saved (0)</button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <button className="my-graphs-btn" onClick={() => setShowSavedGraphs(true)}>📚 Saved ({savedGraphs.length + (sharedGraphs?.length || 0)})</button>
           </div>
         </div>
       </div>
 
-      {(error || localError) && <div className="error-banner">⚠️ {error || localError}</div>}
+      {(error || localError) && !hasNoAccess && <div className="error-banner">⚠️ {error || localError}</div>}
 
-      {canShare && hasValidFileId && (
-        <div style={{ margin: "16px 0", textAlign: "right" }}>
-          <button
-            className="share-btn"
-            style={{ padding: "8px 18px", fontWeight: 600, background: "#1976d2", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer" }}
-            onClick={() => setShowShareModal(true)}
-          >
-            🔗 Share
-          </button>
-        </div>
-      )}
-
-      {canShare && !hasValidFileId && (
-        <div style={{ margin: "16px 0", color: "#d32f2f", fontWeight: 500 }}>
-          ⚠️ Sharing is disabled: This file has an invalid ID and cannot be shared.
-          <br />
-          <span style={{ fontSize: 13, color: "#b71c1c" }}>(File IDs must be 24-character hexadecimal strings.)</span>
-        </div>
-      )}
-
-      {showShareModal && hasValidFileId && (
-        <ShareModal
-          fileData={fileData}
-          setShowShareModal={setShowShareModal}
-          shareLoading={shareLoading}
-          setShareLoading={setShareLoading}
-          shareError={shareError}
-          setShareError={setShareError}
-          shareSuccess={shareSuccess}
-          setShareSuccess={setShareSuccess}
-          user={user}
-          userSearch={userSearch}
-          setUserSearch={setUserSearch}
-          isUserLoading={isUserLoading}
-          allUsers={allUsers}
-          permissions={permissions}
-          handleChangePermission={handleChangePermission}
+      {collabFileId && !collabAccessDenied && !hasNoAccess && (
+        <PresenceBar
+          users={remoteUsers}
+          typingUsers={typingUsers}
+          isConnected={collabConnected}
         />
       )}
 
-      <div className="split-container">
-        <div className="left-panel" style={{ width: `${leftWidth}%` }}>
-          {!fileError || !fileError.toLowerCase().includes("permission") ? (
-            <YamlEditor
-              value={yamlText}
-              onChange={setYamlText}
-              readOnly={!canEditCurrentFile}
-              error={error || localError}
-              validation={validation}
-            />
-          ) : null}
+      {hasNoAccess ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#d32f2f', backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '8px', margin: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <h2 style={{ margin: '0 0 10px' }}>🚫 Access Denied</h2>
+          <p>You do not have permission to view this file.</p>
+          <button onClick={() => navigate('/')} style={{ marginTop: '15px', padding: '8px 20px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}>
+            ← Go Home
+          </button>
         </div>
+      ) : (
+        <>
+          {canShare && hasValidFileId && (
+            <div style={{ margin: "16px 0", textAlign: "right" }}>
+              <button
+                className="share-btn"
+                style={{ padding: "8px 18px", fontWeight: 600, background: "#1976d2", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer" }}
+                onClick={() => setShowShareModal(true)}
+              >
+                🔗 Share
+              </button>
+            </div>
+          )}
 
-        <div className="resizer" onMouseDown={handleMouseDown} />
+          {canShare && !hasValidFileId && (
+            <div style={{ margin: "16px 0", color: "#d32f2f", fontWeight: 500 }}>
+              ⚠️ Sharing is disabled: This file has an invalid ID and cannot be shared.
+              <br />
+              <span style={{ fontSize: 13, color: "#b71c1c" }}>(File IDs must be 24-character hexadecimal strings.)</span>
+            </div>
+          )}
 
-        <div className="right-panel" style={{ width: `${100 - leftWidth}%` }}>
-          <div className="right-panel-container">
-            <div className="diagram-area">
-              <div className="search-panel-container">
-                <SearchPanel
-                  onSearch={handleSearch}
-                  searchResults={searchResults}
-                  currentIndex={currentSearchIndex}
-                  onNavigate={handleSearchNavigation}
-                />
-              </div>
-              <div className="diagram-content">
-                {parsedData ? (
-                  <DiagramViewer data={parsedData} treeInfo={treeInfo} hideSearch />
-                ) : (
-                  <div className="diagram-placeholder">
-                    <div className="placeholder-content">
-                      <div className="placeholder-icon">📊</div>
-                      <h3>No Visualization Yet</h3>
-                      <p>{yamlText ? "Fix YAML errors to see visualization" : "Enter YAML content to see the tree diagram"}</p>
-                    </div>
+          {showShareModal && hasValidFileId && (
+            <ShareModal
+              fileData={fileData}
+              setShowShareModal={setShowShareModal}
+              shareLoading={shareLoading}
+              setShareLoading={setShareLoading}
+              shareError={shareError}
+              setShareError={setShareError}
+              shareSuccess={shareSuccess}
+              setShareSuccess={setShareSuccess}
+              user={user}
+              userSearch={userSearch}
+              setUserSearch={setUserSearch}
+              isUserLoading={isUserLoading}
+              allUsers={allUsers}
+              existingCollaborators={existingCollaborators}
+              permissions={permissions}
+              handleChangePermission={handleChangePermission}
+            />
+          )}
+
+          <div className="split-container">
+            <div className="left-panel" style={{ width: `${leftWidth}%` }}>
+              <YamlEditor
+                value={yamlText}
+                onChange={handleYamlChange}
+                readOnly={!canEditCurrentFile}
+                error={error || localError}
+                validation={validation}
+                remoteCursors={collabFileId ? remoteCursors : {}}
+                onCursorChange={collabFileId ? handleCursorChange : undefined}
+              />
+            </div>
+
+            <div className="resizer" onMouseDown={handleMouseDown} />
+
+            <div className="right-panel" style={{ width: `${100 - leftWidth}%` }}>
+              <div className="right-panel-container">
+                <div className="diagram-area">
+                  <div className="search-panel-container">
+                    <SearchPanel
+                      onSearch={handleSearch}
+                      searchResults={searchResults}
+                      currentIndex={currentSearchIndex}
+                      onNavigate={handleSearchNavigation}
+                    />
                   </div>
-                )}
+                  <div className="diagram-content">
+                    {parsedData ? (
+                      <DiagramViewer data={parsedData} treeInfo={treeInfo} hideSearch />
+                    ) : (
+                      <div className="diagram-placeholder">
+                        <div className="placeholder-content">
+                          <div className="placeholder-icon">📊</div>
+                          <h3>No Visualization Yet</h3>
+                          <p>{yamlText ? "Fix YAML errors to see visualization" : "Enter YAML content to see the tree diagram"}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

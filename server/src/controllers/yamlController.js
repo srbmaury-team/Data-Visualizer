@@ -451,6 +451,37 @@ export const setYamlFilePermissions = async (req, res) => {
   }
 };
 
+// Get collaborators for a YAML file (users with permissions)
+export const getFileCollaborators = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const yamlFile = await YamlFile.findOne({ _id: id, owner: req.user._id });
+    if (!yamlFile) {
+      return res.status(404).json({ error: 'YAML file not found or you do not have permission.' });
+    }
+    const permissionsMap = yamlFile.permissions || new Map();
+    const userIds = [];
+    const permEntries = {};
+    for (const [userId, perm] of permissionsMap.entries()) {
+      if (perm === 'view' || perm === 'edit') {
+        userIds.push(userId);
+        permEntries[userId] = perm;
+      }
+    }
+    const users = await User.find({ _id: { $in: userIds } }).select('_id username email');
+    const collaborators = users.map((u) => ({
+      _id: u._id,
+      username: u.username,
+      email: u.email,
+      permission: permEntries[u._id.toString()]
+    }));
+    res.json({ collaborators });
+  } catch (error) {
+    console.error('Get collaborators error:', error);
+    res.status(500).json({ error: 'Server error while fetching collaborators' });
+  }
+};
+
 export const toggleYamlFileSharing = async (req, res) => {
   try {
     const errors = validationResult(req);

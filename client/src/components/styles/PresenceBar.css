@@ -1,0 +1,205 @@
+/* Presence Bar */
+.presence-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 16px;
+  background: #f0f4f8;
+  border-bottom: 1px solid #e1e5e9;
+  font-size: 0.85em;
+  min-height: 36px;
+  flex-wrap: wrap;
+}
+
+.presence-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.presence-dot.connected {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  animation: pulse-green 2s infinite;
+}
+
+.presence-dot.disconnected {
+  background: #ef4444;
+}
+
+@keyframes pulse-green {
+
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+  }
+}
+
+.presence-label {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* User avatars */
+.presence-users {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.presence-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75em;
+  font-weight: 700;
+  cursor: default;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+}
+
+.presence-avatar:hover {
+  transform: scale(1.15);
+  z-index: 2;
+}
+
+/* Stack overlapping avatars */
+.presence-users .presence-avatar+.presence-avatar {
+  margin-left: -8px;
+}
+
+.presence-count {
+  color: #6c757d;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+/* Typing indicator */
+.presence-typing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6c757d;
+  margin-left: auto;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.typing-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #6c757d;
+  animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes typing-bounce {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.typing-label {
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+/* Remote cursor overlay styles (used inside YamlEditor) */
+.remote-cursors-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.remote-cursor {
+  position: absolute;
+  width: 2px;
+  pointer-events: none;
+  z-index: 5;
+  transition: top 0.1s ease, left 0.1s ease;
+}
+
+.remote-cursor-line {
+  width: 2px;
+  height: 21px;
+  animation: cursor-blink 1.2s infinite;
+}
+
+@keyframes cursor-blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.remote-cursor-label {
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-size: 10px;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.remote-selection {
+  position: absolute;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 4;
+}

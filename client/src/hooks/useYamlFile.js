@@ -6,9 +6,10 @@ import apiService from '../services/apiService';
  * Custom hook to load a YAML file by ID from URL params
  * @param {function} setYamlText - Function to update the yamlText state
  * @param {boolean} isAuthenticated - Whether the user is authenticated
+ * @param {boolean} authLoading - Whether auth is still initializing
  * @returns {object} - { loading, error, fileData, loadFile }
  */
-export const useYamlFile = (setYamlText, isAuthenticated) => {
+export const useYamlFile = (setYamlText, isAuthenticated, authLoading = false) => {
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -51,6 +52,8 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
 
       if (err.message?.includes('Invalid ID format') || err.message?.includes('Invalid file ID')) {
         errorMessage = 'Invalid file ID format';
+      } else if (err.message?.includes('Access denied') || err.message?.includes('permission')) {
+        errorMessage = 'Access denied. You do not have permission to view this file.';
       } else if (err.message?.includes('not found')) {
         errorMessage = 'File not found or you do not have permission to access it';
       } else if (err.message?.includes('Network Error') || err.message?.includes('fetch')) {
@@ -77,9 +80,14 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
       }
 
       if (!isAuthenticated) {
-        setFileData(null);
-        setError(null);
-        setLoading(false);
+        // If auth is still loading, keep loading state true so UI shows a loader
+        if (authLoading) {
+          setLoading(true);
+        } else {
+          setFileData(null);
+          setError(null);
+          setLoading(false);
+        }
         return;
       }
 
@@ -115,6 +123,8 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
 
         if (err.message?.includes('Invalid ID format') || err.message?.includes('Invalid file ID')) {
           errorMessage = 'Invalid file ID format';
+        } else if (err.message?.includes('Access denied') || err.message?.includes('permission')) {
+          errorMessage = 'Access denied. You do not have permission to view this file.';
         } else if (err.message?.includes('not found')) {
           errorMessage = 'File not found or you do not have permission to access it';
         } else if (err.message?.includes('Network Error') || err.message?.includes('fetch')) {
@@ -130,7 +140,7 @@ export const useYamlFile = (setYamlText, isAuthenticated) => {
     };
 
     loadFileById();
-  }, [id, isAuthenticated, setYamlText]);
+  }, [id, isAuthenticated, authLoading, setYamlText]);
 
   // Listen for force reload events
   useEffect(() => {

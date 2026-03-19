@@ -16,8 +16,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -32,11 +37,12 @@
 }
 
 @keyframes slideIn {
-  from { 
+  from {
     opacity: 0;
     transform: scale(0.9) translateY(-20px);
   }
-  to { 
+
+  to {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
@@ -398,51 +404,64 @@
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .modal-header {
     padding: 15px 20px;
   }
-  
+
   .modal-header h2 {
     font-size: 1.3em;
   }
-  
+
   .modal-body {
     padding: 20px;
   }
-  
+
   .graphs-grid {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
+  .graph-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .graph-actions {
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
-  
+
   .load-options {
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 6px;
     width: 100%;
   }
-  
-  .view-buttons {
-    gap: 4px;
+
+  .load-label {
+    margin-right: 0;
   }
-  
+
+  .view-buttons {
+    gap: 6px;
+    width: 100%;
+  }
+
   .view-btn {
-    min-width: 36px;
-    height: 36px;
+    flex: 1;
+    min-width: 0;
+    height: 40px;
     padding: 6px 8px;
     font-size: 1em;
   }
-  
+
   .management-options {
     width: 100%;
   }
-  
-  .graph-actions button {
-    width: 100%;
+
+  .management-options .update-btn,
+  .management-options .delete-btn {
+    flex: 1;
   }
 }
 
@@ -451,19 +470,19 @@
     width: 98%;
     max-height: 95vh;
   }
-  
+
   .modal-header {
     padding: 12px 15px;
   }
-  
+
   .modal-body {
     padding: 15px;
   }
-  
+
   .graph-info {
     padding: 15px;
   }
-  
+
   .graph-actions {
     padding: 12px 15px;
   }

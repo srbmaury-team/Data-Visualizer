@@ -12,7 +12,8 @@ import {
   deleteYamlFile,
   getPublicYamlFiles,
   toggleYamlFileSharing,
-  setYamlFilePermissions
+  setYamlFilePermissions,
+  getFileCollaborators
 } from '../controllers/yamlController.js';
 
 const router = express.Router();
@@ -81,5 +82,10 @@ router.post('/:id/permissions', auth, [
   param('id').isMongoId().withMessage('Invalid file ID'),
   body('permissions').isObject().withMessage('Permissions must be an object'),
 ], setYamlFilePermissions);
+
+// Get collaborators for a YAML file (owner only)
+router.get('/:id/collaborators', auth, [
+  param('id').isMongoId().withMessage('Invalid file ID'),
+], getFileCollaborators);
 
 export default router;

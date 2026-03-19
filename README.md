@@ -75,6 +75,7 @@ Organize and share your work efficiently:
 - **Permission-Aware Save UX**: View-only users are read-only and cannot trigger save/replace flows
 - **Version History**: Shared users with permission can view history and author attribution
 - **Share Links**: Generate secure public URLs while managing per-user view/edit access
+- **Collaborator Visibility**: Existing collaborators are auto-displayed when opening the Share modal — no need to search first
 - **Export Options**: High-quality PNG and SVG export with professional styling and scalability. Effortlessly download your diagrams as crisp images for presentations, documentation, or sharing.
 - **Individual File Management**: Update, delete, and organize files with comprehensive controls
 
@@ -378,6 +379,9 @@ children:
 - `PUT /api/yaml/:id` - Update file
 - `DELETE /api/yaml/:id` - Delete file
 - `GET /api/yaml/public/browse` - Browse public files
+- `POST /api/yaml/:id/share` - Generate or toggle public share link
+- `POST /api/yaml/:id/permissions` - Set per-user view/edit permissions
+- `GET /api/yaml/:id/collaborators` - List existing collaborators on a file
 
 ### Versioning
 - `POST /api/files/:id/versions` - Create a new file version
@@ -451,7 +455,7 @@ children:
 
 ## 🚧 Roadmap
 
-> **Current Status**: The application is stable and production-ready with core features implemented. Recent updates include save-time branching (replace-or-copy), permission-aware shared file UX, shared-access version history, and a rewritten diff checker with synchronized side-by-side editing and clearer indicators.
+> **Current Status**: The application is stable and production-ready with core features implemented. Recent updates include auto-displayed collaborators on the Share modal, combined graph counts (owned + shared) in the My Graphs button, mobile-responsive header and modal layouts, save-time branching (replace-or-copy), permission-aware shared file UX, shared-access version history, and a rewritten diff checker with synchronized side-by-side editing and clearer indicators.
 
 ---
 

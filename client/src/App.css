@@ -1144,6 +1144,11 @@ body {
     padding: 15px;
   }
 
+  .graph-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .graph-actions {
     flex-direction: column;
   }
