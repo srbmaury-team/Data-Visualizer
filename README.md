@@ -27,6 +27,10 @@ Experience the ultimate YAML editing environment:
 - **Search & Replace**: Full-featured find/replace with case sensitivity and match navigation  
 - **Line Numbers & Guides**: Professional editor with line numbers and indentation guides
 - **Clean Interface**: Optimized light theme with professional syntax highlighting
+- **File Import**: Import `.yaml`/`.yml` files directly from disk, or import `.json` files with automatic conversion to YAML
+- **Drag & Drop**: Drop YAML or JSON files directly onto the editor for instant import
+- **Multi-Format Export**: Export content as YAML or convert and download as JSON
+- **Keyboard Shortcuts**: Extensive shortcut support for save, import, export, view toggling, and more
 
 ### 🌳 **Interactive Tree Visualization**
 Bring your YAML structures to life:
@@ -76,6 +80,7 @@ Organize and share your work efficiently:
 - **Version History**: Shared users with permission can view history and author attribution
 - **Share Links**: Generate secure public URLs while managing per-user view/edit access
 - **Collaborator Visibility**: Existing collaborators are auto-displayed when opening the Share modal — no need to search first
+- **Live Presence Bar**: See active collaborators with avatars, typing indicators, and online/offline status
 - **Export Options**: High-quality PNG and SVG export with professional styling and scalability. Effortlessly download your diagrams as crisp images for presentations, documentation, or sharing.
 - **Individual File Management**: Update, delete, and organize files with comprehensive controls
 
@@ -330,7 +335,7 @@ children:
 
 **Import any public GitHub repository structure:**
 
-1. Click **"📁 Import from GitHub"** button (available in Header, Editor, and Combined Editor)
+1. Click **"� Import Repo"** in the File ▾ dropdown menu (available in Editor and Combined Editor)
 2. Enter the GitHub repository URL (e.g., `https://github.com/facebook/react`)
 3. Click **"Import Repository"** to fetch and convert the structure
 4. The repository structure will be automatically converted to YAML format and loaded into the editor
@@ -405,8 +410,17 @@ children:
 |-----|--------|
 | `Tab` | Indent (2 spaces) |
 | `Enter` | New line with auto-indent |
-| `Ctrl/Cmd + F` | Search in editor |
-| `Ctrl/Cmd + E` | Export diagram as PNG |
+| `Ctrl/⌘ + S` | Save graph |
+| `Ctrl/⌘ + O` | Import YAML file |
+| `Ctrl/⌘ + Shift + K` | Import JSON file (auto-converts to YAML) |
+| `Ctrl/⌘ + Shift + E` | Export as YAML |
+| `Ctrl/⌘ + Shift + X` | Export as JSON |
+| `Ctrl/⌘ + F` | Search in editor |
+| `Ctrl/⌘ + E` | Open diagram export dialog (PNG/SVG) |
+| `Ctrl/⌘ + Shift + Y` | Toggle analysis panel |
+| `Ctrl/⌘ + Shift + L` | Toggle combined/editor view |
+| `Ctrl/⌘ + Shift + P` | Toggle AI assistant |
+| `Ctrl/⌘ + /` | Show keyboard shortcuts panel |
 
 ### 🖱️ Mouse Controls
 | Action | Result |
@@ -420,21 +434,53 @@ children:
 | **Click Username** | Navigate to profile page |
 
 ### 🎛️ Interface Buttons
+
+#### Header Menu — File ▾
 | Button | Function |
 |--------|----------|
+| `📄 New File` | Reset editor and start fresh |
+| `📥 Import YAML` | Import `.yaml`/`.yml` files from disk |
+| `📥 Import JSON → YAML` | Import `.json` files with automatic conversion to YAML |
+| `📂 Import Repo` | Import any public GitHub repository structure as YAML |
+| `📤 Export YAML` | Download current content as `.yaml` file |
+| `📤 Export as JSON` | Convert YAML to JSON and download as `.json` file |
 | `💾 Save Graph` | Permission-aware save (replace or copy workflow based on ownership/access) |
 | `📚 My Graphs` | Manage owned and shared files in separate tabs |
 | `📜 Version History` | View, load, and revert file versions (shared-access aware with author attribution) |
-| `🤖 AI Assistant` | Open AI helper |
-| `🔍 Analysis` | Toggle analysis panel |
+
+#### Header Menu — View ▾ (Editor Page)
+| Button | Function |
+|--------|----------|
+| `🔗 Combined View` | Switch to split-panel editor + visualizer |
+| `🔍 Analysis` | Toggle analysis sidebar |
+| `🔍 Diff Compare` | Open diff comparison page with current YAML |
 | `📖 Docs` | View documentation |
-| `📁 Import GitHub` | Import any public GitHub repository structure as YAML |
-| `🔍 Search` | Find nodes in diagram |
-| `⛶ Fullscreen` | Toggle fullscreen mode |
-| `⟲ Reset View` | Center and reset zoom |
-| `📷 Export PNG/SVG` | Download high-quality diagram as PNG or SVG image |
-| `🔄 Combined View` | Switch to split-panel editor |
-| `👤 Profile` | Access user profile and settings |
+
+#### Header — Standalone
+| Button | Function |
+|--------|----------|
+| `🎨 Visualize` | Parse YAML and open full-page diagram view |
+| `🤖 AI` | Open AI assistant panel |
+| `⌨️` | Show keyboard shortcuts panel |
+| `🏠` | Navigate to home page |
+| Username | Click to access profile and settings |
+
+#### Diagram Controls
+| Button | Function |
+|--------|----------|
+| `🔽 Collapse All` / `🔼 Expand All` | Toggle all nodes collapsed/expanded |
+| `🔍+` / `🔍−` | Zoom in/out |
+| `📐` | Fit diagram to screen |
+| `📏` | Reset to actual size (1:1) |
+| `🏠` | Reset view position |
+| `⬇️` | Export diagram as PNG or SVG |
+| `⛶` | Toggle fullscreen mode |
+
+#### Collaboration
+| Button | Function |
+|--------|----------|
+| `🔗 Share` | Open share modal (visible to file owner in PresenceBar) |
+| User avatars | Click to view collaborator details (name, role, status) |
 
 ---
 
@@ -453,20 +499,7 @@ children:
 
 ---
 
-## 🚧 Roadmap
-
-> **Current Status**: The application is stable and production-ready with core features implemented. Recent updates include auto-displayed collaborators on the Share modal, combined graph counts (owned + shared) in the My Graphs button, mobile-responsive header and modal layouts, save-time branching (replace-or-copy), permission-aware shared file UX, shared-access version history, and a rewritten diff checker with synchronized side-by-side editing and clearer indicators.
-
-### Upcoming Features
-
-- **📥 YAML File Import**: Direct import of `.yaml` / `.yml` files from local disk into the editor
-- **📥 JSON File Import with Auto-Conversion**: Import `.json` files and automatically convert them to YAML for visualization
-- **📤 Export YAML as JSON**: Convert the current YAML content to JSON and download it as a `.json` file
-- **⌨️ Keyboard Shortcuts**: Extended shortcut support for common actions (save, open, import, export, toggle panels, etc.)
-
----
-
-## 🛠️ Development
+## ️ Development
 
 > **Note**: This project is actively maintained with regular updates. Enhancements include optimized version history modal with scroll preservation and improved user experience. See the [Key Features](#-key-features) section for the latest enhancements.
 

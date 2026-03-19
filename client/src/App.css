@@ -10,6 +10,41 @@ body {
   overflow-x: hidden;
 }
 
+/* ── Drag & Drop Overlay ── */
+.drop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(25, 118, 210, 0.15);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  border: 3px dashed #1976d2;
+}
+
+.drop-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 48px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  font-size: 16px;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.drop-icon {
+  font-size: 40px;
+}
+
 .app {
   width: 100vw;
   min-height: 100vh;
@@ -496,30 +531,12 @@ body {
     padding: 15px;
   }
 
-  .header h1 {
-    font-size: 1.8em;
-    margin-bottom: 8px;
-  }
-
-  .header p {
-    font-size: 0.95em;
-  }
-
   .header-actions {
     gap: 8px;
     margin-top: 12px;
   }
 
-  .save-graph-btn,
-  .my-graphs-btn,
-  .version-history-btn,
-  .docs-btn,
-  .ai-btn,
-  .visualize-btn,
-  .analysis-btn,
-  .combined-editor-btn,
-  .repo-import-btn,
-  .diff-compare-btn {
+  .visualize-btn {
     padding: 4px 16px;
     font-size: 0.8em;
     white-space: nowrap;
@@ -1211,19 +1228,6 @@ body {
 @media (max-width: 768px) {
   .header {
     padding: 60px 20px 30px 20px;
-  }
-
-  .auth-section {
-    position: static !important;
-    top: auto !important;
-    right: auto !important;
-    margin-bottom: 20px;
-    order: -1;
-    justify-content: center;
-  }
-
-  .header-main {
-    order: 1;
   }
 
   .header-actions {

@@ -58,6 +58,18 @@
   gap: 4px;
 }
 
+.presence-avatar-wrapper {
+  position: relative;
+}
+
+.presence-avatar-wrapper+.presence-avatar-wrapper {
+  margin-left: -8px;
+}
+
+.presence-avatar-wrapper+.presence-overflow {
+  margin-left: -8px;
+}
+
 .presence-avatar {
   width: 26px;
   height: 26px;
@@ -68,10 +80,11 @@
   color: white;
   font-size: 0.75em;
   font-weight: 700;
-  cursor: default;
+  cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   transition: transform 0.15s ease;
+  user-select: none;
 }
 
 .presence-avatar:hover {
@@ -79,9 +92,126 @@
   z-index: 2;
 }
 
+.presence-overflow {
+  background: #6c757d;
+  font-size: 0.65em;
+  cursor: default;
+}
+
+/* User popover */
+.presence-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #1e1e2e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 100;
+  overflow: hidden;
+  animation: popover-in 0.15s ease;
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.popover-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 2px solid;
+}
+
+.popover-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.popover-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popover-details {
+  padding: 8px 12px;
+}
+
+.popover-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.popover-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.popover-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.badge-edit {
+  background: #1b3a1b;
+  color: #4ade80;
+}
+
+.badge-view {
+  background: #1b2a3a;
+  color: #60a5fa;
+}
+
+.popover-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #ccc;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
+}
+
 /* Stack overlapping avatars */
-.presence-users .presence-avatar+.presence-avatar {
-  margin-left: -8px;
+.presence-users .presence-avatar-wrapper+.presence-avatar-wrapper .presence-avatar {
+  margin-left: 0;
 }
 
 .presence-count {
@@ -138,6 +268,25 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Share button */
+.presence-share-btn {
+  margin-left: auto;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.presence-share-btn:hover {
+  background: #1565c0;
 }
 
 .typing-label {

@@ -4,11 +4,17 @@ import YamlEditor from "../components/YamlEditor";
 import AiAssistant from "../components/AiAssistant";
 import AnalysisPanel from "../components/AnalysisPanel";
 import PresenceBar from "../components/PresenceBar";
+import ShareModal from "../components/ShareModal";
 import YamlAnalysisService from "../services/yamlAnalysisService";
+import { fetchUsersByPrefix } from "../services/userService";
 import { useYamlFile } from "../hooks/useYamlFile";
 import { useDebounce } from "../hooks/useDebounce";
 import { useCollaboration } from "../hooks/useCollaboration";
 import yaml from "js-yaml";
+import KeyboardShortcutsPanel from "../components/KeyboardShortcutsPanel";
+
+const isValidMongoId = (value) => /^[0-9a-fA-F]{24}$/.test(value || "");
+const getUserId = (u) => `${u?.id || u?._id || ""}`;
 
 export default function EditorPage({
   yamlText,
@@ -36,8 +42,22 @@ export default function EditorPage({
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const previousAuthState = useRef(isAuthenticated);
   const yamlFileInputRef = useRef(null);
+  const jsonFileInputRef = useRef(null);
   const [openMenu, setOpenMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareError, setShareError] = useState("");
+  const [shareSuccess, setShareSuccess] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [existingCollaborators, setExistingCollaborators] = useState([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [isUserLoading, setIsUserLoading] = useState(false);
+  const [permissions, setPermissions] = useState({});
+  const debouncedUserSearch = useDebounce(userSearch, 350);
 
   const handleImportYamlFile = useCallback((e) => {
     const file = e.target.files?.[0];
@@ -47,6 +67,25 @@ export default function EditorPage({
       const content = evt.target?.result;
       if (typeof content === 'string') {
         setYamlText(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, [setYamlText]);
+
+  const handleImportJsonFile = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result;
+      if (typeof content === 'string') {
+        try {
+          const parsed = JSON.parse(content);
+          setYamlText(yaml.dump(parsed, { indent: 2, lineWidth: -1 }));
+        } catch {
+          alert('Invalid JSON file');
+        }
       }
     };
     reader.readAsText(file);
@@ -69,6 +108,22 @@ export default function EditorPage({
     URL.revokeObjectURL(url);
   }, [yamlText, fileData]);
 
+  const handleExportJson = useCallback(() => {
+    try {
+      const parsed = yaml.load(yamlText);
+      const json = JSON.stringify(parsed, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (fileData?.title || 'export') + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Cannot export: YAML content is invalid');
+    }
+  }, [yamlText, fileData]);
+
   const [copyLabel, setCopyLabel] = useState('📋 Copy');
   const handleCopyText = useCallback(() => {
     navigator.clipboard.writeText(yamlText).then(() => {
@@ -87,7 +142,7 @@ export default function EditorPage({
     typingUsers,
     handleLocalChange,
     handleCursorChange,
-  } = useCollaboration(collabFileId, yamlText, setYamlText, !!collabFileId);
+  } = useCollaboration(collabFileId, yamlText, setYamlText, !!collabFileId, user?.id || user?._id || null);
 
   const handleYamlChange = useCallback((newValue) => {
     setYamlText(newValue);
@@ -97,6 +152,10 @@ export default function EditorPage({
   }, [setYamlText, collabFileId, handleLocalChange]);
 
   const candidateUserIds = [`${user?.id || ''}`, `${user?._id || ''}`].filter(Boolean);
+  const ownerId = `${fileData?.owner?._id || fileData?.owner || ''}`;
+  const isOwner = !!(fileData && candidateUserIds.includes(ownerId));
+  const canShare = fileData && fileData.owner && getUserId(user) === `${fileData.owner}`;
+  const hasValidFileId = isValidMongoId(fileData?._id);
   const editorReadOnly = (() => {
     if (!currentFileId || !fileData) return false;
     const ownerId = `${fileData.owner?._id || fileData.owner || ''}`;
@@ -128,7 +187,60 @@ export default function EditorPage({
       navigate('/', { replace: true });
     }
     previousAuthState.current = isAuthenticated;
-  }, [isAuthenticated, currentFileId, navigate]);  // Memoized analysis that updates when debounced YAML changes
+  }, [isAuthenticated, currentFileId, navigate]);
+
+  // Load existing collaborators when the share modal opens
+  useEffect(() => {
+    if (showShareModal && fileData && getUserId(user) === `${fileData.owner}`) {
+      import("../services/apiService").then(({ default: apiService }) => {
+        apiService.getFileCollaborators(fileData._id)
+          .then((data) => {
+            const collabs = data.collaborators || [];
+            setExistingCollaborators(collabs);
+            const permMap = { ...(fileData.permissions || {}) };
+            collabs.forEach((c) => {
+              const uid = c._id || c.id;
+              if (!permMap[uid]) permMap[uid] = c.permission;
+            });
+            setPermissions(permMap);
+          })
+          .catch(() => setExistingCollaborators([]));
+      });
+    }
+  }, [showShareModal, fileData, user]);
+
+  useEffect(() => {
+    if (showShareModal && fileData && getUserId(user) === `${fileData.owner}`) {
+      if (!debouncedUserSearch) {
+        setAllUsers([]);
+        return;
+      }
+      setIsUserLoading(true);
+      fetchUsersByPrefix(debouncedUserSearch)
+        .then((users) => setAllUsers(users))
+        .catch(() => setAllUsers([]))
+        .finally(() => setIsUserLoading(false));
+    }
+  }, [showShareModal, fileData, user, debouncedUserSearch]);
+
+  const handleChangePermission = async (targetUserId, newPermission) => {
+    const updated = { ...permissions, [targetUserId]: newPermission };
+    setPermissions(updated);
+    setShareLoading(true);
+    setShareError("");
+    setShareSuccess("");
+    try {
+      const apiService = (await import("../services/apiService")).default;
+      await apiService.setYamlFilePermissions(fileData._id, updated);
+      setShareSuccess("Permissions updated!");
+    } catch (err) {
+      setShareError(err.message || "Failed to update permissions");
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  // Memoized analysis that updates when debounced YAML changes
 
   const analysis = useMemo(() => {
     if (!debouncedYamlText || debouncedYamlText.trim() === '') {
@@ -172,8 +284,93 @@ export default function EditorPage({
     }
   }, [debouncedYamlText]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      if (!e.shiftKey) {
+        if (e.key === 's') {
+          e.preventDefault();
+          if (isAuthenticated && canSaveGraph) handleSaveGraph();
+        } else if (e.key === 'o') {
+          e.preventDefault();
+          yamlFileInputRef.current?.click();
+        }
+      }
+
+      if (!e.shiftKey && e.key === '/') {
+        e.preventDefault();
+        setShowShortcuts(prev => !prev);
+      }
+
+      if (e.shiftKey) {
+        const key = e.key.toLowerCase();
+        if (key === 'k') {
+          e.preventDefault();
+          jsonFileInputRef.current?.click();
+        } else if (key === 'e') {
+          e.preventDefault();
+          if (yamlText) handleExportYaml();
+        } else if (key === 'x') {
+          e.preventDefault();
+          if (yamlText) handleExportJson();
+        } else if (key === 'y') {
+          e.preventDefault();
+          setShowAnalysis(prev => !prev);
+        } else if (key === 'l') {
+          e.preventDefault();
+          if (currentFileId) navigate(`/combined/${currentFileId}`);
+          else navigate('/combined');
+        } else if (key === 'p') {
+          e.preventDefault();
+          setShowAiAssistant(prev => !prev);
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isAuthenticated, canSaveGraph, handleSaveGraph, yamlText, handleExportYaml, handleExportJson, currentFileId, navigate]);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['yaml', 'yml', 'json'].includes(ext)) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result;
+      if (typeof content !== 'string') return;
+      if (ext === 'json') {
+        try {
+          const parsed = JSON.parse(content);
+          setYamlText(yaml.dump(parsed, { indent: 2, lineWidth: -1 }));
+        } catch { /* ignore invalid */ }
+      } else {
+        setYamlText(content);
+      }
+    };
+    reader.readAsText(file);
+  }, [setYamlText]);
+
   return (
-    <div className="editor-container">
+    <div
+      className="editor-container"
+      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+      onDragLeave={(e) => { if (e.currentTarget.contains(e.relatedTarget)) return; setIsDragOver(false); }}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="drop-overlay">
+          <div className="drop-overlay-content">
+            <span className="drop-icon">📄</span>
+            <span>Drop YAML or JSON file here</span>
+          </div>
+        </div>
+      )}
       <div className="header compact-header">
         <div className="header-top-bar">
           <div className="header-left">
@@ -195,8 +392,10 @@ export default function EditorPage({
                       <button onClick={() => { handleNewFile("/"); setOpenMenu(null); }}>📄 New File</button>
                     )}
                     <button onClick={() => { yamlFileInputRef.current?.click(); setOpenMenu(null); }}>📥 Import YAML</button>
+                    <button onClick={() => { jsonFileInputRef.current?.click(); setOpenMenu(null); }}>📥 Import JSON → YAML</button>
                     <button onClick={() => { onShowRepositoryImporter(); setOpenMenu(null); }}>📂 Import Repo</button>
                     <button onClick={() => { handleExportYaml(); setOpenMenu(null); }} disabled={!yamlText}>📤 Export YAML</button>
+                    <button onClick={() => { handleExportJson(); setOpenMenu(null); }} disabled={!yamlText}>📤 Export as JSON</button>
                     {isAuthenticated && (
                       <>
                         <div className="dropdown-divider" />
@@ -240,6 +439,7 @@ export default function EditorPage({
           </div>
 
           <div className={`header-right${mobileMenuOpen ? ' mobile-open' : ''}`}>
+            <button className="compact-icon-btn" onClick={() => setShowShortcuts(true)} title="Keyboard Shortcuts">⌨️</button>
             {isAuthenticated ? (
               <>
                 <span className="user-name clickable-username" onClick={() => navigate('/profile')} title="Go to profile">
@@ -254,6 +454,7 @@ export default function EditorPage({
         </div>
 
         <input ref={yamlFileInputRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={handleImportYamlFile} />
+        <input ref={jsonFileInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportJsonFile} />
 
         {fileLoading && <div className="header-status">📄 Loading file...</div>}
         {fileError && <div className="header-status header-status-error">❌ {fileError}</div>}
@@ -276,6 +477,8 @@ export default function EditorPage({
                   users={remoteUsers}
                   typingUsers={typingUsers}
                   isConnected={collabConnected}
+                  canShare={canShare && hasValidFileId}
+                  onShare={() => setShowShareModal(true)}
                 />
               )}
               <YamlEditor
@@ -357,6 +560,31 @@ export default function EditorPage({
         onYamlGenerated={setYamlText}
         currentYaml={yamlText}
       />
+
+      {showShortcuts && (
+        <KeyboardShortcutsPanel mode="editor" onClose={() => setShowShortcuts(false)} />
+      )}
+
+      {showShareModal && hasValidFileId && (
+        <ShareModal
+          fileData={fileData}
+          setShowShareModal={setShowShareModal}
+          shareLoading={shareLoading}
+          setShareLoading={setShareLoading}
+          shareError={shareError}
+          setShareError={setShareError}
+          shareSuccess={shareSuccess}
+          setShareSuccess={setShareSuccess}
+          user={user}
+          userSearch={userSearch}
+          setUserSearch={setUserSearch}
+          isUserLoading={isUserLoading}
+          allUsers={allUsers}
+          existingCollaborators={existingCollaborators}
+          permissions={permissions}
+          handleChangePermission={handleChangePermission}
+        />
+      )}
     </div>
   );
 }

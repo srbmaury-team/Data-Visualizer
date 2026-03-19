@@ -83,7 +83,7 @@ function applyOperation(content, op) {
  * @param {boolean} enabled - Whether collaboration is enabled
  * @returns {{ remoteUsers, remoteCursors, isConnected, typingUsers, handleLocalChange, handleCursorChange }}
  */
-export function useCollaboration(fileId, localContent, setLocalContent, enabled = true) {
+export function useCollaboration(fileId, localContent, setLocalContent, enabled = true, currentUserId = null) {
     const [remoteUsers, setRemoteUsers] = useState([]);
     const [remoteCursors, setRemoteCursors] = useState({});
     const [isConnected, setIsConnected] = useState(false);
@@ -127,13 +127,14 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
             contentRef.current = content;
             setLocalContent(content);
 
-            setRemoteUsers(users.filter((u) => u.socketId !== socket.id));
+            setRemoteUsers(users.filter((u) => u.socketId !== socket.id && u.userId !== currentUserId));
             setIsConnected(true);
             setAccessDenied(false);
         };
 
         // A new user joined the room
         const handleUserJoined = (user) => {
+            if (user.userId && user.userId === currentUserId) return;
             setRemoteUsers((prev) => {
                 if (prev.some((u) => u.socketId === user.socketId)) return prev;
                 return [...prev, user];

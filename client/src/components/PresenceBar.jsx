@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './styles/PresenceBar.css';
 
-export default function PresenceBar({ users = [], typingUsers = [], isConnected = false }) {
+const MAX_VISIBLE = 5;
+
+export default function PresenceBar({ users = [], typingUsers = [], isConnected = false, canShare = false, onShare }) {
+  const [activePopover, setActivePopover] = useState(null);
+
   if (!isConnected && users.length === 0) return null;
+
+  const visibleUsers = users.slice(0, MAX_VISIBLE);
+  const overflowCount = users.length - MAX_VISIBLE;
 
   return (
     <div className="presence-bar">
@@ -15,16 +22,49 @@ export default function PresenceBar({ users = [], typingUsers = [], isConnected 
 
       {users.length > 0 && (
         <div className="presence-users">
-          {users.map((user) => (
+          {visibleUsers.map((user) => (
             <div
               key={user.socketId}
-              className="presence-avatar"
-              style={{ backgroundColor: user.color }}
-              title={`${user.username}${user.canEdit ? '' : ' (view-only)'}`}
+              className="presence-avatar-wrapper"
             >
-              {(user.username || '?')[0].toUpperCase()}
+              <div
+                className="presence-avatar"
+                style={{ backgroundColor: user.color }}
+                onClick={() => setActivePopover(activePopover === user.socketId ? null : user.socketId)}
+              >
+                {(user.username || '?')[0].toUpperCase()}
+              </div>
+              {activePopover === user.socketId && (
+                <div className="presence-popover">
+                  <div className="popover-header" style={{ borderColor: user.color }}>
+                    <div className="popover-avatar" style={{ backgroundColor: user.color }}>
+                      {(user.username || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="popover-name">{user.username || 'Anonymous'}</div>
+                  </div>
+                  <div className="popover-details">
+                    <div className="popover-row">
+                      <span className="popover-label">Role</span>
+                      <span className={`popover-badge ${user.canEdit ? 'badge-edit' : 'badge-view'}`}>
+                        {user.canEdit ? '✏️ Editor' : '👁️ Viewer'}
+                      </span>
+                    </div>
+                    <div className="popover-row">
+                      <span className="popover-label">Status</span>
+                      <span className="popover-status">
+                        <span className="status-dot online" /> Online
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
+          {overflowCount > 0 && (
+            <div className="presence-avatar presence-overflow" title={users.slice(MAX_VISIBLE).map(u => u.username).join(', ')}>
+              +{overflowCount}
+            </div>
+          )}
           <span className="presence-count">
             {users.length} collaborator{users.length !== 1 ? 's' : ''}
           </span>
@@ -44,6 +84,12 @@ export default function PresenceBar({ users = [], typingUsers = [], isConnected 
               : `${typingUsers.length} people typing...`}
           </span>
         </div>
+      )}
+
+      {canShare && (
+        <button className="presence-share-btn" onClick={onShare}>
+          🔗 Share
+        </button>
       )}
     </div>
   );

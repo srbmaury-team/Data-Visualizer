@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import YamlEditor from "../components/YamlEditor";
 import UserPermissionManager from "../components/UserPermissionManager";
 import PresenceBar from "../components/PresenceBar";
+import ShareModal from "../components/ShareModal";
 import { fetchUsersByPrefix } from "../services/userService";
 import DiagramViewer from "../components/DiagramViewer";
 import SearchPanel from "../components/SearchPanel";
@@ -11,154 +12,13 @@ import { useYamlFile } from "../hooks/useYamlFile";
 import { useDebounce } from "../hooks/useDebounce";
 import { useCollaboration } from "../hooks/useCollaboration";
 import yaml from "js-yaml";
+import KeyboardShortcutsPanel from "../components/KeyboardShortcutsPanel";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import { validateYAML } from "../utils/yamlValidator";
 import "./CombinedEditor.css";
 
 const isValidMongoId = (value) => /^[0-9a-fA-F]{24}$/.test(value || "");
 const getUserId = (u) => `${u?.id || u?._id || ""}`;
-
-function ShareModal({
-  fileData,
-  setShowShareModal,
-  shareLoading,
-  setShareLoading,
-  shareError,
-  setShareError,
-  shareSuccess,
-  setShareSuccess,
-  user,
-  userSearch,
-  setUserSearch,
-  isUserLoading,
-  allUsers,
-  existingCollaborators,
-  permissions,
-  handleChangePermission,
-}) {
-  const [isPublic, setIsPublic] = useState(fileData.isPublic);
-  const [isCopied, setIsCopied] = useState(false);
-
-  useEffect(() => {
-    setIsPublic(fileData.isPublic);
-  }, [fileData.isPublic]);
-
-  useEffect(() => {
-    if (!isPublic) {
-      setIsCopied(false);
-    }
-  }, [isPublic]);
-
-  const handleTogglePublic = async (e) => {
-    const nextPublic = e.target.checked;
-    const previous = isPublic;
-    setIsPublic(nextPublic);
-    setShareLoading(true);
-    setShareError("");
-    setShareSuccess("");
-    try {
-      const apiService = (await import("../services/apiService")).default;
-      const updated = await apiService.shareYamlFile(fileData._id, nextPublic);
-      const confirmed = updated?.yamlFile?.isPublic ?? nextPublic;
-      setIsPublic(confirmed);
-      setShareSuccess(updated.message || "Sharing updated!");
-    } catch (err) {
-      setIsPublic(previous);
-      setShareError(err.message || "Failed to update sharing");
-    } finally {
-      setShareLoading(false);
-    }
-  };
-
-  return (
-    <div className="share-modal-overlay" onClick={() => setShowShareModal(false)}>
-      <div className="share-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="share-modal-close" onClick={() => setShowShareModal(false)} aria-label="Close share modal">✕</button>
-        <h2 className="share-modal-title">Share this file</h2>
-        <p className="share-modal-subtitle">Control public access and user-level permissions from one place.</p>
-
-        <div className="share-toggle-card">
-          <label className="share-toggle-label">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              disabled={shareLoading}
-              onChange={handleTogglePublic}
-            />
-            <span>
-              Make this file public
-              <small>Anyone with the link can view this file.</small>
-            </span>
-          </label>
-        </div>
-
-        {isPublic && fileData?.shareId && (
-          <div className="share-link-card">
-            <span className="share-link-label">Share Link</span>
-            <div className="share-link-row">
-              <input
-                type="text"
-                value={`${window.location.origin}/shared/${fileData.shareId}`}
-                readOnly
-                className="share-link-input"
-                onFocus={(e) => e.target.select()}
-              />
-              <button
-                type="button"
-                className="share-copy-btn"
-                onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/shared/${fileData.shareId}`);
-                  setIsCopied(true);
-                  setTimeout(() => setIsCopied(false), 1200);
-                }}
-              >
-                {isCopied ? "Copied" : "Copy"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {getUserId(user) === `${fileData.owner}` && (
-          <div className="share-permissions-section">
-            <div className="share-user-search-wrap">
-              <input
-                type="text"
-                placeholder="Search users by name or email..."
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                className="share-user-search"
-              />
-              {isUserLoading && <div className="share-user-loading">Searching users...</div>}
-            </div>
-            {(() => {
-              // Merge existing collaborators with search results, deduplicating
-              const existingIds = new Set(existingCollaborators.map((c) => `${c._id || c.id}`));
-              const searchUsers = allUsers.filter((u) => {
-                const uid = `${u.id || u._id}`;
-                return uid !== fileData.owner && !existingIds.has(uid);
-              });
-              const combinedUsers = [
-                ...existingCollaborators.filter((c) => `${c._id || c.id}` !== fileData.owner),
-                ...searchUsers,
-              ];
-              return (
-                <UserPermissionManager
-                  users={combinedUsers}
-                  permissions={permissions}
-                  onChangePermission={handleChangePermission}
-                  currentUserId={getUserId(user)}
-                  ownerId={fileData.owner}
-                />
-              );
-            })()}
-          </div>
-        )}
-        {shareError && <div className="share-status share-status-error">{shareError}</div>}
-        {shareSuccess && <div className="share-status share-status-success">{shareSuccess}</div>}
-      </div>
-    </div>
-  );
-}
 
 export default function CombinedEditorPage({
   yamlText,
@@ -182,8 +42,11 @@ export default function CombinedEditorPage({
   const { id: currentFileId } = useParams();
   const previousAuthState = useRef(isAuthenticated);
   const yamlFileInputRef = useRef(null);
+  const jsonFileInputRef = useRef(null);
   const [openMenu, setOpenMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleImportYamlFile = useCallback((e) => {
     const file = e.target.files?.[0];
@@ -193,6 +56,25 @@ export default function CombinedEditorPage({
       const content = evt.target?.result;
       if (typeof content === 'string') {
         setYamlText(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, [setYamlText]);
+
+  const handleImportJsonFile = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result;
+      if (typeof content === 'string') {
+        try {
+          const parsed = JSON.parse(content);
+          setYamlText(yaml.dump(parsed, { indent: 2, lineWidth: -1 }));
+        } catch {
+          alert('Invalid JSON file');
+        }
       }
     };
     reader.readAsText(file);
@@ -239,6 +121,22 @@ export default function CombinedEditorPage({
     URL.revokeObjectURL(url);
   }, [yamlText, fileData]);
 
+  const handleExportJson = useCallback(() => {
+    try {
+      const parsed = yaml.load(yamlText);
+      const json = JSON.stringify(parsed, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (fileData?.title || 'export') + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Cannot export: YAML content is invalid');
+    }
+  }, [yamlText, fileData]);
+
   // Real-time collaboration — only active when viewing a saved file and authenticated
   const collabFileId = currentFileId && isAuthenticated ? currentFileId : null;
   const {
@@ -249,7 +147,7 @@ export default function CombinedEditorPage({
     typingUsers,
     handleLocalChange,
     handleCursorChange,
-  } = useCollaboration(collabFileId, yamlText, setYamlText, !!collabFileId);
+  } = useCollaboration(collabFileId, yamlText, setYamlText, !!collabFileId, getUserId(user) || null);
 
   // Wrap setYamlText to also notify the collaboration hook
   const handleYamlChange = useCallback((newValue) => {
@@ -428,11 +326,90 @@ export default function CombinedEditorPage({
   const canEditCurrentFile = !!(fileData ? (isOwner || currentPermission === "edit") : !currentFileId);
   const canSaveGraph = !currentFileId || canEditCurrentFile;
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      if (!e.shiftKey) {
+        if (e.key === 's') {
+          e.preventDefault();
+          if (isAuthenticated && canSaveGraph) handleSaveGraph();
+        } else if (e.key === 'o') {
+          e.preventDefault();
+          yamlFileInputRef.current?.click();
+        }
+      }
+
+      if (!e.shiftKey && e.key === '/') {
+        e.preventDefault();
+        setShowShortcuts(prev => !prev);
+      }
+
+      if (e.shiftKey) {
+        const key = e.key.toLowerCase();
+        if (key === 'k') {
+          e.preventDefault();
+          jsonFileInputRef.current?.click();
+        } else if (key === 'e') {
+          e.preventDefault();
+          if (yamlText) handleExportYaml();
+        } else if (key === 'x') {
+          e.preventDefault();
+          if (yamlText) handleExportJson();
+        } else if (key === 'l') {
+          e.preventDefault();
+          if (currentFileId) navigate(`/editor/${currentFileId}`);
+          else navigate('/');
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isAuthenticated, canSaveGraph, handleSaveGraph, yamlText, handleExportYaml, handleExportJson, currentFileId, navigate]);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['yaml', 'yml', 'json'].includes(ext)) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result;
+      if (typeof content !== 'string') return;
+      if (ext === 'json') {
+        try {
+          const parsed = JSON.parse(content);
+          setYamlText(yaml.dump(parsed, { indent: 2, lineWidth: -1 }));
+        } catch { /* ignore invalid */ }
+      } else {
+        setYamlText(content);
+      }
+    };
+    reader.readAsText(file);
+  }, [setYamlText]);
+
   // Determine if user has no access to this file
   const hasNoAccess = !!(fileError && fileError.includes('Access denied')) || collabAccessDenied;
 
   return (
-    <div className="simple-combined-editor">
+    <div
+      className="simple-combined-editor"
+      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+      onDragLeave={(e) => { if (e.currentTarget.contains(e.relatedTarget)) return; setIsDragOver(false); }}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="drop-overlay">
+          <div className="drop-overlay-content">
+            <span className="drop-icon">📄</span>
+            <span>Drop YAML or JSON file here</span>
+          </div>
+        </div>
+      )}
       <div className="simple-header compact-header">
         <div className="header-top-bar">
           <div className="header-left">
@@ -456,8 +433,10 @@ export default function CombinedEditorPage({
                       <button onClick={() => { handleNewFile("/combined"); setOpenMenu(null); }}>📄 New File</button>
                     )}
                     <button onClick={() => { yamlFileInputRef.current?.click(); setOpenMenu(null); }}>📥 Import YAML</button>
+                    <button onClick={() => { jsonFileInputRef.current?.click(); setOpenMenu(null); }}>📥 Import JSON → YAML</button>
                     <button onClick={() => { onShowRepositoryImporter(); setOpenMenu(null); }}>📂 Import Repo</button>
                     <button onClick={() => { handleExportYaml(); setOpenMenu(null); }} disabled={!yamlText}>📤 Export YAML</button>
+                    <button onClick={() => { handleExportJson(); setOpenMenu(null); }} disabled={!yamlText}>📤 Export as JSON</button>
                     <div className="dropdown-divider" />
                     <button onClick={() => { handleSaveGraph(); setOpenMenu(null); }} disabled={!parsedData || !canSaveGraph}>💾 Save</button>
                     <button onClick={() => { setShowSavedGraphs(true); setOpenMenu(null); }}>📚 Saved ({savedGraphs.length + (sharedGraphs?.length || 0)})</button>
@@ -469,6 +448,7 @@ export default function CombinedEditorPage({
           </div>
 
           <div className={`header-right${mobileMenuOpen ? ' mobile-open' : ''}`}>
+            <button className="compact-icon-btn" onClick={() => setShowShortcuts(true)} title="Keyboard Shortcuts">⌨️</button>
             {isAuthenticated ? (
               <>
                 <span className="user-name clickable-username" onClick={() => navigate("/profile")} title="View Profile">
@@ -483,6 +463,7 @@ export default function CombinedEditorPage({
         </div>
 
         <input ref={yamlFileInputRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={handleImportYamlFile} />
+        <input ref={jsonFileInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportJsonFile} />
 
         {fileLoading && <div className="header-status">📄 Loading file...</div>}
         {fileError && <div className="header-status header-status-error">❌ {fileError}</div>}
@@ -495,6 +476,8 @@ export default function CombinedEditorPage({
           users={remoteUsers}
           typingUsers={typingUsers}
           isConnected={collabConnected}
+          canShare={canShare && hasValidFileId}
+          onShare={() => setShowShareModal(true)}
         />
       )}
 
@@ -508,25 +491,6 @@ export default function CombinedEditorPage({
         </div>
       ) : (
         <>
-          {canShare && hasValidFileId && (
-            <div style={{ margin: "16px 0", textAlign: "right" }}>
-              <button
-                className="share-btn"
-                style={{ padding: "8px 18px", fontWeight: 600, background: "#1976d2", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer" }}
-                onClick={() => setShowShareModal(true)}
-              >
-                🔗 Share
-              </button>
-            </div>
-          )}
-
-          {canShare && !hasValidFileId && (
-            <div style={{ margin: "16px 0", color: "#d32f2f", fontWeight: 500 }}>
-              ⚠️ Sharing is disabled: This file has an invalid ID and cannot be shared.
-              <br />
-              <span style={{ fontSize: 13, color: "#b71c1c" }}>(File IDs must be 24-character hexadecimal strings.)</span>
-            </div>
-          )}
 
           {showShareModal && hasValidFileId && (
             <ShareModal
@@ -595,6 +559,10 @@ export default function CombinedEditorPage({
             </div>
           </div>
         </>
+      )}
+
+      {showShortcuts && (
+        <KeyboardShortcutsPanel mode="combined" onClose={() => setShowShortcuts(false)} />
       )}
     </div>
   );

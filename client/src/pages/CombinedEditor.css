@@ -561,44 +561,12 @@
   .simple-header {
     padding: 15px;
   }
-
-  .combined-header-top h1 {
-    font-size: 1.8em;
-    margin-bottom: 8px;
-  }
-
-  .combined-header-actions {
-    gap: 8px;
-    margin-top: 12px;
-  }
 }
 
 /* Responsive — mobile */
 @media (max-width: 768px) {
   .simple-header {
     padding: 60px 20px 30px 20px;
-  }
-
-  .combined-auth-section {
-    position: static !important;
-    top: auto !important;
-    right: auto !important;
-    margin-bottom: 20px;
-    justify-content: center;
-  }
-
-  .combined-header-main {
-    text-align: center;
-  }
-
-  .combined-header-top {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .combined-header-actions {
-    gap: 8px;
   }
 
   /* Override main container for mobile to allow scrolling */
