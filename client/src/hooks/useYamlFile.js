@@ -29,15 +29,14 @@ export const useYamlFile = (setYamlText, isAuthenticated, authLoading = false) =
         return;
       }
 
-      // Refresh token before making API call
-      apiService.refreshToken();
       const response = await apiService.getYamlFile(fileId);
 
       if (response.yamlFile) {
         const { yamlFile } = response;
         setFileData(yamlFile);
         // Only set YAML text if user has access
-        const userId = apiService.getToken() ? (JSON.parse(atob(apiService.getToken().split('.')[1]))?.id) : null;
+        let userId = null;
+        try { userId = JSON.parse(localStorage.getItem('user_data'))?.id ?? null; } catch {}
         const isOwner = userId && yamlFile.owner && (yamlFile.owner.toString() === userId.toString());
         const perm = yamlFile.permissions?.[userId] || yamlFile.permissions?.get?.(userId) || null;
         if (setYamlText && yamlFile.content && (isOwner || perm === 'edit' || perm === 'view')) {
@@ -102,8 +101,6 @@ export const useYamlFile = (setYamlText, isAuthenticated, authLoading = false) =
           return;
         }
 
-        // Refresh token before making API call
-        apiService.refreshToken();
         const response = await apiService.getYamlFile(id);
 
         if (response.yamlFile) {

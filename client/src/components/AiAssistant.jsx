@@ -28,13 +28,9 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey] = useState(() => {
-    // Use environment variable or empty string (remove localStorage dependency)
-    return import.meta.env.VITE_OPENAI_API_KEY || '';
-  });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const openaiServiceRef = useRef(new OpenAIYamlService(apiKey));
+  const openaiServiceRef = useRef(new OpenAIYamlService());
 
   useEffect(() => {
     if (isOpen) {
@@ -45,10 +41,6 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    openaiServiceRef.current = new OpenAIYamlService(apiKey);
-  }, [apiKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -319,7 +311,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
       const errorMessage = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: `I encountered an error: ${error.message}. ${!apiKey ? 'Consider adding your OpenAI API key for better responses.' : 'Please try again or rephrase your request.'}`,
+        content: `I encountered an error: ${error.message}. Please try again or rephrase your request.`,
         timestamp: new Date(),
         isError: true
       };
@@ -363,14 +355,7 @@ export default function AiAssistant({ isOpen, onClose, onYamlGenerated, currentY
             <h3>🤖 AI YAML Assistant</h3>
             <p>Generate, modify, and optimize YAML structures with AI</p>
             <div className="api-status">
-              {apiKey ? (
-                <span className="api-connected">
-                  ✅ OpenAI Connected
-                  {import.meta.env.VITE_OPENAI_API_KEY ? ' (Environment)' : ' (Local)'}
-                </span>
-              ) : (
-                <span className="api-disconnected">⚠️ Using Mock Responses</span>
-              )}
+              <span className="api-connected">✅ AI Connected</span>
             </div>
           </div>
           <div className="clear-or-exit">

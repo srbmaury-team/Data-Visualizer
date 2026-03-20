@@ -95,11 +95,94 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
     const fileIdRef = useRef(fileId);
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);
+    const pendingContentRef = useRef(null);
+    const lastSentContentRef = useRef(localContent || '');
+    const contentThrottleTimeoutRef = useRef(null);
+    const lastContentSendAtRef = useRef(0);
+    const pendingCursorRef = useRef(null);
+    const cursorThrottleTimeoutRef = useRef(null);
+    const lastCursorSendAtRef = useRef(0);
+
+    const CONTENT_THROTTLE_MS = 120;
+    const CURSOR_THROTTLE_MS = 80;
 
     // Keep content ref in sync — but NOT during remote updates (handled directly)
     useEffect(() => {
         contentRef.current = localContent;
     }, [localContent]);
+
+    const flushContentUpdate = useCallback(() => {
+        if (!fileIdRef.current) return;
+
+        const nextContent = pendingContentRef.current;
+        if (nextContent == null) return;
+
+        pendingContentRef.current = null;
+        const previousSentContent = lastSentContentRef.current;
+
+        if (nextContent === previousSentContent) return;
+
+        const op = computeOperation(previousSentContent, nextContent);
+        if (!op) return;
+
+        if (op.type === 'replace') {
+            sendContentSync(fileIdRef.current, nextContent);
+        } else {
+            sendOperation(fileIdRef.current, op, versionRef.current);
+        }
+
+        lastSentContentRef.current = nextContent;
+        lastContentSendAtRef.current = Date.now();
+    }, []);
+
+    const scheduleContentUpdate = useCallback(() => {
+        const elapsed = Date.now() - lastContentSendAtRef.current;
+
+        if (elapsed >= CONTENT_THROTTLE_MS) {
+            if (contentThrottleTimeoutRef.current) {
+                clearTimeout(contentThrottleTimeoutRef.current);
+                contentThrottleTimeoutRef.current = null;
+            }
+            flushContentUpdate();
+            return;
+        }
+
+        if (!contentThrottleTimeoutRef.current) {
+            contentThrottleTimeoutRef.current = setTimeout(() => {
+                contentThrottleTimeoutRef.current = null;
+                flushContentUpdate();
+            }, CONTENT_THROTTLE_MS - elapsed);
+        }
+    }, [flushContentUpdate]);
+
+    const flushCursorUpdate = useCallback(() => {
+        if (!fileIdRef.current) return;
+        if (!pendingCursorRef.current) return;
+
+        sendCursorUpdate(fileIdRef.current, pendingCursorRef.current);
+        pendingCursorRef.current = null;
+        lastCursorSendAtRef.current = Date.now();
+    }, []);
+
+    const scheduleCursorUpdate = useCallback(() => {
+        const elapsed = Date.now() - lastCursorSendAtRef.current;
+
+        if (elapsed >= CURSOR_THROTTLE_MS) {
+            if (cursorThrottleTimeoutRef.current) {
+                clearTimeout(cursorThrottleTimeoutRef.current);
+                cursorThrottleTimeoutRef.current = null;
+            }
+            flushCursorUpdate();
+            return;
+        }
+
+        if (!cursorThrottleTimeoutRef.current) {
+            cursorThrottleTimeoutRef.current = setTimeout(() => {
+                cursorThrottleTimeoutRef.current = null;
+                flushCursorUpdate();
+            }, CURSOR_THROTTLE_MS - elapsed);
+        }
+    }, [flushCursorUpdate]);
 
     // Main connection effect
     useEffect(() => {
@@ -125,6 +208,8 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
         const handleFileState = ({ content, version, users, canEdit }) => {
             versionRef.current = version;
             contentRef.current = content;
+            lastSentContentRef.current = content;
+            pendingContentRef.current = null;
             setLocalContent(content);
 
             setRemoteUsers(users.filter((u) => u.socketId !== socket.id && u.userId !== currentUserId));
@@ -163,6 +248,7 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
             // Apply to contentRef immediately so handleLocalChange sees the latest
             const newContent = applyOperation(contentRef.current, op);
             contentRef.current = newContent;
+            lastSentContentRef.current = newContent;
             setLocalContent(newContent);
         };
 
@@ -170,6 +256,8 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
         const handleContentSync = ({ content, version }) => {
             versionRef.current = version;
             contentRef.current = content;
+            lastSentContentRef.current = content;
+            pendingContentRef.current = null;
             setLocalContent(content);
         };
 
@@ -246,6 +334,16 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
             setRemoteCursors({});
             setIsConnected(false);
             setAccessDenied(false);
+
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+            if (contentThrottleTimeoutRef.current) {
+                clearTimeout(contentThrottleTimeoutRef.current);
+            }
+            if (cursorThrottleTimeoutRef.current) {
+                clearTimeout(cursorThrottleTimeoutRef.current);
+            }
         };
     }, [fileId, enabled, setLocalContent]);
 
@@ -257,19 +355,10 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
         (newContent) => {
             if (!fileIdRef.current) return;
 
-            const oldContent = contentRef.current;
-            const op = computeOperation(oldContent, newContent);
-
-            if (!op) return;
-
             // Update contentRef immediately so subsequent calls compare correctly
             contentRef.current = newContent;
-
-            if (op.type === 'replace') {
-                sendContentSync(fileIdRef.current, newContent);
-            } else {
-                sendOperation(fileIdRef.current, op, versionRef.current);
-            }
+            pendingContentRef.current = newContent;
+            scheduleContentUpdate();
 
             // Typing indicator
             if (!isTypingRef.current) {
@@ -284,7 +373,7 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
                 sendTypingIndicator(fileIdRef.current, false);
             }, 2000);
         },
-        [],
+        [scheduleContentUpdate],
     );
 
     /**
@@ -293,9 +382,10 @@ export function useCollaboration(fileId, localContent, setLocalContent, enabled 
     const handleCursorChange = useCallback(
         (cursor) => {
             if (!fileIdRef.current) return;
-            sendCursorUpdate(fileIdRef.current, cursor);
+            pendingCursorRef.current = cursor;
+            scheduleCursorUpdate();
         },
-        [],
+        [scheduleCursorUpdate],
     );
 
     return {

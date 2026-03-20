@@ -6,6 +6,7 @@ import apiService from "../services/apiService";
 import "./ProfilePage.css";
 
 export default function ProfilePage() {
+  const PAGE_SIZE = 8;
   const navigate = useNavigate();
   const { logout, isAuthenticated: contextIsAuthenticated, updateUser } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -14,6 +15,9 @@ export default function ProfilePage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
+  const [profileFilesPage, setProfileFilesPage] = useState(1);
+  const [recentFilesPage, setRecentFilesPage] = useState(1);
+  const [popularFilesPage, setPopularFilesPage] = useState(1);
   
   // If user is not authenticated via context, redirect immediately
   useEffect(() => {
@@ -89,8 +93,6 @@ export default function ProfilePage() {
   useEffect(() => {
     // Only load data if user is authenticated
     if (contextIsAuthenticated) {
-      // Refresh token from localStorage to ensure we have the latest token
-      apiService.refreshToken();
       loadProfileData();
       loadDashboardData();
     }
@@ -238,6 +240,54 @@ export default function ProfilePage() {
       tone: 'neutral',
     },
   ];
+
+  const profileFiles = profileData?.user?.yamlFiles || [];
+  const recentFiles = dashboardData?.recentFiles || [];
+  const popularFiles = dashboardData?.popularFiles || [];
+
+  const profileFilesTotalPages = Math.max(1, Math.ceil(profileFiles.length / PAGE_SIZE));
+  const recentFilesTotalPages = Math.max(1, Math.ceil(recentFiles.length / PAGE_SIZE));
+  const popularFilesTotalPages = Math.max(1, Math.ceil(popularFiles.length / PAGE_SIZE));
+
+  const paginatedProfileFiles = profileFiles.slice((profileFilesPage - 1) * PAGE_SIZE, profileFilesPage * PAGE_SIZE);
+  const paginatedRecentFiles = recentFiles.slice((recentFilesPage - 1) * PAGE_SIZE, recentFilesPage * PAGE_SIZE);
+  const paginatedPopularFiles = popularFiles.slice((popularFilesPage - 1) * PAGE_SIZE, popularFilesPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setProfileFilesPage(1);
+  }, [profileFiles.length]);
+
+  useEffect(() => {
+    setRecentFilesPage(1);
+  }, [recentFiles.length]);
+
+  useEffect(() => {
+    setPopularFilesPage(1);
+  }, [popularFiles.length]);
+
+  const renderPagination = (currentPage, totalPages, onPageChange) => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="pagination-controls">
+        <button
+          className="pagination-btn"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span className="pagination-status">Page {currentPage} of {totalPages}</span>
+        <button
+          className="pagination-btn"
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -504,9 +554,9 @@ export default function ProfilePage() {
                 <div className="card-header">
                   <h3>Recent Creations</h3>
                 </div>
-                {profileData.user.yamlFiles?.length > 0 ? (
+                {profileFiles.length > 0 ? (
                   <div className="files-list compact-files-list">
-                    {profileData.user.yamlFiles.map((file) => (
+                    {paginatedProfileFiles.map((file) => (
                       <div
                         key={file._id}
                         className="file-item clickable"
@@ -525,6 +575,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     ))}
+                    {renderPagination(profileFilesPage, profileFilesTotalPages, setProfileFilesPage)}
                   </div>
                 ) : (
                   <div className="empty-state">
@@ -590,9 +641,9 @@ export default function ProfilePage() {
                 <div className="card-header">
                   <h3>Recent Files</h3>
                 </div>
-                {dashboardData.recentFiles.length > 0 ? (
+                {recentFiles.length > 0 ? (
                   <div className="files-list">
-                    {dashboardData.recentFiles.map((file) => (
+                    {paginatedRecentFiles.map((file) => (
                       <div 
                         key={file._id} 
                         className="file-item clickable"
@@ -612,6 +663,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     ))}
+                    {renderPagination(recentFilesPage, recentFilesTotalPages, setRecentFilesPage)}
                   </div>
                 ) : (
                   <div className="empty-state">
@@ -624,9 +676,9 @@ export default function ProfilePage() {
                 <div className="card-header">
                   <h3>Most Popular Files</h3>
                 </div>
-                {dashboardData.popularFiles.length > 0 ? (
+                {popularFiles.length > 0 ? (
                   <div className="files-list">
-                    {dashboardData.popularFiles.map((file) => (
+                    {paginatedPopularFiles.map((file) => (
                       <div 
                         key={file._id} 
                         className="file-item clickable"
@@ -646,6 +698,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     ))}
+                    {renderPagination(popularFilesPage, popularFilesTotalPages, setPopularFilesPage)}
                   </div>
                 ) : (
                   <div className="empty-state">

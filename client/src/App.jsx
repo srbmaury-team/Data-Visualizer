@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
@@ -14,11 +14,7 @@ import SharedViewerPage from "./pages/SharedViewerPage";
 import SharedViewerWrapper from "./pages/SharedViewerWrapper";
 import DocsPage from "./pages/DocsPage";
 import ProfilePage from "./pages/ProfilePage";
-import SavedGraphsModal from "./components/SavedGraphsModal";
-import SaveGraphModal from "./components/SaveGraphModal";
 import AuthModal from "./components/AuthModal";
-import RepositoryImporter from "./components/RepositoryImporter";
-import VersionHistoryModal from "./components/VersionHistoryModal";
 import apiService from "./services/apiService";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "./utils/treeBuilder";
@@ -28,6 +24,10 @@ import "./App.css";
 
 const STORAGE_KEY = "yaml-diagram-data";
 const DEFAULT_YAML = defaultYamlContent;
+const SavedGraphsModal = lazy(() => import("./components/SavedGraphsModal"));
+const SaveGraphModal = lazy(() => import("./components/SaveGraphModal"));
+const RepositoryImporter = lazy(() => import("./components/RepositoryImporter"));
+const VersionHistoryModal = lazy(() => import("./components/VersionHistoryModal"));
 
 function AppContent() {
   const navigate = useNavigate();
@@ -711,47 +711,55 @@ function AppContent() {
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
 
-      <SavedGraphsModal
-        showSavedGraphs={showSavedGraphs}
-        setShowSavedGraphs={setShowSavedGraphs}
-        savedGraphs={savedGraphs}
-        sharedGraphs={sharedGraphs}
-        handleLoadGraph={handleLoadGraph}
-        handleDeleteGraph={handleDeleteGraph}
-        handleUpdateGraph={handleUpdateGraph}
-        isAuthenticated={isAuthenticated}
-        onAuthRequired={() => setShowAuthModal(true)}
-      />
+      <Suspense fallback={null}>
+        <SavedGraphsModal
+          showSavedGraphs={showSavedGraphs}
+          setShowSavedGraphs={setShowSavedGraphs}
+          savedGraphs={savedGraphs}
+          sharedGraphs={sharedGraphs}
+          handleLoadGraph={handleLoadGraph}
+          handleDeleteGraph={handleDeleteGraph}
+          handleUpdateGraph={handleUpdateGraph}
+          isAuthenticated={isAuthenticated}
+          onAuthRequired={() => setShowAuthModal(true)}
+        />
+      </Suspense>
 
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
 
-      <SaveGraphModal
-        isOpen={showSaveGraphModal}
-        onClose={() => setShowSaveGraphModal(false)}
-        onSave={handleSaveGraphFromModal}
-        existingGraphs={savedGraphs}
-      />
+      <Suspense fallback={null}>
+        <SaveGraphModal
+          isOpen={showSaveGraphModal}
+          onClose={() => setShowSaveGraphModal(false)}
+          onSave={handleSaveGraphFromModal}
+          existingGraphs={savedGraphs}
+        />
+      </Suspense>
 
       {showRepositoryImporter && (
-        <RepositoryImporter
-          onImport={handleRepositoryImport}
-          onClose={() => setShowRepositoryImporter(false)}
-        />
+        <Suspense fallback={null}>
+          <RepositoryImporter
+            onImport={handleRepositoryImport}
+            onClose={() => setShowRepositoryImporter(false)}
+          />
+        </Suspense>
       )}
 
-      <VersionHistoryModal
-        isOpen={showVersionHistory}
-        onClose={() => setShowVersionHistory(false)}
-        fileId={currentFileId}
-        fileName="Current YAML File"
-        onLoadVersion={(content, message) => {
-          setYamlText(content);
-          showSuccess(message);
-        }}
-      />
+      <Suspense fallback={null}>
+        <VersionHistoryModal
+          isOpen={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          fileId={currentFileId}
+          fileName="Current YAML File"
+          onLoadVersion={(content, message) => {
+            setYamlText(content);
+            showSuccess(message);
+          }}
+        />
+      </Suspense>
     </div>
   );
 }

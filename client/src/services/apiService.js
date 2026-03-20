@@ -3,41 +3,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
-    this.token = localStorage.getItem('auth_token');
   }
 
-  /**
-   * Get authorization headers
-   */
   getAuthHeaders() {
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
-    }
-
-    return headers;
-  }
-
-  /**
-   * Set authentication token
-   */
-  setToken(token) {
-    this.token = token;
-    if (token) {
-      localStorage.setItem('auth_token', token);
-    } else {
-      localStorage.removeItem('auth_token');
-    }
-  }
-
-  /**
-   * Refresh token from localStorage
-   */
-  refreshToken() {
-    this.token = localStorage.getItem('auth_token');
+    return { 'Content-Type': 'application/json' };
   }
 
   /**
@@ -47,6 +16,7 @@ class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     const config = {
       headers: this.getAuthHeaders(),
+        credentials: 'include',
       ...options,
     };
 
@@ -74,12 +44,6 @@ class ApiService {
     } catch (error) {
       console.error('API request failed:', error);
 
-      // Handle authentication errors - just clear token, let AuthContext handle the UI
-      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-        this.setToken(null);
-        // Don't redirect here, let the AuthContext handle authentication state
-      }
-
       throw error;
     }
   }
@@ -106,16 +70,11 @@ class ApiService {
       body: JSON.stringify(loginData),
     });
 
-    if (response.token) {
-      this.setToken(response.token);
-    }
-
     return response;
   }
 
   async logout() {
-    this.setToken(null);
-    return Promise.resolve();
+    return this.request('/auth/logout', { method: 'POST' });
   }
 
   async getCurrentUser() {
@@ -236,20 +195,6 @@ class ApiService {
       method: 'DELETE',
       body: JSON.stringify({ keepVersions }),
     });
-  }
-
-  /**
-   * Check if user is authenticated
-   */
-  isAuthenticated() {
-    return !!this.token;
-  }
-
-  /**
-   * Get stored authentication token
-   */
-  getToken() {
-    return this.token;
   }
 
   /**

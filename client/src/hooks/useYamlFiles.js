@@ -83,9 +83,6 @@ export const useYamlFiles = () => {
       throw new Error('Authentication required to save graphs');
     }
 
-    // Refresh the API service token to ensure it's up to date
-    apiService.refreshToken();
-
     setLoading(true);
     setError(null);
 
@@ -129,9 +126,6 @@ export const useYamlFiles = () => {
       throw new Error('Authentication required to update graphs');
     }
 
-    // Refresh the API service token to ensure it's up to date
-    apiService.refreshToken();
-
     setLoading(true);
     setError(null);
 
@@ -174,9 +168,6 @@ export const useYamlFiles = () => {
     if (!isAuthenticated) {
       throw new Error('Authentication required to delete graphs');
     }
-
-    // Refresh the API service token to ensure it's up to date
-    apiService.refreshToken();
 
     setLoading(true);
     setError(null);

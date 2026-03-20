@@ -2,6 +2,19 @@ import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 
+const COOKIE_NAME = 'auth_token';
+
+function getCookieOptions() {
+  const isProd = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
+  };
+}
+
 export const register = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -33,9 +46,9 @@ export const register = async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    res.cookie(COOKIE_NAME, token, getCookieOptions());
     res.status(201).json({
       message: 'User registered successfully',
-      token,
       user: {
         id: user._id,
         username: user.username,
@@ -83,9 +96,9 @@ export const login = async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    res.cookie(COOKIE_NAME, token, getCookieOptions());
     res.json({
       message: 'Login successful',
-      token,
       user: {
         id: user._id,
         username: user.username,
@@ -114,6 +127,8 @@ export const getCurrentUser = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    const { secure, sameSite, path } = getCookieOptions();
+    res.clearCookie(COOKIE_NAME, { httpOnly: true, secure, sameSite, path });
     res.json({ message: 'Logout successful' });
   } catch (error) {
     res.status(500).json({ error: 'Server error during logout' });

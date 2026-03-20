@@ -1,6 +1,15 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import "./styles/YamlEditor.css";
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export default function YamlEditor({ value, onChange, readOnly = false, remoteCursors = {}, onCursorChange, onCopy, copyLabel }) {
   const textareaRef = useRef(null);
   const highlighterRef = useRef(null);
@@ -70,7 +79,7 @@ export default function YamlEditor({ value, onChange, readOnly = false, remoteCu
     const lines = safeValue.split('\n');
     const highlightedLines = lines.map((line) => {
       // YAML syntax highlighting patterns
-      let highlightedLine = line;
+      let highlightedLine = escapeHtml(line);
 
       // First, highlight keys that don't have a colon yet (incomplete lines)
       if (!line.includes(':') && !line.trim().startsWith('#') && !line.trim().startsWith('-') && line.trim().length > 0) {

@@ -30,54 +30,36 @@ export const AuthProvider = ({ children }) => {
 
   const initializeAuth = useCallback(async () => {
     try {
-      // Refresh the token from localStorage in case it was updated
-      apiService.refreshToken();
-      
-      if (apiService.isAuthenticated()) {
-        try {
-          const userData = await apiService.getCurrentUser();
-          setUser(userData.user);
-          setIsAuthenticated(true);
-          saveUserToStorage(userData.user);
-        } catch (error) {
-          console.error('Failed to validate token:', error);
-          // Only clear auth if it's a 401 (unauthorized) error
-          // For network errors or 500 errors, keep the user logged in
-          if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-            apiService.setToken(null);
+      // Always attempt to get the current user — the httpOnly cookie is sent
+      // automatically. If there's no valid session, the server returns 401.
+      try {
+        const userData = await apiService.getCurrentUser();
+        setUser(userData.user);
+        setIsAuthenticated(true);
+        saveUserToStorage(userData.user);
+      } catch (error) {
+        if (error.message.includes('401') || error.message.includes('Unauthorized') || error.message.includes('No token')) {
+          // Not logged in — clear any stale cached data
+          setIsAuthenticated(false);
+          setUser(null);
+          clearUserFromStorage();
+        } else {
+          // Network / server error — use cached profile for offline experience
+          const cachedUser = loadUserFromStorage();
+          if (cachedUser) {
+            setUser(cachedUser);
+            setIsAuthenticated(true);
+          } else {
             setIsAuthenticated(false);
             setUser(null);
-            clearUserFromStorage();
-          } else {
-            // Try to load user from storage for offline experience
-            const cachedUser = loadUserFromStorage();
-            if (cachedUser) {
-              setUser(cachedUser);
-              setIsAuthenticated(true);
-            } else {
-              // No cached user data, but keep token for when server comes back
-              setIsAuthenticated(true);
-            }
           }
         }
-      } else {
-        // No token found
-        setIsAuthenticated(false);
-        setUser(null);
-        clearUserFromStorage();
       }
     } catch (error) {
       console.error('Auth initialization error:', error);
-      // Try to load from cache on general errors
-      const cachedUser = loadUserFromStorage();
-      if (apiService.isAuthenticated() && cachedUser) {
-        setUser(cachedUser);
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-        setUser(null);
-        clearUserFromStorage();
-      }
+      setIsAuthenticated(false);
+      setUser(null);
+      clearUserFromStorage();
     } finally {
       setIsLoading(false);
     }
@@ -93,10 +75,6 @@ export const AuthProvider = ({ children }) => {
     setUser(response.user);
     setIsAuthenticated(true);
     saveUserToStorage(response.user);
-    // Ensure the apiService token is properly set
-    if (response.token) {
-      apiService.setToken(response.token);
-    }
     return response;
   };
 
@@ -105,10 +83,6 @@ export const AuthProvider = ({ children }) => {
     setUser(response.user);
     setIsAuthenticated(true);
     saveUserToStorage(response.user);
-    // Ensure the apiService token is properly set
-    if (response.token) {
-      apiService.setToken(response.token);
-    }
     return response;
   };
 

@@ -19,10 +19,6 @@ const DiagramViewer = forwardRef(({
   triggerSearch
 }, ref) => {
 
-  // Debug: Log when props change
-  useEffect(() => {
-  }, [externalSearchTerm]);
-
   const svgRef = useRef(null);
   const gRef = useRef(null);
   const zoomBehaviorRef = useRef(null);

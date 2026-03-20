@@ -1,8 +1,6 @@
 # 🎯 YAML Data Visualizer
 
-**Transform YAML hierarchies into stunning interactive tree diagrams with professional-grade tools and intelligent analysis.**
-
-A comprehensive full-stack application that seamlessly converts complex YAML structures into beautiful, interactive visualizations. Built with React, Node.js, and D3.js, featuring advanced editing capabilities, AI-powered assistance, and enterprise-ready sharing/versioning workflows.
+Convert YAML structures into interactive tree diagrams. Built with React, Node.js, D3.js, and MongoDB — with a YAML editor, diff comparison, AI assistance, versioning, and real-time collaboration.
 
 ![React](https://img.shields.io/badge/React-19.1.1-blue) ![Node.js](https://img.shields.io/badge/Node.js-18+-green) ![MongoDB](https://img.shields.io/badge/MongoDB-8.0+-brightgreen) ![D3.js](https://img.shields.io/badge/D3.js-7.9.0-orange) ![Express](https://img.shields.io/badge/Express-4.18+-red) ![OpenAI](https://img.shields.io/badge/OpenAI-6.7.0-purple) ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF)
 
@@ -11,85 +9,47 @@ A comprehensive full-stack application that seamlessly converts complex YAML str
 ## ✨ **Core Capabilities**
 
 ### 🔍 **YAML Diff Comparison**
-Compare two YAML files with precision and clarity using our advanced diff engine:
-- **Side-by-Side Workspace**: Paired editors with synchronized scrolling and a dedicated comparator panel below
-- **Side-by-Side Indicators**: Explicit `+`, `-`, `~`, and `∅` markers for added/removed/modified/missing lines
-- **Unified Diff View**: Full-context diff with clear source tags (`Original`, `Modified`, `Both`)
-- **Smart Analysis**: Comprehensive statistics showing changes, additions, deletions, and unchanged content
-- **Multi-Source Loading**: Compare manual input, saved graphs, specific versions, or current editor content
-- **One-Click Paste**: Instant clipboard integration for rapid file comparison
-- **Export Results**: Copy unified diff output for documentation and sharing
-- **Professional Styling**: Clean, readable interface with color-coded change indicators
+- Side-by-side editors with `+`, `-`, `~`, `∅` change markers
+- Unified diff view with `Original`/`Modified`/`Both` tags
+- Compare manual input, saved graphs, specific versions, or current editor content
+- Export unified diff output
 
-### 📝 **Professional YAML Editor**
-Experience the ultimate YAML editing environment:
-- **Smart Auto-Indentation**: Maintains proper YAML indentation with automatic nesting
-- **Search & Replace**: Full-featured find/replace with case sensitivity and match navigation  
-- **Line Numbers & Guides**: Professional editor with line numbers and indentation guides
-- **Clean Interface**: Optimized light theme with professional syntax highlighting
-- **File Import**: Import `.yaml`/`.yml` files directly from disk, or import `.json` files with automatic conversion to YAML
-- **Drag & Drop**: Drop YAML or JSON files directly onto the editor for instant import
-- **Multi-Format Export**: Export content as YAML or convert and download as JSON
-- **Keyboard Shortcuts**: Extensive shortcut support for save, import, export, view toggling, and more
+### 📝 **YAML Editor**
+- Auto-indentation, line numbers, search & replace, syntax highlighting
+- Import `.yaml`/`.yml`/`.json` files (drag & drop supported; JSON auto-converts)
+- Export as YAML or JSON
+- Keyboard shortcuts for all major actions
 
 ### 🌳 **Interactive Tree Visualization**
-Bring your YAML structures to life:
-- **D3.js Powered Graphics**: Smooth, high-performance tree rendering with fluid animations
-- **Click to Expand/Collapse**: Individual node controls with intuitive +/- buttons
-- **Path Tracing**: Visual breadcrumb highlighting from root to selected nodes
-- **Smart Zoom Controls**: Precise zoom with fit-to-screen and focus capabilities
-- **Full-Screen Mode**: Immersive viewing experience for complex structures
+- D3.js-powered tree with expand/collapse, zoom/pan, and path highlighting
+- Fit-to-screen, fullscreen mode, and PNG/SVG export
 
 ### 🔄 **Split-Panel Workspace**
-Maximize productivity with our adaptive interface:
-- **Real-Time Synchronization**: Instant diagram updates as you type
-- **Adjustable Layout**: Drag-to-resize panels (20%-80% flexibility)
-- **Responsive Design**: Seamless experience across desktop, tablet, and mobile
-- **Context Switching**: Effortless transitions between editor-only and combined views
+- Real-time diagram updates as you type
+- Drag-to-resize panels (20%–80%), responsive on desktop and mobile
 
 ### 📊 **GitHub Repository Integration**
-Import entire repository structures with a single click:
-- **Universal Compatibility**: Works with any public GitHub repository
-- **Smart Tree Building**: Intelligent conversion of directory structures to YAML
-- **Performance Optimization**: Auto-limited to 500 nodes for optimal rendering
-- **Rate Limit Management**: Intelligent API handling to prevent service interruption
-- **Error Resilience**: Comprehensive handling of private repositories and edge cases
+- Import any public GitHub repository as a YAML tree
+- Auto-limited to 500 nodes; skips `node_modules`, `.git`, `build`, `dist`
+- Handles rate limits, timeouts, and private repo errors gracefully
 
-### 🤖 **AI-Powered Intelligence**
-Leverage artificial intelligence for enhanced productivity:
-- **Natural Language Generation**: Create YAML from plain English descriptions
-- **Structure Analysis**: AI-driven optimization suggestions and best practices
-- **Context Awareness**: Maintains conversation history for intelligent assistance
-- **Performance Insights**: Automated analysis of complexity and optimization opportunities
-- **Fallback Support**: Helpful guidance even without API access
+### 🤖 **AI Assistant**
+- Generate YAML from plain English descriptions
+- Structure analysis and optimization suggestions
+- Maintains conversation history; works with graceful fallback without an API key
 
-### 🔐 **Enterprise Authentication**
-Secure, scalable user management:
-- **JWT-Based Security**: Industry-standard authentication with refresh tokens
-- **Profile Management**: Comprehensive user profiles with customizable settings
-- **Session Control**: Automatic cleanup and secure logout procedures
-- **Cross-Device Sync**: Seamless experience across multiple devices
-- **Data Ownership**: Complete control over your personal files and account
+### 🔐 **Authentication**
+- JWT-based auth with refresh tokens, profile management, and secure sessions
 
-### 💾 **Advanced File Management**
-Organize and share your work efficiently:
-- **Personal Library**: Save, categorize, and manage unlimited YAML diagrams
-- **Owned + Shared Views**: Browse files in separate `Owned by me` and `Shared with me` tabs
-- **Save-Time Branching**: Non-owners can replace (if allowed) or save a copy as a new owner
-- **Permission-Aware Save UX**: View-only users are read-only and cannot trigger save/replace flows
-- **Version History**: Shared users with permission can view history and author attribution
-- **Share Links**: Generate secure public URLs while managing per-user view/edit access
-- **Collaborator Visibility**: Existing collaborators are auto-displayed when opening the Share modal — no need to search first
-- **Live Presence Bar**: See active collaborators with avatars, typing indicators, and online/offline status
-- **Export Options**: High-quality PNG and SVG export with professional styling and scalability. Effortlessly download your diagrams as crisp images for presentations, documentation, or sharing.
-- **Individual File Management**: Update, delete, and organize files with comprehensive controls
+### 💾 **File Management & Collaboration**
+- Save, version, and share YAML diagrams with per-user view/edit permissions
+- Non-owners can save a copy or replace (if permitted); view-only users are read-only
+- Live presence bar with collaborator avatars and typing indicators
+- Export diagrams as PNG or SVG
 
-### 📈 **Analytics & Insights**
-Understand your data structures deeply:
-- **Complexity Metrics**: Node counts, depth analysis, and structural complexity scoring
-- **Performance Monitoring**: Real-time validation and optimization recommendations
-- **Usage Statistics**: Personal dashboard with activity tracking and trends
-- **Quality Scoring**: Automated assessment of YAML structure and best practices
+### 📈 **Analytics**
+- Node count, depth, and complexity metrics with YAML quality scoring
+- Personal dashboard with usage statistics
 
 ---
 
@@ -130,7 +90,7 @@ cd ../client && npm install
 3. **Launch Application**:
    ```bash
    # Terminal 1: Backend server
-   cd server && npm start
+   cd server && npm run dev
 
    # Terminal 2: Frontend development server
    cd client && npm run dev -- --host
@@ -143,31 +103,8 @@ cd ../client && npm install
 
 ### AI Assistant Setup
 
-Unlock the full potential with OpenAI integration:
-
-1. Obtain an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Navigate to "🤖 AI Assistant" in the application
-3. Click the "🔑" icon and enter your API key
-4. Key is stored securely in local storage for immediate access
-
----
-
-## 📱 **User Experience**
-
-### Intuitive Workflow
-
-**Create**: Start with the professional YAML editor or import existing files
-**Visualize**: Watch your structure come to life in real-time interactive diagrams  
-**Analyze**: Leverage AI insights and built-in analytics for optimization
-**Share**: Export high-quality images or generate shareable links
-**Review**: Use saved/version-aware diff comparison tools for team workflows
-
-### Cross-Platform Excellence
-
-- **Desktop First**: Optimized for professional development environments
-- **Mobile Ready**: Full functionality on tablets and smartphones
-- **Network Accessible**: Server supports local network connections for multi-device workflows
-- **Local Storage**: YAML content persistence in browser for session continuity
+1. Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Open "🤖 AI Assistant" in the app, click "🔑", and enter your key
 
 ---
 
@@ -185,96 +122,42 @@ Unlock the full potential with OpenAI integration:
 - **MongoDB 8.0**: Flexible document database with indexing
 - **JWT Authentication**: Secure token-based user sessions
 
-### Development Tools
-- **ESLint**: Code quality and consistency enforcement
-- **Vite DevServer**: Hot module replacement and instant updates
-- **GitHub Pages**: Automated deployment and hosting
-
 ---
 
-## 🔧 **API Integration**
+##  **Documentation**
 
-### OpenAI Assistant
-```javascript
-// AI-powered YAML generation
-const response = await aiService.generateYAML(prompt);
-```
-
-### GitHub Repository Import
-```javascript
-// One-click repository structure import
-const yamlStructure = await githubService.importRepository(repoUrl);
-```
-
-### File Management
-```javascript
-// Save and retrieve user diagrams
-const savedFile = await yamlService.saveGraph(yamlContent, metadata);
-```
+See the interactive project structure:
+> [Visualize the project structure](https://yaml-visualizer.netlify.app/shared/ZjrtD8_Jv_)
 
 ---
-
-## 📚 **Documentation**
-
-### File Structure
-```
-Data-Visualizer/
-├── client/                    # React frontend application
-│   ├── src/
-│   │   ├── components/        # Reusable UI components
-│   │   ├── pages/            # Main application views
-│   │   ├── hooks/            # Custom React hooks
-│   │   ├── services/         # API and business logic
-│   │   ├── utils/            # Helper functions and utilities
-│   │   └── contexts/         # React context providers
-│   └── public/               # Static assets and index.html
-├── server/                   # Node.js backend application
-│   ├── src/
-│   │   ├── controllers/      # Request handling logic
-│   │   ├── models/           # Database schemas and models
-│   │   ├── routes/           # API endpoint definitions
-│   │   ├── middleware/       # Authentication and error handling
-│   │   └── services/         # Business logic and external APIs
-│   └── package.json          # Server dependencies
-└── README.md                 # Project documentation
-```
-
-### Key Components
-
-**YAML Editor**: Advanced code editor with syntax highlighting and validation
-**Diagram Viewer**: Interactive D3.js tree visualization with zoom and pan
-**Diff Comparator**: Side-by-side and unified diff views for YAML comparison
-**AI Assistant**: OpenAI-powered natural language processing for YAML generation
-**File Manager**: Complete CRUD operations for user diagrams and versions
-
----
-
-## 🚀 **Deployment**
-
-### Production Build
-```bash
-# Build optimized production bundle
-cd client && npm run build
-
-# Serve static files
-cd server && npm start
-```
-
-### GitHub Pages Deployment
-```bash
-# Deploy to GitHub Pages
-cd client && npm run deploy
-```
 
 ### Environment Variables
+***server (`.env`):***
 ```env
-# Server Configuration
-MONGODB_URI=mongodb://localhost:27017/yaml-visualizer
-JWT_SECRET=your-secure-jwt-secret
+NODE_ENV=development
 PORT=5000
 
-# Optional Features
+# Database
+MONGODB_URI=mongodb://localhost:27017/yaml-visualizer
+
+# Auth
+JWT_SECRET=your-secure-jwt-secret
+
+# CORS
+CORS_ORIGIN=http://localhost:5173
+
+# Optional Feature
 OPENAI_API_KEY=your-openai-api-key
+```
+
+***client (`.env`):***
+```env
+# API Configuration
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5000
+
+# Optional Feature
+VITE_OPENAI_API_KEY=sk-your-openai-api-key
 ```
 
 ---
@@ -291,79 +174,27 @@ We welcome contributions that enhance the YAML visualization experience:
 
 ### Development Guidelines
 - Follow React functional component patterns
-- Maintain comprehensive test coverage
 - Ensure mobile responsiveness
-- Document new features thoroughly
 
 ### YAML Format
+- `name`: Required node identifier
+- `children` or `nodes`: Array of child nodes
+- Custom properties displayed in node boxes; unlimited nesting depth
 
+Example:
 ```yaml
-name: My-React-App
-language: JavaScript
+name: app
 children:
-  - name: public
-    type: directory
-    children:
-      - name: index.html
-        type: file
-      - name: favicon.ico
-        type: file
-  - name: src
-    type: directory
-    children:
-      - name: components
-        type: directory
-        children:
-          - name: Header.jsx
-            type: file
-          - name: App.jsx
-            type: file
-      - name: styles
-        type: directory
-        children:
-          - name: App.css
-            type: file
-      - name: index.js
-        type: file
-  - name: package.json
-    type: file
-  - name: README.md
-    type: file
+   - name: src
+      children:
+         - name: components
+         - name: pages
+   - name: package.json
 ```
 
 ### GitHub Repository Import
 
-**Import any public GitHub repository structure:**
-
-1. Click **"� Import Repo"** in the File ▾ dropdown menu (available in Editor and Combined Editor)
-2. Enter the GitHub repository URL (e.g., `https://github.com/facebook/react`)
-3. Click **"Import Repository"** to fetch and convert the structure
-4. The repository structure will be automatically converted to YAML format and loaded into the editor
-
-**Supported URL formats:**
-- `https://github.com/owner/repo`
-- `https://github.com/owner/repo/tree/branch`
-- `github.com/owner/repo`
-
-**Safety Features:**
-- **Node Limit Protection**: Automatically limited to 500 nodes to prevent memory issues
-- **API Rate Limiting**: Intelligent delay system to avoid GitHub API limits
-- **Timeout Protection**: 30-second timeout to prevent hanging requests
-- **Smart Filtering**: Automatically skips common directories like `node_modules`, `.git`, `build`, `dist`
-- **Progress Tracking**: Real-time feedback showing nodes processed and API calls made
-- **Graceful Degradation**: Shows partial results if limits are reached
-
-### Manual YAML Format
-- `name`: Required node identifier
-- `children` or `nodes`: Array of child nodes
-- Custom properties: Displayed in node boxes
-- Nested hierarchy: Unlimited depth supported
-
----
-
-## 🏗️ Architecture
-
-[Visualize the whole project structure here](https://yaml-visualizer.netlify.app/shared/ZjrtD8_Jv_)
+Use **File ▾ → Import Repo**, enter a public GitHub URL (`https://github.com/owner/repo`), and the structure is converted to YAML. Auto-limited to 500 nodes; skips `node_modules`, `.git`, `build`, `dist`.
 
 ---
 
@@ -501,8 +332,6 @@ children:
 
 ## ️ Development
 
-> **Note**: This project is actively maintained with regular updates. Enhancements include optimized version history modal with scroll preservation and improved user experience. See the [Key Features](#-key-features) section for the latest enhancements.
-
 ### Available Scripts
 
 **Frontend:**
@@ -519,27 +348,7 @@ npm run lint         # Lint code
 cd server
 npm start            # Production server
 npm run dev          # Development with nodemon
-npm test             # Run tests
 ```
-
-### Environment Variables
-
-**Backend (`.env`):**
-```env
-NODE_ENV=development
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/yaml-visualizer
-JWT_SECRET=your-super-secret-key
-CORS_ORIGIN=http://localhost:5173
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
 
 ---
 
@@ -554,44 +363,7 @@ CORS_ORIGIN=http://localhost:5173
 
 ---
 
-## 📱 Mobile Support
-
-- **📱 Responsive Design**: Works on all screen sizes
-- **🌐 Network Access**: Mobile devices supported via network IP
-- **👆 Touch Interactions**: Mobile-optimized controls
-- **📂 File Sharing**: Share links work across devices
-- **🔐 Authentication**: Full login/register on mobile
-
----
-
-## 🧪 Testing
-
-**Frontend:**
-```bash
-cd client && npm test
-```
-
-**Backend:**
-```bash
-cd server && npm test
-```
-
-**End-to-End:**
-- Create YAML file
-- Save with custom name
-- Copy share link
-- Test in incognito/mobile browser
-
----
-
-## 📊 Performance
-
-### Optimization Features
-- **⚡ Lazy Loading**: Components loaded on demand
-- **🗜️ Code Splitting**: Optimized bundle sizes
-- **💾 Caching**: Smart caching strategies
-- **📈 Monitoring**: Performance tracking
-- **🚀 CDN Ready**: Static asset optimization
+## � Performance
 
 ### Recommended Limits
 - **YAML Files**: < 1MB for optimal performance
@@ -609,17 +381,13 @@ cd server && npm test
 - **Mobile interactions**: Some advanced features work better on desktop/tablet devices
 - **GitHub imports**: Auto-limited to representative structures (default ~500 nodes; reduced for larger repositories)
 
-> 💡 **Tip**: For large hierarchies, consider using the collapse/expand features to improve performance and navigation.
-
-> 🛠️ **Updates**: Save-time branching for non-owners, shared-file permissions hardening (including view-only save blocking), shared-access version history with edit attribution, and improved diff checker UX.
+> 💡 For large hierarchies, use collapse/expand to improve performance and navigation.
 
 ---
 
 ## 🤝 Support
 
-- **📁 GitHub Issues**: [Report bugs or request features](https://github.com/srbmaury-team/Data-Visualizer/issues)
-- **📖 Documentation**: Check this README for guidance
-- **💬 Discussions**: Community support via GitHub Discussions
+- [GitHub Issues](https://github.com/srbmaury-team/Data-Visualizer/issues) — bug reports and feature requests
 
 ---
 

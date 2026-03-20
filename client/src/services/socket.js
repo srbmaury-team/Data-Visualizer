@@ -12,11 +12,9 @@ export function getSocket() {
   // Reuse existing socket if it exists (even if temporarily disconnected — it will auto-reconnect)
   if (socket) return socket;
 
-  const token = localStorage.getItem('auth_token');
-
   socket = io(SOCKET_URL, {
-    auth: { token },
     transports: ['websocket', 'polling'],
+      withCredentials: true,
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,

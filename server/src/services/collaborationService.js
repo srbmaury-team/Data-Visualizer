@@ -131,7 +131,15 @@ export function initializeSocketServer(httpServer, corsOptions) {
     // Authentication middleware for socket connections
     io.use(async (socket, next) => {
         try {
-            const token = socket.handshake.auth?.token;
+            // Prefer httpOnly cookie (sent automatically on WebSocket upgrade / polling),
+            // fall back to explicit auth.token for older clients.
+            const rawCookie = socket.handshake.headers?.cookie || '';
+            const cookieToken = rawCookie
+                .split(';')
+                .map(c => c.trim())
+                .find(c => c.startsWith('auth_token='))
+                ?.split('=').slice(1).join('=');
+            const token = cookieToken || socket.handshake.auth?.token;
             if (!token) {
                 // Allow anonymous connections with limited capabilities
                 socket.userData = { userId: null, username: 'Anonymous', isAnonymous: true };

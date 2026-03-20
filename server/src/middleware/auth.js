@@ -3,8 +3,8 @@ import User from '../models/User.js';
 
 export const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+    const token = req.cookies?.auth_token || req.header('Authorization')?.replace('Bearer ', '');
+
     if (!token) {
       return res.status(401).json({ error: 'No token, authorization denied' });
     }
@@ -25,8 +25,8 @@ export const auth = async (req, res, next) => {
 
 export const optionalAuth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+    const token = req.cookies?.auth_token || req.header('Authorization')?.replace('Bearer ', '');
+
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(decoded.userId).select('-password');
