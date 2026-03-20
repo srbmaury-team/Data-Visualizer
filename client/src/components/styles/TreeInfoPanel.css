@@ -215,3 +215,85 @@
   background: #5568d3;
 }
 
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .tree-info-panel {
+  background: rgba(30, 30, 46, 0.98);
+  border-left-color: #cba6f7;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .panel-toggle {
+  background: linear-gradient(135deg, #cba6f7 0%, #89b4fa 100%);
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .panel-toggle:hover {
+  background: linear-gradient(135deg, #d4b8fa 0%, #a5c8ff 100%);
+}
+
+[data-theme="dark"] .panel-content {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .info-section {
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .info-section h3 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .info-item .label {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .info-item .value {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .copy-icon:hover {
+  background: rgba(203, 166, 247, 0.15);
+}
+
+[data-theme="dark"] .level-info {
+  background: #181825;
+}
+
+[data-theme="dark"] .level-badge {
+  background: linear-gradient(135deg, #cba6f7 0%, #89b4fa 100%);
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .node-count {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .node-tag-container {
+  background: #313244;
+  border-color: #585b70;
+}
+
+[data-theme="dark"] .node-tag-container:hover {
+  border-color: #cba6f7;
+  box-shadow: 0 2px 4px rgba(203, 166, 247, 0.15);
+}
+
+[data-theme="dark"] .node-tag {
+  color: #cba6f7;
+}
+
+[data-theme="dark"] .tips-list {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .panel-content::-webkit-scrollbar-track {
+  background: #181825;
+}
+
+[data-theme="dark"] .panel-content::-webkit-scrollbar-thumb {
+  background: #cba6f7;
+}
+
+[data-theme="dark"] .panel-content::-webkit-scrollbar-thumb:hover {
+  background: #d4b8fa;
+}

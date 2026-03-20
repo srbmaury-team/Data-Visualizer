@@ -142,46 +142,66 @@
   color: #45a049;
 }
 
-/* Dark theme support - only when explicitly preferred */
-@media (prefers-color-scheme: dark) {
-  .auth-modal {
-    background: #2d2d2d !important;
-    color: #fff !important;
-  }
+/* Dark theme support - controlled by theme toggle */
+[data-theme="dark"] .auth-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
 
-  .auth-form h2 {
-    color: #fff !important;
-  }
+[data-theme="dark"] .auth-modal {
+  background: #1e1e2e !important;
+  color: #cdd6f4 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
 
-  .form-group label {
-    color: #fff !important;
-  }
+[data-theme="dark"] .auth-form h2 {
+  color: #cdd6f4 !important;
+}
 
-  .form-group input {
-    background-color: #3d3d3d !important;
-    border-color: #555 !important;
-    color: #fff !important;
-  }
+[data-theme="dark"] .form-group label {
+  color: #cdd6f4 !important;
+}
 
-  .form-group input:focus {
-    border-color: #4CAF50 !important;
-  }
+[data-theme="dark"] .form-group input {
+  background-color: #181825 !important;
+  border-color: #45475a !important;
+  color: #cdd6f4 !important;
+}
 
-  .auth-modal-close {
-    color: #ccc !important;
-  }
+[data-theme="dark"] .form-group input:focus {
+  border-color: #a6e3a1 !important;
+  box-shadow: 0 0 0 2px rgba(166, 227, 161, 0.2);
+}
 
-  .auth-modal-close:hover {
-    background-color: #3d3d3d !important;
-  }
+[data-theme="dark"] .form-group input:disabled {
+  background-color: #313244 !important;
+}
 
-  .auth-error {
-    background-color: #4a2c2a !important;
-    color: #ffcdd2 !important;
-    border-color: #6d4c41 !important;
-  }
+[data-theme="dark"] .auth-modal-close {
+  color: #a6adc8 !important;
+}
 
-  .auth-toggle {
-    color: #ccc !important;
-  }
+[data-theme="dark"] .auth-modal-close:hover {
+  background-color: #313244 !important;
+}
+
+[data-theme="dark"] .auth-button:disabled {
+  background-color: #45475a;
+}
+
+[data-theme="dark"] .auth-error {
+  background-color: #302028 !important;
+  color: #f38ba8 !important;
+  border-color: #45283a !important;
+}
+
+[data-theme="dark"] .auth-toggle {
+  color: #a6adc8 !important;
+}
+
+[data-theme="dark"] .link-button {
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .link-button:hover {
+  color: #94e2d5;
 }

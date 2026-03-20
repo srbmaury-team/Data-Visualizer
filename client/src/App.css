@@ -8,6 +8,12 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   overflow-y: auto;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] body {
+  background: #11111b;
+  color: #cdd6f4;
 }
 
 /* ── Drag & Drop Overlay ── */
@@ -41,6 +47,11 @@ body {
   color: #1976d2;
 }
 
+[data-theme="dark"] .drop-overlay-content {
+  background: rgba(30, 30, 46, 0.95);
+  color: #89b4fa;
+}
+
 .drop-icon {
   font-size: 40px;
 }
@@ -59,6 +70,10 @@ body {
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+[data-theme="dark"] .editor-container {
+  background: linear-gradient(135deg, #11111b 0%, #1e1e2e 100%);
 }
 
 /* ── Compact Header (new menu bar) ── */
@@ -780,6 +795,11 @@ body {
   border-top: 1px solid #e0e0e0;
 }
 
+[data-theme="dark"] .controls {
+  background: rgba(30, 30, 46, 0.8);
+  border-top-color: #313244;
+}
+
 .visualize-btn {
   padding: 15px 40px;
   font-size: 1.1em;
@@ -821,6 +841,10 @@ body {
   background: #f5f5f0;
 }
 
+[data-theme="dark"] .diagram-container {
+  background: #181825;
+}
+
 .diagram-header {
   padding: 15px 30px;
   background: rgba(255, 255, 255, 0.95);
@@ -830,6 +854,11 @@ body {
   gap: 20px;
   z-index: 10;
   flex-wrap: wrap;
+}
+
+[data-theme="dark"] .diagram-header {
+  background: rgba(30, 30, 46, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .back-btn {
@@ -842,6 +871,12 @@ body {
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .back-btn {
+  background: #313244;
+  color: #89b4fa;
+  border-color: #89b4fa;
 }
 
 .back-btn:hover {
@@ -862,6 +897,12 @@ body {
   transition: all 0.3s ease;
 }
 
+[data-theme="dark"] .combined-btn {
+  background: #313244;
+  color: #cba6f7;
+  border-color: #cba6f7;
+}
+
 .combined-btn:hover {
   background: #8b5cf6;
   color: white;
@@ -874,10 +915,18 @@ body {
   font-size: 1.5em;
 }
 
+[data-theme="dark"] .diagram-header h2 {
+  color: #cdd6f4;
+}
+
 .hint {
   color: #7f8c8d;
   font-size: 0.95em;
   font-style: italic;
+}
+
+[data-theme="dark"] .hint {
+  color: #a6adc8;
 }
 
 .tree-info {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "./hooks/useAuth";
 import { useYamlFiles } from "./hooks/useYamlFiles";
 import { useToast } from "./hooks/useToast";
@@ -766,12 +767,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </ToastProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

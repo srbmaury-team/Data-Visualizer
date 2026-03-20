@@ -13,6 +13,7 @@ import { useDebounce } from "../hooks/useDebounce";
 import { useCollaboration } from "../hooks/useCollaboration";
 import yaml from "js-yaml";
 import KeyboardShortcutsPanel from "../components/KeyboardShortcutsPanel";
+import { useTheme } from "../hooks/useTheme";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import { validateYAML } from "../utils/yamlValidator";
 import "./CombinedEditor.css";
@@ -40,6 +41,7 @@ export default function CombinedEditorPage({
 }) {
   const navigate = useNavigate();
   const { id: currentFileId } = useParams();
+  const { darkMode, toggleDarkMode } = useTheme();
   const previousAuthState = useRef(isAuthenticated);
   const yamlFileInputRef = useRef(null);
   const jsonFileInputRef = useRef(null);
@@ -448,6 +450,7 @@ export default function CombinedEditorPage({
           </div>
 
           <div className={`header-right${mobileMenuOpen ? ' mobile-open' : ''}`}>
+            <button className="compact-icon-btn" onClick={toggleDarkMode} title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>{darkMode ? '☀️' : '🌙'}</button>
             <button className="compact-icon-btn" onClick={() => setShowShortcuts(true)} title="Keyboard Shortcuts">⌨️</button>
             {isAuthenticated ? (
               <>

@@ -2,19 +2,21 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DiagramViewer from "../components/DiagramViewer";
 import { useYamlFile } from "../hooks/useYamlFile";
+import { useTheme } from "../hooks/useTheme";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import yaml from "js-yaml";
 
 export default function DiagramPage({ parsedData: propParsedData, treeInfo: propTreeInfo, treeData: propTreeData, isAuthenticated }) {
   const navigate = useNavigate();
   const { id: currentFileId } = useParams(); // Get current file ID from URL
+  const { darkMode, toggleDarkMode } = useTheme();
   const [parsedData, setParsedData] = useState(propParsedData);
   const [treeInfo, setTreeInfo] = useState(propTreeInfo);
   const [treeData, setTreeData] = useState(propTreeData);
   const [loading, setLoading] = useState(false);
   const [yamlText, setYamlText] = useState('');
   const previousAuthState = useRef(isAuthenticated);
-  
+
   // Use the custom hook to load YAML file by ID if present in URL
   const { loading: fileLoading, error: fileError, fileData } = useYamlFile(setYamlText, isAuthenticated);
 
@@ -186,6 +188,13 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
         }}>
           🔗 Combined View
         </button>
+        <button
+          className="back-btn"
+          onClick={toggleDarkMode}
+          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
         <h2>Interactive Diagram View</h2>
         <div className="hint">
           💡 Scroll to zoom • Drag to pan • Click nodes to expand/collapse
@@ -196,7 +205,7 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
           </div>
         )}
       </div>
-            <DiagramViewer data={parsedData} treeInfo={treeInfo} treeData={treeData} />
+      <DiagramViewer data={parsedData} treeInfo={treeInfo} treeData={treeData} />
     </div>
   );
 }

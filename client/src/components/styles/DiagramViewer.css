@@ -1,4 +1,6 @@
 .diagram-viewer {
+  --diagram-prop-key: #667eea;
+  --diagram-prop-value: #2c3e50;
   position: absolute;
   top: 60px;
   left: 0;
@@ -104,6 +106,15 @@
 .prop-value {
   fill: #0ea5e9;
   font-weight: 500;
+}
+
+/* foreignObject property text (HTML spans inside SVG nodes) */
+.diagram-prop-key {
+  color: #667eea;
+}
+
+.diagram-prop-val {
+  color: #2c3e50;
 }
 
 /* Expand/Collapse Icon */
@@ -691,10 +702,11 @@
 
   /* Tree info panel - stick to right side, rectangular with curved left corners */
   .tree-info-panel.collapsed {
-    max-height:150px;
+    max-height: 150px;
   }
+
   .tree-info-panel {
-    z-index:200;
+    z-index: 200;
   }
 
   /* Fix copy buttons for mobile - make them more touch-friendly */
@@ -724,4 +736,222 @@
 
   /* Combined view buttons are now visible on mobile */
   /* Removed: display: none for .combined-editor-btn and .combined-btn */
+}
+
+/* ── Dark Theme ── */
+[data-theme="dark"] .diagram-viewer {
+  --diagram-prop-key: #cba6f7;
+  --diagram-prop-value: #cdd6f4;
+}
+
+[data-theme="dark"] .diagram-viewer.fullscreen {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .diagram-svg {
+  background: #1e1e2e;
+}
+
+/* Nodes */
+[data-theme="dark"] .node-box {
+  fill: #313244;
+  stroke: #585b70;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="dark"] .node:hover .node-box {
+  fill: #45475a;
+  stroke: #89b4fa;
+  filter: drop-shadow(0 4px 16px rgba(137, 180, 250, 0.25));
+}
+
+[data-theme="dark"] .node-name {
+  fill: #cdd6f4;
+}
+
+[data-theme="dark"] .node-separator {
+  stroke: #585b70;
+}
+
+[data-theme="dark"] .prop-key {
+  fill: #a6adc8;
+}
+
+[data-theme="dark"] .prop-value {
+  fill: #89dceb;
+}
+
+[data-theme="dark"] .diagram-prop-key {
+  color: #cba6f7;
+}
+
+[data-theme="dark"] .diagram-prop-val {
+  color: #cdd6f4;
+}
+
+/* Expand/Collapse icon */
+[data-theme="dark"] .icon-circle {
+  fill: #89b4fa;
+  stroke: #74c7ec;
+  filter: drop-shadow(0 2px 4px rgba(137, 180, 250, 0.3));
+}
+
+[data-theme="dark"] .expand-icon:hover .icon-circle {
+  fill: #b4d0fb;
+  stroke: #89b4fa;
+}
+
+/* Links */
+[data-theme="dark"] .link {
+  stroke: #585b70;
+}
+
+[data-theme="dark"] .link:hover {
+  stroke: #89b4fa;
+}
+
+/* Guide lines */
+[data-theme="dark"] .guide-line {
+  stroke: #45475a;
+}
+
+/* Zoom controls */
+[data-theme="dark"] .zoom-controls {
+  background: rgba(30, 30, 46, 0.95);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .zoom-controls-group:not(:last-child) {
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .zoom-btn {
+  color: #cdd6f4;
+  background: #313244;
+  border-color: #45475a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .zoom-btn:hover {
+  background: #45475a;
+  border-color: #585b70;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Highlight legend */
+[data-theme="dark"] .highlight-legend {
+  background: #1e1e2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  color: #cdd6f4;
+}
+
+/* Path highlighting */
+[data-theme="dark"] .path-highlight.node-box {
+  fill: #1e3a2a !important;
+  stroke: #a6e3a1 !important;
+  filter: drop-shadow(0 4px 12px rgba(166, 227, 161, 0.3));
+}
+
+[data-theme="dark"] .path-highlight.node-name {
+  fill: #a6e3a1 !important;
+}
+
+[data-theme="dark"] .path-highlight.link {
+  stroke: #a6e3a1 !important;
+}
+
+/* Search highlighting (dark) */
+[data-theme="dark"] .search-highlight {
+  fill: #302c1e !important;
+  stroke: #f9e2af !important;
+}
+
+[data-theme="dark"] .current-match {
+  fill: #302028 !important;
+  stroke: #f38ba8 !important;
+}
+
+[data-theme="dark"] .search-match {
+  fill: #f9e2af !important;
+}
+
+/* Visual analysis highlights */
+[data-theme="dark"] .node-highlight-critical .node-box {
+  fill: #302028;
+  stroke: #f38ba8;
+  filter: drop-shadow(0 4px 16px rgba(243, 139, 168, 0.3));
+}
+
+[data-theme="dark"] .node-highlight-warning .node-box {
+  fill: #302c1e;
+  stroke: #f9e2af;
+  filter: drop-shadow(0 4px 16px rgba(249, 226, 175, 0.25));
+}
+
+[data-theme="dark"] .node-highlight-positive .node-box {
+  fill: #1e3a2a;
+  stroke: #a6e3a1;
+  filter: drop-shadow(0 4px 16px rgba(166, 227, 161, 0.25));
+}
+
+[data-theme="dark"] .node-highlight-info .node-box {
+  fill: #1e2a3a;
+  stroke: #89b4fa;
+  filter: drop-shadow(0 4px 16px rgba(137, 180, 250, 0.2));
+}
+
+[data-theme="dark"] .node-highlight-critical:hover .node-box {
+  fill: #3d2530;
+  stroke: #eba0ac;
+}
+
+[data-theme="dark"] .node-highlight-warning:hover .node-box {
+  fill: #3d3525;
+  stroke: #f9e2af;
+}
+
+[data-theme="dark"] .node-highlight-positive:hover .node-box {
+  fill: #254a34;
+  stroke: #a6e3a1;
+}
+
+[data-theme="dark"] .node-highlight-info:hover .node-box {
+  fill: #253548;
+  stroke: #89b4fa;
+}
+
+/* Node tooltip */
+[data-theme="dark"] .node-tooltip {
+  background: rgba(17, 17, 27, 0.9);
+}
+
+/* Node count badge (gradient is fine, just soften shadow) */
+[data-theme="dark"] .node-count-badge {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Mobile header toggle */
+@media (max-width: 768px) {
+  [data-theme="dark"] .mobile-header-toggle {
+    background: rgba(30, 30, 46, 0.95);
+    border-color: #45475a;
+    color: #cdd6f4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="dark"] .mobile-header-toggle:hover {
+    background: rgba(49, 50, 68, 1);
+    border-color: #89b4fa;
+  }
+
+  [data-theme="dark"] .svg-copy-btn {
+    background: rgba(30, 30, 46, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #cdd6f4;
+  }
+}
+
+/* Fullscreen dark */
+[data-theme="dark"] .diagram-viewer:fullscreen {
+  background: #1e1e2e;
 }

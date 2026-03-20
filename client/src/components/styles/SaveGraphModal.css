@@ -14,6 +14,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -230,40 +231,45 @@
   .save-graph-modal {
     width: 95%;
     margin: 20px;
-    max-height: 85vh; /* Reduce height to ensure buttons are visible */
+    max-height: 85vh;
+    /* Reduce height to ensure buttons are visible */
   }
-  
+
   .modal-header {
     padding: 16px 20px;
   }
-  
+
   .save-form {
     padding: 20px;
-    padding-bottom: 30px; /* Extra padding at bottom */
+    padding-bottom: 30px;
+    /* Extra padding at bottom */
   }
-  
+
   .form-actions {
     flex-direction: column;
-    margin-top: 24px; /* Reduce top margin */
-    position: sticky; /* Make buttons stick to bottom */
+    margin-top: 24px;
+    /* Reduce top margin */
+    position: sticky;
+    /* Make buttons stick to bottom */
     bottom: 0;
     background: white;
     padding: 16px 0 0 0;
     border-top: 1px solid #e5e7eb;
   }
-  
+
   .cancel-btn,
   .save-btn {
     width: 100%;
     justify-content: center;
-    padding: 14px 20px; /* Larger touch targets */
+    padding: 14px 20px;
+    /* Larger touch targets */
     font-size: 1rem;
   }
-  
+
   .confirm-actions {
     flex-direction: column;
   }
-  
+
   .overwrite-btn {
     width: 100%;
     padding: 14px 20px;
@@ -272,5 +278,113 @@
 
   .save-btn-modal {
     display: block !important;
+  }
+}
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .save-graph-modal {
+  background: #1e1e2e;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .modal-header h2 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .close-btn {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .close-btn:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .label-text {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .label-desc {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea {
+  background: #181825;
+  border-color: #45475a;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group textarea:focus {
+  border-color: #89b4fa;
+  box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.15);
+}
+
+[data-theme="dark"] .form-group input::placeholder,
+[data-theme="dark"] .form-group textarea::placeholder {
+  color: #6c7086;
+}
+
+[data-theme="dark"] .checkbox-text {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .form-actions {
+  border-top-color: #45475a;
+}
+
+[data-theme="dark"] .cancel-btn {
+  background: #313244;
+  color: #a6adc8;
+  border-color: #45475a;
+}
+
+[data-theme="dark"] .cancel-btn:hover {
+  background: #45475a;
+  border-color: #585b70;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .save-btn {
+  background: #89b4fa;
+  border-color: #89b4fa;
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .save-btn:hover:not(:disabled) {
+  background: #a5c8ff;
+  border-color: #a5c8ff;
+  box-shadow: 0 4px 12px rgba(137, 180, 250, 0.3);
+}
+
+[data-theme="dark"] .overwrite-confirm h3 {
+  color: #f38ba8;
+}
+
+[data-theme="dark"] .overwrite-confirm p {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .overwrite-btn {
+  background: #f38ba8;
+  border-color: #f38ba8;
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .overwrite-btn:hover {
+  background: #f5a0b8;
+  border-color: #f5a0b8;
+  box-shadow: 0 4px 12px rgba(243, 139, 168, 0.3);
+}
+
+@media (max-width: 640px) {
+  [data-theme="dark"] .form-actions {
+    background: #1e1e2e;
+    border-top-color: #45475a;
   }
 }

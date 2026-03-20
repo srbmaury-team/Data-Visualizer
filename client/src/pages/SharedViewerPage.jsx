@@ -6,6 +6,7 @@ import SearchPanel from "../components/SearchPanel";
 import yaml from "js-yaml";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
 import { validateYAML } from "../utils/yamlValidator";
+import { useTheme } from "../hooks/useTheme";
 import "./CombinedEditor.css";
 
 export default function SharedViewerPage({
@@ -13,6 +14,7 @@ export default function SharedViewerPage({
   error
 }) {
   const navigate = useNavigate();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [parsedData, setParsedData] = useState(null);
   const [treeInfo, setTreeInfo] = useState(null);
   const [localError, setLocalError] = useState("");
@@ -20,7 +22,7 @@ export default function SharedViewerPage({
   const [isDragging, setIsDragging] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
-  
+
   // Listen for search results from DiagramViewer via custom events
   useEffect(() => {
     const handleSearchComplete = (event) => {
@@ -45,7 +47,7 @@ export default function SharedViewerPage({
 
   // Note: Mobile redirect is now handled in SharedViewerWrapper
   // This component will only render for desktop users
-  
+
   // Search handler - calls DiagramViewer's global search function
   const handleSearch = useCallback((term) => {
     if (!term || !term.trim()) {
@@ -53,7 +55,7 @@ export default function SharedViewerPage({
       setSearchResults([]);
       setCurrentSearchIndex(0);
     }
-    
+
     // Call DiagramViewer's search function (will dispatch event with results)
     if (window.combinedEditorDiagramSearch) {
       window.combinedEditorDiagramSearch(term);
@@ -103,10 +105,10 @@ export default function SharedViewerPage({
 
   const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
-    
+
     const containerWidth = window.innerWidth;
     const newLeftWidth = (e.clientX / containerWidth) * 100;
-    
+
     // Constrain between 20% and 80%
     if (newLeftWidth >= 20 && newLeftWidth <= 80) {
       setLeftWidth(newLeftWidth);
@@ -137,6 +139,9 @@ export default function SharedViewerPage({
           <button className="back-btn" onClick={() => navigate("/")}>
             ← Back
           </button>
+          <button className="back-btn" onClick={toggleDarkMode} title="Toggle dark mode">
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <h1>Shared YAML Viewer</h1>
           {treeInfo && (
             <span className="tree-info">
@@ -144,7 +149,7 @@ export default function SharedViewerPage({
             </span>
           )}
         </div>
-        
+
         <div className="header-actions">
           <div className="right-controls">
             <span className="shared-badge">📤 Shared Content</span>
@@ -162,26 +167,26 @@ export default function SharedViewerPage({
       {/* Main Split View */}
       <div className="split-container">
         {/* Left Panel - Read-only Editor */}
-        <div 
-          className="left-panel" 
+        <div
+          className="left-panel"
           style={{ width: `${leftWidth}%` }}
         >
           <YamlEditor
             value={yamlText}
-            onChange={() => {}} // Read-only for shared view
+            onChange={() => { }} // Read-only for shared view
             error={error || localError}
             readOnly={true}
           />
         </div>
 
         {/* Resizer */}
-        <div 
+        <div
           className="resizer"
           onMouseDown={handleMouseDown}
         />
 
         {/* Right Panel - Visualization */}
-        <div 
+        <div
           className="right-panel"
           style={{ width: `${100 - leftWidth}%` }}
         >
@@ -199,8 +204,8 @@ export default function SharedViewerPage({
               </div>
               <div className="diagram-content">
                 {parsedData ? (
-                  <DiagramViewer 
-                    data={parsedData} 
+                  <DiagramViewer
+                    data={parsedData}
                     treeInfo={treeInfo}
                     hideSearch={true}
                   />
@@ -210,8 +215,8 @@ export default function SharedViewerPage({
                       <div className="placeholder-icon">📊</div>
                       <h3>No Visualization Available</h3>
                       <p>
-                        {yamlText ? 
-                          "YAML content has errors - cannot display visualization" : 
+                        {yamlText ?
+                          "YAML content has errors - cannot display visualization" :
                           "No YAML content to display"
                         }
                       </p>

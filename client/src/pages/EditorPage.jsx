@@ -12,6 +12,7 @@ import { useDebounce } from "../hooks/useDebounce";
 import { useCollaboration } from "../hooks/useCollaboration";
 import yaml from "js-yaml";
 import KeyboardShortcutsPanel from "../components/KeyboardShortcutsPanel";
+import { useTheme } from "../hooks/useTheme";
 
 const isValidMongoId = (value) => /^[0-9a-fA-F]{24}$/.test(value || "");
 const getUserId = (u) => `${u?.id || u?._id || ""}`;
@@ -37,6 +38,7 @@ export default function EditorPage({
 }) {
   const navigate = useNavigate();
   const { id: currentFileId } = useParams(); // Get current file ID from URL
+  const { darkMode, toggleDarkMode } = useTheme();
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -439,6 +441,7 @@ export default function EditorPage({
           </div>
 
           <div className={`header-right${mobileMenuOpen ? ' mobile-open' : ''}`}>
+            <button className="compact-icon-btn" onClick={toggleDarkMode} title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>{darkMode ? '☀️' : '🌙'}</button>
             <button className="compact-icon-btn" onClick={() => setShowShortcuts(true)} title="Keyboard Shortcuts">⌨️</button>
             {isAuthenticated ? (
               <>

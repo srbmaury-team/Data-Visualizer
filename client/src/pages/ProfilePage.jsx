@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import apiService from "../services/apiService";
+import { useTheme } from "../hooks/useTheme";
 import "./ProfilePage.css";
 
 export default function ProfilePage() {
@@ -10,7 +11,8 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { logout, isAuthenticated: contextIsAuthenticated, updateUser } = useAuth();
   const { showSuccess, showError } = useToast();
-  
+  const { darkMode, toggleDarkMode } = useTheme();
+
   const [profileData, setProfileData] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,7 @@ export default function ProfilePage() {
   const [profileFilesPage, setProfileFilesPage] = useState(1);
   const [recentFilesPage, setRecentFilesPage] = useState(1);
   const [popularFilesPage, setPopularFilesPage] = useState(1);
-  
+
   // If user is not authenticated via context, redirect immediately
   useEffect(() => {
     if (!contextIsAuthenticated) {
@@ -33,21 +35,21 @@ export default function ProfilePage() {
       return;
     }
   }, [contextIsAuthenticated, navigate, showError]);
-  
+
   // Profile editing state
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({
     username: '',
     email: ''
   });
-  
+
   // Password change state
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
-  
+
   // Delete account state
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -115,12 +117,12 @@ export default function ProfilePage() {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       showError('New passwords do not match');
       return;
     }
-    
+
     try {
       await apiService.changePassword({
         currentPassword: passwordData.currentPassword,
@@ -152,18 +154,18 @@ export default function ProfilePage() {
     try {
       // Fetch the full file content
       const fileData = await apiService.getYamlFile(file._id);
-      
+
       // Navigate to the editor with the file content and ID
       // We'll pass the content via state so it can be loaded into the editor
-      navigate('/', { 
-        state: { 
+      navigate('/', {
+        state: {
           yamlContent: fileData.content,
           fileName: fileData.title,
           fileId: file._id,
           loadFile: true
         }
       });
-      
+
       showSuccess(`Loaded "${file.title}" into editor`);
     } catch (error) {
       showError(error.message || 'Failed to load file');
@@ -218,10 +220,10 @@ export default function ProfilePage() {
   const peakMonthCount = Math.max(...((dashboardData?.filesByMonth || []).map((item) => item.count)), 1);
   const recentActivity = (dashboardData?.filesByMonth || []).length
     ? dashboardData.filesByMonth.map((item) => ({
-        label: getMonthLabel(item._id.year, item._id.month),
-        count: item.count,
-        height: `${Math.max(20, Math.round((item.count / peakMonthCount) * 100))}%`,
-      }))
+      label: getMonthLabel(item._id.year, item._id.month),
+      count: item.count,
+      height: `${Math.max(20, Math.round((item.count / peakMonthCount) * 100))}%`,
+    }))
     : [];
   const insightItems = [
     {
@@ -333,7 +335,10 @@ export default function ProfilePage() {
         </button>
         <h2>User Profile</h2>
         <div className="profile-actions">
-          <button 
+          <button className="back-btn" onClick={toggleDarkMode} title="Toggle dark mode">
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          <button
             className="logout-btn"
             onClick={() => {
               // Set flag to indicate this is a logout action
@@ -406,19 +411,19 @@ export default function ProfilePage() {
         </section>
 
         <div className="profile-tabs">
-          <button 
+          <button
             className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
             👤 Profile
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
             📊 Dashboard
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'security' ? 'active' : ''}`}
             onClick={() => setActiveTab('security')}
           >
@@ -474,14 +479,14 @@ export default function ProfilePage() {
               <div className="profile-info-card">
                 <div className="card-header">
                   <h3>Profile Information</h3>
-                  <button 
+                  <button
                     className={`edit-btn ${editMode ? 'cancel' : 'edit'}`}
                     onClick={() => setEditMode(!editMode)}
                   >
                     {editMode ? '✕ Cancel' : '✏️ Edit'}
                   </button>
                 </div>
-                
+
                 {!editMode ? (
                   <div className="profile-display">
                     <div className="profile-field">
@@ -504,7 +509,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         value={editData.username}
-                        onChange={(e) => setEditData({...editData, username: e.target.value})}
+                        onChange={(e) => setEditData({ ...editData, username: e.target.value })}
                         required
                       />
                     </div>
@@ -513,7 +518,7 @@ export default function ProfilePage() {
                       <input
                         type="email"
                         value={editData.email}
-                        onChange={(e) => setEditData({...editData, email: e.target.value})}
+                        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
                         required
                       />
                     </div>
@@ -644,8 +649,8 @@ export default function ProfilePage() {
                 {recentFiles.length > 0 ? (
                   <div className="files-list">
                     {paginatedRecentFiles.map((file) => (
-                      <div 
-                        key={file._id} 
+                      <div
+                        key={file._id}
                         className="file-item clickable"
                         onClick={() => handleLoadFile(file)}
                         title="Click to open in editor"
@@ -679,8 +684,8 @@ export default function ProfilePage() {
                 {popularFiles.length > 0 ? (
                   <div className="files-list">
                     {paginatedPopularFiles.map((file) => (
-                      <div 
-                        key={file._id} 
+                      <div
+                        key={file._id}
                         className="file-item clickable"
                         onClick={() => handleLoadFile(file)}
                         title="Click to open in editor"
@@ -741,7 +746,7 @@ export default function ProfilePage() {
                     <input
                       type="password"
                       value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                       required
                     />
                   </div>
@@ -750,7 +755,7 @@ export default function ProfilePage() {
                     <input
                       type="password"
                       value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                       minLength="6"
                       required
                     />
@@ -760,7 +765,7 @@ export default function ProfilePage() {
                     <input
                       type="password"
                       value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                       minLength="6"
                       required
                     />
@@ -777,9 +782,9 @@ export default function ProfilePage() {
                 </div>
                 <div className="danger-content">
                   <p>⚠️ Once you delete your account, there is no going back. This will permanently delete your account and all your YAML files.</p>
-                  
+
                   {!showDeleteConfirm ? (
-                    <button 
+                    <button
                       className="delete-account-btn"
                       onClick={() => setShowDeleteConfirm(true)}
                     >
@@ -798,14 +803,14 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div className="delete-actions">
-                        <button 
+                        <button
                           className="confirm-delete-btn"
                           onClick={handleDeleteAccount}
                           disabled={!deletePassword}
                         >
                           ⚠️ Confirm Delete Account
                         </button>
-                        <button 
+                        <button
                           className="cancel-delete-btn"
                           onClick={() => {
                             setShowDeleteConfirm(false);

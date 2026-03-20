@@ -4,10 +4,12 @@ import DiffVisualization from '../components/DiffVisualization';
 import DiffComputer from '../utils/diffComputer';
 import apiService from '../services/apiService';
 import './DiffComparePage.css';
+import { useTheme } from '../hooks/useTheme';
 
 const DiffComparePage = ({ isAuthenticated }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [leftYaml, setLeftYaml] = useState('');
   const [rightYaml, setRightYaml] = useState('');
   const [diffResult, setDiffResult] = useState(null);
@@ -306,6 +308,9 @@ const DiffComparePage = ({ isAuthenticated }) => {
             title="Back to Editor"
           >
             ← Back to Editor
+          </button>
+          <button className="yaml-diff-back-btn" onClick={toggleDarkMode} title="Toggle dark mode">
+            {darkMode ? '☀️' : '🌙'}
           </button>
           <h1 className="yaml-diff-main-title">🔍 YAML Diff Compare</h1>
           <p className="yaml-diff-subtitle">Compare two YAML files side by side to see differences</p>

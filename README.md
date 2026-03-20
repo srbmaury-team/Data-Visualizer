@@ -8,6 +8,8 @@ Convert YAML structures into interactive tree diagrams. Built with React, Node.j
 
 ## ✨ **Core Capabilities**
 
+**🌗 Dark mode:** Toggle light/dark themes from any page. All components and diagrams are fully themed and your preference is remembered.
+
 ### 🔍 **YAML Diff Comparison**
 - Side-by-side editors with `+`, `-`, `~`, `∅` change markers
 - Unified diff view with `Original`/`Modified`/`Both` tags

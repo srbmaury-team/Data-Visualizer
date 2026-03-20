@@ -352,3 +352,42 @@
   pointer-events: none;
   z-index: 4;
 }
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .presence-bar {
+  background: #181825;
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .presence-label {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .presence-avatar {
+  border-color: #1e1e2e;
+}
+
+[data-theme="dark"] .presence-overflow {
+  background: #585b70;
+}
+
+[data-theme="dark"] .presence-count {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .presence-typing {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .typing-dot {
+  background: #a6adc8;
+}
+
+[data-theme="dark"] .presence-share-btn {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .presence-share-btn:hover {
+  background: #a5c8ff;
+}

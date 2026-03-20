@@ -449,3 +449,150 @@
     font-size: 0.75rem;
   }
 }
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .yaml-diff-empty-state {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .yaml-diff-stats {
+  background: #181825;
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .yaml-diff-stat-item {
+  background: #1e1e2e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .yaml-diff-stat-label {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .yaml-diff-view-header {
+  background: #1e1e2e;
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .yaml-diff-view-title {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .yaml-diff-view-content {
+  background: #181825;
+}
+
+[data-theme="dark"] .yaml-diff-line-numbers {
+  background: #11111b;
+  border-right-color: #45475a;
+  color: #6c7086;
+}
+
+[data-theme="dark"] .yaml-diff-line.yaml-diff-line-delete {
+  background: rgba(243, 139, 168, 0.1);
+}
+
+[data-theme="dark"] .yaml-diff-line.yaml-diff-line-insert {
+  background: rgba(166, 227, 161, 0.1);
+}
+
+[data-theme="dark"] .yaml-diff-line.yaml-diff-line-modify {
+  background: rgba(249, 226, 175, 0.1);
+}
+
+[data-theme="dark"] .yaml-diff-line-text {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .yaml-diff-source-tag-original {
+  background: rgba(243, 139, 168, 0.15);
+  color: #f38ba8;
+}
+
+[data-theme="dark"] .yaml-diff-source-tag-modified {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .yaml-diff-source-tag-both {
+  background: rgba(166, 173, 200, 0.15);
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .yaml-diff-deleted-line .yaml-diff-marker {
+  color: #f38ba8;
+}
+
+[data-theme="dark"] .yaml-diff-added-line .yaml-diff-marker {
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .yaml-diff-panels {
+  background: #45475a;
+}
+
+[data-theme="dark"] .yaml-diff-panel {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .yaml-diff-panel-header {
+  background: #181825;
+  border-bottom-color: #45475a;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .yaml-diff-panel-content .yaml-diff-line-number {
+  color: #6c7086;
+  border-right-color: #313244;
+}
+
+[data-theme="dark"] .yaml-diff-panel-content .yaml-diff-line-content {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .yaml-diff-panel-content .yaml-diff-line-content.yaml-diff-line-missing {
+  color: #6c7086;
+}
+
+[data-theme="dark"] .yaml-diff-panel-content .yaml-diff-line.yaml-diff-line-delete {
+  background: rgba(243, 139, 168, 0.12);
+}
+
+[data-theme="dark"] .yaml-diff-panel-content .yaml-diff-line.yaml-diff-line-insert {
+  background: rgba(166, 227, 161, 0.12);
+}
+
+[data-theme="dark"] .yaml-diff-panel-content .yaml-diff-line.yaml-diff-line-modify {
+  background: rgba(249, 226, 175, 0.12);
+}
+
+[data-theme="dark"] .yaml-diff-view-content::-webkit-scrollbar-track,
+[data-theme="dark"] .yaml-diff-panel-content::-webkit-scrollbar-track {
+  background: #181825;
+}
+
+[data-theme="dark"] .yaml-diff-view-content::-webkit-scrollbar-thumb,
+[data-theme="dark"] .yaml-diff-panel-content::-webkit-scrollbar-thumb {
+  background: #585b70;
+  border-color: #181825;
+}
+
+[data-theme="dark"] .yaml-diff-view-content::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] .yaml-diff-panel-content::-webkit-scrollbar-thumb:hover {
+  background: #a6adc8;
+}
+
+[data-theme="dark"] .yaml-diff-legend-item.yaml-diff-legend-added {
+  background: rgba(166, 227, 161, 0.1);
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .yaml-diff-legend-item.yaml-diff-legend-deleted {
+  background: rgba(243, 139, 168, 0.1);
+  color: #f38ba8;
+}
+
+[data-theme="dark"] .yaml-diff-legend-item.yaml-diff-legend-modified {
+  background: rgba(249, 226, 175, 0.1);
+  color: #f9e2af;
+}

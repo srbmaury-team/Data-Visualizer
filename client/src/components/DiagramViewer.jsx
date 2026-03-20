@@ -4,6 +4,7 @@ import TreeInfoPanel from "./TreeInfoPanel";
 import SearchPanel from "./SearchPanel";
 import { exportDiagramAsPNG, exportDiagramAsSVG } from "../utils/diagramExport";
 import ExportDialog from "./ExportDialog";
+import { useTheme } from "../hooks/useTheme";
 import "./styles/DiagramViewer.css";
 
 const DiagramViewer = forwardRef(({
@@ -22,6 +23,7 @@ const DiagramViewer = forwardRef(({
   const svgRef = useRef(null);
   const gRef = useRef(null);
   const zoomBehaviorRef = useRef(null);
+  const { darkMode } = useTheme();
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
@@ -427,13 +429,13 @@ const DiagramViewer = forwardRef(({
             .style("pointer-events", "none"); // Allow clicks to pass through
 
           propText.append("xhtml:span")
-            .style("color", "#667eea")
+            .attr("class", "diagram-prop-key")
             .style("font-weight", "600")
             .style("pointer-events", "none") // Allow clicks to pass through
             .text(`${key}: `);
 
           propText.append("xhtml:span")
-            .style("color", "#2c3e50")
+            .attr("class", "diagram-prop-val")
             .style("pointer-events", "none") // Allow clicks to pass through
             .text(displayValue)
             .attr("title", displayValue.length > 30 ? displayValue : null);
@@ -1207,11 +1209,11 @@ const DiagramViewer = forwardRef(({
             height="30"
             patternUnits="userSpaceOnUse"
           >
-            <circle cx="2" cy="2" r="1.5" fill="#cbd5e1" opacity="0.3" />
+            <circle cx="2" cy="2" r="1.5" fill={darkMode ? '#585b70' : '#cbd5e1'} opacity="0.3" />
           </pattern>
           <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#f8f9fa', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#e2e8f0', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: darkMode ? '#1e1e2e' : '#f8f9fa', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: darkMode ? '#181825' : '#e2e8f0', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <rect width="100%" height="100%" fill="url(#bg-gradient)" />

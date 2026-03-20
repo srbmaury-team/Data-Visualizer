@@ -204,8 +204,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .versions-list {
@@ -539,6 +544,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -664,4 +670,167 @@
     height: 40px;
     font-size: 1rem;
   }
+}
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .version-history-modal {
+  background: #1e1e2e;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .version-modal-header {
+  background: #181825;
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .version-modal-header h2 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .version-modal-content {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .file-info {
+  background: #181825;
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .file-info strong {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .version-count {
+  color: #a6adc8;
+  background: #313244;
+  border-color: #45475a;
+}
+
+[data-theme="dark"] .compare-instructions {
+  background: rgba(137, 180, 250, 0.08);
+  border-bottom-color: rgba(137, 180, 250, 0.2);
+  color: #89b4fa;
+}
+
+[data-theme="dark"] .selected-version {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .loading-indicator {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .spinner {
+  border-color: #45475a;
+  border-top-color: #89b4fa;
+}
+
+[data-theme="dark"] .empty-state {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .empty-state h3 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .version-item {
+  border-bottom-color: #313244;
+}
+
+[data-theme="dark"] .version-item:hover {
+  background: #181825;
+}
+
+[data-theme="dark"] .version-item.selected {
+  background: rgba(137, 180, 250, 0.08);
+  border-left-color: #89b4fa;
+}
+
+[data-theme="dark"] .version-number {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .version-author {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .version-date {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .date {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .change-summary {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .version-message {
+  background: #181825;
+  color: #a6adc8;
+  border-left-color: #585b70;
+}
+
+[data-theme="dark"] .stat-add {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .stat-remove {
+  background: rgba(243, 139, 168, 0.15);
+  color: #f38ba8;
+}
+
+[data-theme="dark"] .stat-type {
+  background: #313244;
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .stat-lines {
+  background: rgba(137, 180, 250, 0.15);
+  color: #89b4fa;
+}
+
+[data-theme="dark"] .version-actions button {
+  background: #313244;
+  border-color: #45475a;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .comparison-result,
+[data-theme="dark"] .version-preview {
+  background: #181825;
+  border-color: #45475a;
+}
+
+[data-theme="dark"] .comparison-result h3,
+[data-theme="dark"] .version-preview h3 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .comparison-summary p {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .version-preview.inline-preview {
+  background: #181825;
+  border-color: #45475a;
+}
+
+[data-theme="dark"] .preview-header {
+  border-bottom-color: #45475a;
+}
+
+[data-theme="dark"] .preview-header h4 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .content-preview {
+  background: #11111b;
+  border-color: #45475a;
+  color: #cdd6f4;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 }

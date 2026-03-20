@@ -27,7 +27,7 @@
 
 .modal-content {
   background: white;
-  border-radius: 16px;
+  border-radius: 24px;
   max-width: 900px;
   max-height: 80vh;
   width: 90%;
@@ -51,10 +51,15 @@
 .modal-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 20px 30px;
+  padding: 20px 30px 20px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .modal-header h2 {
@@ -162,13 +167,15 @@
   background: #5a6fd8;
 }
 
-.graphs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+.graphs-grid,
+.graphs-list {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
-.graph-card {
+.graph-card,
+.graph-item {
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
@@ -176,7 +183,8 @@
   background: white;
 }
 
-.graph-card:hover {
+.graph-card:hover,
+.graph-item:hover {
   border-color: #667eea;
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
   transform: translateY(-2px);
@@ -223,7 +231,8 @@
   margin: 12px 0;
 }
 
-.graph-tag {
+.graph-tag,
+.tag {
   background: #f3f4f6;
   color: #374151;
   padding: 4px 8px;
@@ -234,13 +243,15 @@
 
 .graph-preview {
   background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 12px;
+  border: none;
+  border-radius: 0 0 12px 12px;
+  padding: 16px 20px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.8em;
+  font-size: 0.9em;
   color: #374151;
-  margin: 12px 0;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
   white-space: pre-wrap;
   overflow: hidden;
 }
@@ -486,4 +497,146 @@
   .graph-actions {
     padding: 12px 15px;
   }
+}
+
+/* ===== Dark Mode ===== */
+[data-theme="dark"] .modal-content {
+  background: #1e1e2e;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .modal-header {
+  background: linear-gradient(135deg, #cba6f7 0%, #89b4fa 100%);
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .modal-header h2 {
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .close-modal-btn {
+  background: rgba(0, 0, 0, 0.2);
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .close-modal-btn:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .modal-body {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .graphs-tabs {
+  background: #181825;
+  border-color: #45475a;
+}
+
+[data-theme="dark"] .graphs-tab {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .graphs-tab:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .graphs-tab.active {
+  background: #313244;
+  color: #89b4fa;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .no-graphs {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .no-graphs h3 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .auth-required h3 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .auth-required p {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .auth-required button {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+[data-theme="dark"] .auth-required button:hover {
+  background: #a5c8ff;
+}
+
+[data-theme="dark"] .graph-card,
+[data-theme="dark"] .graph-item {
+  background: #181825;
+  border-color: #45475a;
+}
+
+[data-theme="dark"] .graph-card:hover,
+[data-theme="dark"] .graph-item:hover {
+  border-color: #cba6f7;
+  box-shadow: 0 8px 25px rgba(203, 166, 247, 0.15);
+}
+
+[data-theme="dark"] .graph-info h3 {
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .graph-description {
+  color: #a6adc8;
+}
+
+[data-theme="dark"] .graph-date {
+  color: #6c7086;
+}
+
+[data-theme="dark"] .updated-date {
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .graph-tag,
+[data-theme="dark"] .tag {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .graph-preview {
+  background: #11111b;
+  border: none;
+  color: #cdd6f4;
+  border-radius: 0 0 12px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .public-indicator {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+}
+
+[data-theme="dark"] .graph-actions {
+  background: #11111b;
+  border-top-color: #45475a;
+}
+
+[data-theme="dark"] .view-btn {
+  background: #313244;
+  border-color: #45475a;
+  color: #cdd6f4;
+}
+
+[data-theme="dark"] .view-btn:hover {
+  background: #45475a;
+  border-color: #89b4fa;
+}
+
+[data-theme="dark"] .load-label {
+  color: #a6adc8;
+}
 }
