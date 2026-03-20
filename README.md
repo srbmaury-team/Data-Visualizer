@@ -22,9 +22,11 @@ Convert YAML structures into interactive tree diagrams. Built with React, Node.j
 - Export as YAML or JSON
 - Keyboard shortcuts for all major actions
 
+
 ### 🌳 **Interactive Tree Visualization**
 - D3.js-powered tree with expand/collapse, zoom/pan, and path highlighting
 - Fit-to-screen, fullscreen mode, and PNG/SVG export
+- **Time Travel Visualization:** Instantly view and explore your YAML diagram at any point in its version history using a timeline/slider. Effortlessly switch between versions and see how your data evolved over time.
 
 ### 🔄 **Split-Panel Workspace**
 - Real-time diagram updates as you type
@@ -157,9 +159,6 @@ OPENAI_API_KEY=your-openai-api-key
 # API Configuration
 VITE_API_BASE_URL=http://localhost:5000/api
 VITE_API_URL=http://localhost:5000
-
-# Optional Feature
-VITE_OPENAI_API_KEY=sk-your-openai-api-key
 ```
 
 ---
@@ -317,8 +316,10 @@ Use **File ▾ → Import Repo**, enter a public GitHub URL (`https://github.com
 
 ---
 
+
 ## 🌟 Use Cases
 
+- **⏳ Time Travel Diagrams**: Instantly visualize and compare your YAML structure at any point in its version history.
 - **🏢 System Architecture**: Visualize microservices and dependencies
 - **📋 Configuration Docs**: Map complex config file structures
 - **🗂️ Data Hierarchies**: Explore nested data relationships

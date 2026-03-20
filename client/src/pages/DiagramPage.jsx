@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DiagramViewer from "../components/DiagramViewer";
+import DiagramTimeTravel from "../components/DiagramTimeTravel";
 import { useYamlFile } from "../hooks/useYamlFile";
 import { useTheme } from "../hooks/useTheme";
 import { buildTreeFromYAML, convertToD3Hierarchy } from "../utils/treeBuilder";
@@ -14,7 +15,43 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
   const [treeInfo, setTreeInfo] = useState(propTreeInfo);
   const [treeData, setTreeData] = useState(propTreeData);
   const [loading, setLoading] = useState(false);
-  const [yamlText, setYamlText] = useState('');
+  const [yamlText, setYamlText] = useState("");
+  // For time travel (removed unused selectedVersion)
+  // Handler for DiagramTimeTravel
+  const handleTimeTravel = useMemo(() => {
+    let lastVersion = null;
+    let lastYaml = "";
+    return (versionNumber, yamlContent) => {
+      if (versionNumber === lastVersion && yamlContent === lastYaml) return;
+      lastVersion = versionNumber;
+      lastYaml = yamlContent;
+      if (yamlContent && yamlContent.trim()) {
+        try {
+          setLoading(true);
+          const yamlData = yaml.load(yamlContent);
+          const tree = buildTreeFromYAML(yamlData);
+          const hierarchical = convertToD3Hierarchy(tree);
+          const info = {
+            totalNodes: tree.nodes.length,
+            totalEdges: tree.edges.length,
+            maxDepth: Math.max(...tree.nodes.map(n => n.level)),
+            nodesPerLevel: Array.from(tree.levels.entries()).map(([level, nodes]) => ({
+              level,
+              count: nodes.length,
+              nodes: nodes.map(n => n.name),
+            })),
+          };
+          setParsedData(hierarchical);
+          setTreeInfo(info);
+          setTreeData(tree);
+        } catch (error) {
+          console.error("Error processing time travel YAML:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+  }, []);
   const previousAuthState = useRef(isAuthenticated);
 
   // Use the custom hook to load YAML file by ID if present in URL
@@ -199,6 +236,10 @@ export default function DiagramPage({ parsedData: propParsedData, treeInfo: prop
         <div className="hint">
           💡 Scroll to zoom • Drag to pan • Click nodes to expand/collapse
         </div>
+        {/* Time Travel Timeline/Slider */}
+        {currentFileId && (
+          <DiagramTimeTravel fileId={currentFileId} onVersionChange={handleTimeTravel} />
+        )}
         {treeInfo && (
           <div className="tree-info">
             📊 Nodes: {treeInfo.totalNodes} | Levels: {treeInfo.maxDepth + 1} | Edges: {treeInfo.totalEdges}

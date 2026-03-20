@@ -1,0 +1,22 @@
+.diagram-time-travel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0 0;
+}
+
+.diagram-time-travel label {
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.diagram-time-travel input[type="range"] {
+    accent-color: #646cff;
+    width: 200px;
+    margin: 0 8px;
+}
+
+.diagram-time-travel span {
+    font-size: 14px;
+    color: #444;
+}
