@@ -1,3 +1,10 @@
+/* Ensure parent container is positioned and fills viewport */
+.diagram-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
 .diagram-viewer {
   --diagram-prop-key: #667eea;
   --diagram-prop-value: #2c3e50;
@@ -7,7 +14,7 @@
   right: 0;
   bottom: 0;
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
   overflow: hidden;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Roboto",
