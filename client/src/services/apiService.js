@@ -6,7 +6,12 @@ class ApiService {
   }
 
   getAuthHeaders() {
-    return { 'Content-Type': 'application/json' };
+    const headers = { 'Content-Type': 'application/json' };
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
   }
 
   /**

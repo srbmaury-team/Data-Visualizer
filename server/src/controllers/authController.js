@@ -49,6 +49,7 @@ export const register = async (req, res) => {
     res.cookie(COOKIE_NAME, token, getCookieOptions());
     res.status(201).json({
       message: 'User registered successfully',
+      token,
       user: {
         id: user._id,
         username: user.username,
@@ -99,6 +100,7 @@ export const login = async (req, res) => {
     res.cookie(COOKIE_NAME, token, getCookieOptions());
     res.json({
       message: 'Login successful',
+      token,
       user: {
         id: user._id,
         username: user.username,

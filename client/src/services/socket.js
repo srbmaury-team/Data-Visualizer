@@ -15,6 +15,9 @@ export function getSocket() {
   socket = io(SOCKET_URL, {
     transports: ['websocket', 'polling'],
       withCredentials: true,
+    auth: {
+      token: localStorage.getItem('auth_token'),
+    },
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,

@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   // Helper function to clear user data
   const clearUserFromStorage = () => {
     localStorage.removeItem('user_data');
+    localStorage.removeItem('auth_token');
   };
 
   const initializeAuth = useCallback(async () => {
@@ -72,6 +73,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const response = await apiService.login(credentials);
+    if (response.token) {
+      localStorage.setItem('auth_token', response.token);
+    }
     setUser(response.user);
     setIsAuthenticated(true);
     saveUserToStorage(response.user);
@@ -80,6 +84,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const response = await apiService.register(userData);
+    if (response.token) {
+      localStorage.setItem('auth_token', response.token);
+    }
     setUser(response.user);
     setIsAuthenticated(true);
     saveUserToStorage(response.user);

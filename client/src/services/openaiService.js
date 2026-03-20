@@ -8,11 +8,15 @@ class OpenAIYamlService {
   }
 
   async generateYamlResponse(userInput, currentYaml = '') {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/ai/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
         credentials: 'include',
       body: JSON.stringify({ userInput, currentYaml }),
     });
